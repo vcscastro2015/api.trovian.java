@@ -11,6 +11,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -183,6 +187,162 @@ public class CooperativaController {
             @Parameter(description = "Sigla do estado (UF)", required = true)
             @PathVariable String uf) {
         List<CooperativaDTO> cooperativas = cooperativaService.findByCidadeAndUf(cidade, uf);
+        return ResponseEntity.ok(cooperativas);
+    }
+
+    @Operation(summary = "Lista cooperativas com paginação",
+               description = "Retorna uma página de cooperativas com suporte a paginação e ordenação")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Página de cooperativas retornada com sucesso",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = Page.class)))
+    })
+    @GetMapping(value = "/paginated", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Page<CooperativaDTO>> getAllCooperativasPaginated(
+            @Parameter(description = "Número da página (inicia em 0)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Tamanho da página", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Campo para ordenação", example = "nome")
+            @RequestParam(defaultValue = "id") String sortBy,
+            @Parameter(description = "Direção da ordenação (ASC ou DESC)", example = "ASC")
+            @RequestParam(defaultValue = "ASC") String direction) {
+
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+        Page<CooperativaDTO> cooperativas = cooperativaService.findAllPaginated(pageable);
+        return ResponseEntity.ok(cooperativas);
+    }
+
+    @Operation(summary = "Busca cooperativas por nome com paginação",
+               description = "Retorna uma página de cooperativas cujo nome contenha o texto informado")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Página de cooperativas retornada com sucesso",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = Page.class)))
+    })
+    @GetMapping(value = "/search/paginated", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Page<CooperativaDTO>> searchCooperativasByNomePaginated(
+            @Parameter(description = "Nome (ou parte do nome) da cooperativa", required = true)
+            @RequestParam String nome,
+            @Parameter(description = "Número da página (inicia em 0)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Tamanho da página", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Campo para ordenação", example = "nome")
+            @RequestParam(defaultValue = "id") String sortBy,
+            @Parameter(description = "Direção da ordenação (ASC ou DESC)", example = "ASC")
+            @RequestParam(defaultValue = "ASC") String direction) {
+
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+        Page<CooperativaDTO> cooperativas = cooperativaService.searchByNomePaginated(nome, pageable);
+        return ResponseEntity.ok(cooperativas);
+    }
+
+    @Operation(summary = "Busca cooperativas por cidade com paginação",
+               description = "Retorna uma página de cooperativas de uma cidade específica")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Página de cooperativas retornada com sucesso",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = Page.class)))
+    })
+    @GetMapping(value = "/cidade/{cidade}/paginated", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Page<CooperativaDTO>> getCooperativasByCidadePaginated(
+            @Parameter(description = "Nome da cidade", required = true)
+            @PathVariable String cidade,
+            @Parameter(description = "Número da página (inicia em 0)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Tamanho da página", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Campo para ordenação", example = "nome")
+            @RequestParam(defaultValue = "id") String sortBy,
+            @Parameter(description = "Direção da ordenação (ASC ou DESC)", example = "ASC")
+            @RequestParam(defaultValue = "ASC") String direction) {
+
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+        Page<CooperativaDTO> cooperativas = cooperativaService.findByCidadePaginated(cidade, pageable);
+        return ResponseEntity.ok(cooperativas);
+    }
+
+    @Operation(summary = "Busca cooperativas por UF com paginação",
+               description = "Retorna uma página de cooperativas de um estado específico")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Página de cooperativas retornada com sucesso",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = Page.class)))
+    })
+    @GetMapping(value = "/uf/{uf}/paginated", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Page<CooperativaDTO>> getCooperativasByUfPaginated(
+            @Parameter(description = "Sigla do estado (UF)", required = true)
+            @PathVariable String uf,
+            @Parameter(description = "Número da página (inicia em 0)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Tamanho da página", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Campo para ordenação", example = "nome")
+            @RequestParam(defaultValue = "id") String sortBy,
+            @Parameter(description = "Direção da ordenação (ASC ou DESC)", example = "ASC")
+            @RequestParam(defaultValue = "ASC") String direction) {
+
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+        Page<CooperativaDTO> cooperativas = cooperativaService.findByUfPaginated(uf, pageable);
+        return ResponseEntity.ok(cooperativas);
+    }
+
+    @Operation(summary = "Busca cooperativas por status com paginação",
+               description = "Retorna uma página de cooperativas ativas ou inativas")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Página de cooperativas retornada com sucesso",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = Page.class)))
+    })
+    @GetMapping(value = "/ativa/{ativa}/paginated", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Page<CooperativaDTO>> getCooperativasByAtivaPaginated(
+            @Parameter(description = "Status da cooperativa (true = ativa, false = inativa)", required = true)
+            @PathVariable Boolean ativa,
+            @Parameter(description = "Número da página (inicia em 0)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Tamanho da página", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Campo para ordenação", example = "nome")
+            @RequestParam(defaultValue = "id") String sortBy,
+            @Parameter(description = "Direção da ordenação (ASC ou DESC)", example = "ASC")
+            @RequestParam(defaultValue = "ASC") String direction) {
+
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+        Page<CooperativaDTO> cooperativas = cooperativaService.findByAtivaPaginated(ativa, pageable);
+        return ResponseEntity.ok(cooperativas);
+    }
+
+    @Operation(summary = "Busca cooperativas por cidade e UF com paginação",
+               description = "Retorna uma página de cooperativas de uma cidade e estado específicos")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Página de cooperativas retornada com sucesso",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = Page.class)))
+    })
+    @GetMapping(value = "/cidade/{cidade}/uf/{uf}/paginated", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Page<CooperativaDTO>> getCooperativasByCidadeAndUfPaginated(
+            @Parameter(description = "Nome da cidade", required = true)
+            @PathVariable String cidade,
+            @Parameter(description = "Sigla do estado (UF)", required = true)
+            @PathVariable String uf,
+            @Parameter(description = "Número da página (inicia em 0)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Tamanho da página", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Campo para ordenação", example = "nome")
+            @RequestParam(defaultValue = "id") String sortBy,
+            @Parameter(description = "Direção da ordenação (ASC ou DESC)", example = "ASC")
+            @RequestParam(defaultValue = "ASC") String direction) {
+
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+        Page<CooperativaDTO> cooperativas = cooperativaService.findByCidadeAndUfPaginated(cidade, uf, pageable);
         return ResponseEntity.ok(cooperativas);
     }
 }

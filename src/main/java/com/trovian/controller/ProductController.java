@@ -11,6 +11,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -99,5 +103,53 @@ public class ProductController {
             @Parameter(description = "ID do produto a ser deletado", required = true) @PathVariable Long id) {
         productService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Listar produtos com paginação",
+               description = "Retorna uma página de produtos com suporte a paginação e ordenação")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Página de produtos retornada com sucesso",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class)))
+    })
+    @GetMapping("/paginated")
+    public ResponseEntity<Page<ProductDTO>> getAllProductsPaginated(
+            @Parameter(description = "Número da página (inicia em 0)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Tamanho da página", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Campo para ordenação", example = "name")
+            @RequestParam(defaultValue = "id") String sortBy,
+            @Parameter(description = "Direção da ordenação (ASC ou DESC)", example = "ASC")
+            @RequestParam(defaultValue = "ASC") String direction) {
+
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+        Page<ProductDTO> products = productService.findAllPaginated(pageable);
+        return ResponseEntity.ok(products);
+    }
+
+    @Operation(summary = "Buscar produtos por nome com paginação",
+               description = "Retorna uma página de produtos que contenham o nome fornecido")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Página de produtos retornada com sucesso",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class)))
+    })
+    @GetMapping("/search/paginated")
+    public ResponseEntity<Page<ProductDTO>> searchProductsPaginated(
+            @Parameter(description = "Nome ou parte do nome do produto", required = true)
+            @RequestParam String name,
+            @Parameter(description = "Número da página (inicia em 0)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Tamanho da página", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Campo para ordenação", example = "name")
+            @RequestParam(defaultValue = "id") String sortBy,
+            @Parameter(description = "Direção da ordenação (ASC ou DESC)", example = "ASC")
+            @RequestParam(defaultValue = "ASC") String direction) {
+
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+        Page<ProductDTO> products = productService.searchByNamePaginated(name, pageable);
+        return ResponseEntity.ok(products);
     }
 }

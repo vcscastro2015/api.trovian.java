@@ -22,22 +22,27 @@ api.trovian.java/
 │   │   └── OpenApiConfig.java             # Configuração Swagger/OpenAPI
 │   ├── controller/                         # Camada REST
 │   │   ├── ProductController.java
-│   │   └── CooperativaController.java
+│   │   ├── CooperativaController.java
+│   │   └── ClienteController.java
 │   ├── dto/                                # Data Transfer Objects
 │   │   ├── ProductDTO.java
-│   │   └── CooperativaDTO.java
+│   │   ├── CooperativaDTO.java
+│   │   └── ClienteDTO.java
 │   ├── entity/                             # Entidades JPA
 │   │   ├── Product.java
-│   │   └── Cooperativa.java
+│   │   ├── Cooperativa.java
+│   │   └── Cliente.java
 │   ├── jms/                                # Mensageria
 │   │   ├── MessageProducer.java
 │   │   └── MessageListener.java
 │   ├── repository/                         # Camada de dados
 │   │   ├── ProductRepository.java
-│   │   └── CooperativaRepository.java
+│   │   ├── CooperativaRepository.java
+│   │   └── ClienteRepository.java
 │   └── service/                            # Lógica de negócio
 │       ├── ProductService.java
-│       └── CooperativaService.java
+│       ├── CooperativaService.java
+│       └── ClienteService.java
 ├── src/main/resources/
 │   └── application.yml                     # Configurações da aplicação
 ├── docker-compose.yml                      # Serviços Docker (PostgreSQL, ActiveMQ)
@@ -186,6 +191,346 @@ src/main/java/com/trovian/controller/CooperativaController.java
    - `dataCadastro` definido no momento da criação
    - `updatedAt` atualizado em cada modificação
 5. **Buscas Case-Insensitive**: Todas as buscas por texto ignoram maiúsculas/minúsculas
+
+---
+
+### 3. CRUD Cliente
+**Data**: 30/10/2025
+**Branch**: `feature/cliente`
+
+#### Atributos Implementados
+
+**Dados Básicos**
+- **id** (Long) - Chave primária auto-incrementada
+- **uuid** (UUID) - Identificador único universal, gerado automaticamente
+- **nome** (String, 200 chars) - Obrigatório
+- **cnpjCpf** (String, 18 chars) - Obrigatório, Único
+- **ie** (String, 20 chars) - Inscrição Estadual, Opcional
+- **status** (Boolean) - Obrigatório, Default: true
+- **cooperado** (Boolean) - Obrigatório, Default: false
+
+**Endereço Completo**
+- **endereco** (String, 300 chars) - Opcional
+- **bairro** (String, 100 chars) - Opcional
+- **complemento** (String, 100 chars) - Opcional
+- **numero** (String, 20 chars) - Opcional
+- **cep** (String, 9 chars) - Opcional
+- **cidade** (String, 100 chars) - Opcional
+- **uf** (String, 2 chars) - Opcional
+
+**Contatos**
+- **contatos** (String, 500 chars) - Informações de contato, Opcional
+- **telefones** (String, 200 chars) - Telefones, Opcional
+
+**Relacionamento**
+- **cooperativa** (ManyToOne) - Relacionamento com Cooperativa (obrigatório se cooperado = true)
+
+**Auditoria**
+- **dataCadastro** (LocalDateTime) - Auto-gerado
+- **updatedAt** (LocalDateTime) - Auto-atualizado
+
+#### Arquivos Criados
+
+**Entity**
+```java
+src/main/java/com/trovian/entity/Cliente.java
+```
+- Anotações JPA (@Entity, @Table, @Id, @GeneratedValue)
+- Validações Jakarta (@NotBlank, @NotNull, @Size)
+- Constraint unique no CNPJ/CPF e UUID
+- Relacionamento ManyToOne com Cooperativa (FetchType.LAZY)
+- UUID gerado automaticamente no @PrePersist
+- Auditoria com @PrePersist e @PreUpdate
+- Lombok (@Data, @NoArgsConstructor, @AllArgsConstructor)
+
+**DTO**
+```java
+src/main/java/com/trovian/dto/ClienteDTO.java
+```
+- Validações de entrada
+- Documentação Swagger (@Schema)
+- Campos read-only (id, uuid, dataCadastro, updatedAt, cooperativaNome)
+- Campo cooperativaId para relacionamento
+- Campo cooperativaNome (read-only) para exibição
+
+**Repository**
+```java
+src/main/java/com/trovian/repository/ClienteRepository.java
+```
+- Extende JpaRepository<Cliente, Long>
+- Query methods customizados:
+  - `findByCooperativa(Cooperativa, Pageable)` - Busca por cooperativa com paginação
+  - `findByCooperativaId(Long, Pageable)` - Busca por ID da cooperativa com paginação
+  - `findByUuid(UUID)` - Busca por UUID
+  - `findByCnpjCpf(String)` - Busca por CNPJ/CPF
+
+**Service**
+```java
+src/main/java/com/trovian/service/ClienteService.java
+```
+- CRUD completo com transações
+- Validação de CNPJ/CPF duplicado (create e update)
+- Validação de cooperativa obrigatória quando cooperado = true
+- Logs SLF4J em todas operações
+- Conversão manual DTO ↔ Entity
+- Métodos de busca paginados
+
+**Controller**
+```java
+src/main/java/com/trovian/controller/ClienteController.java
+```
+- Base path: `/cliente`
+- Documentação Swagger completa
+- Response entities com status HTTP corretos
+- 3 endpoints GET (conforme especificado):
+  1. Listar todos com paginação
+  2. Buscar por ID
+  3. Buscar por cooperativa com paginação
+
+#### Endpoints REST - Cliente
+
+| Método | Endpoint | Descrição | Status Code |
+|--------|----------|-----------|-------------|
+| GET | `/cliente` | Lista todos clientes com paginação | 200 |
+| GET | `/cliente/{id}` | Busca por ID | 200 / 404 |
+| GET | `/cliente/cooperativa/{cooperativaId}` | Busca por cooperativa com paginação | 200 |
+| POST | `/cliente` | Cria novo cliente | 201 |
+| PUT | `/cliente/{id}` | Atualiza cliente | 200 / 404 |
+| DELETE | `/cliente/{id}` | Deleta cliente | 204 / 404 |
+
+**Parâmetros de Paginação** (todos opcionais):
+- `page` (int, default: 0) - Número da página
+- `size` (int, default: 10) - Tamanho da página
+- `sortBy` (String, default: "id") - Campo para ordenação
+- `direction` (String, default: "ASC") - Direção (ASC/DESC)
+
+#### Regras de Negócio
+
+1. **CNPJ/CPF Único**: Não permite cadastro de CNPJ/CPF duplicado
+2. **UUID Automático**: UUID gerado automaticamente no momento da criação
+3. **Cooperativa Obrigatória**: Se cooperado = true, deve ter cooperativaId informado
+4. **Validação em Update**: Verifica CNPJ/CPF duplicado, exceto do próprio cliente
+5. **Status Padrão**: Cliente criado como ativo (status = true) por padrão
+6. **Cooperado Padrão**: Cliente criado como não cooperado (cooperado = false) por padrão
+7. **Auditoria Automática**:
+   - `uuid` gerado no momento da criação
+   - `dataCadastro` definido no momento da criação
+   - `updatedAt` atualizado em cada modificação
+8. **Lazy Loading**: Cooperativa carregada somente quando necessário
+
+#### Exemplos de Uso
+
+**Criar Cliente Cooperado**
+```bash
+curl -X POST http://localhost:8080/cliente \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nome": "João da Silva",
+    "cnpjCpf": "123.456.789-00",
+    "ie": "123.456.789.012",
+    "endereco": "Rua das Flores, 123",
+    "bairro": "Centro",
+    "numero": "123",
+    "cep": "12345-678",
+    "cidade": "São Paulo",
+    "uf": "SP",
+    "telefones": "(11) 98765-4321",
+    "contatos": "joao@email.com",
+    "status": true,
+    "cooperado": true,
+    "cooperativaId": 1
+  }'
+```
+
+**Criar Cliente Não Cooperado**
+```bash
+curl -X POST http://localhost:8080/cliente \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nome": "Maria Santos",
+    "cnpjCpf": "98.765.432/0001-00",
+    "endereco": "Av. Paulista, 1000",
+    "cidade": "São Paulo",
+    "uf": "SP",
+    "telefones": "(11) 91234-5678",
+    "status": true,
+    "cooperado": false
+  }'
+```
+
+**Listar Todos os Clientes (primeira página, 10 itens)**
+```bash
+curl -X GET "http://localhost:8080/cliente?page=0&size=10&sortBy=nome&direction=ASC"
+```
+
+**Buscar Cliente por ID**
+```bash
+curl -X GET http://localhost:8080/cliente/1
+```
+
+**Buscar Clientes por Cooperativa (com paginação)**
+```bash
+curl -X GET "http://localhost:8080/cliente/cooperativa/1?page=0&size=20&sortBy=nome&direction=ASC"
+```
+
+**Atualizar Cliente**
+```bash
+curl -X PUT http://localhost:8080/cliente/1 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nome": "João da Silva - Atualizado",
+    "cnpjCpf": "123.456.789-00",
+    "endereco": "Rua das Flores, 456",
+    "cidade": "São Paulo",
+    "uf": "SP",
+    "status": true,
+    "cooperado": true,
+    "cooperativaId": 1
+  }'
+```
+
+**Deletar Cliente**
+```bash
+curl -X DELETE http://localhost:8080/cliente/1
+```
+
+#### Características Técnicas
+
+1. **UUID Único**: Cada cliente possui um UUID único e imutável
+2. **Relacionamento ManyToOne**: Vários clientes podem pertencer a uma cooperativa
+3. **Lazy Loading**: Cooperativa carregada somente quando acessada
+4. **Validações Completas**: CNPJ/CPF único, cooperativa obrigatória para cooperados
+5. **Paginação Nativa**: Todos os endpoints de listagem suportam paginação
+6. **Endereço Completo**: Campos separados para endereço detalhado
+7. **Flexibilidade**: Cliente pode ser cooperado ou não
+8. **Auditoria**: Rastreamento de criação e atualização
+
+---
+
+### 4. Paginação
+**Data**: 30/10/2025
+**Branch**: `feature/cooperativa` (continuação)
+
+#### Implementação
+
+A paginação foi implementada utilizando o suporte nativo do Spring Data JPA através da interface `Pageable`. A implementação mantém os endpoints originais sem paginação para retrocompatibilidade e adiciona novos endpoints com sufixo `/paginated`.
+
+#### Recursos Implementados
+
+**Parâmetros de Paginação**:
+- `page` (int, default: 0) - Número da página (inicia em 0)
+- `size` (int, default: 10) - Tamanho da página
+- `sortBy` (String, default: "id") - Campo para ordenação
+- `direction` (String, default: "ASC") - Direção da ordenação (ASC ou DESC)
+
+**Resposta Paginada** (objeto `Page`):
+```json
+{
+  "content": [...],           // Lista de objetos da página atual
+  "pageable": {
+    "pageNumber": 0,
+    "pageSize": 10,
+    "sort": {...}
+  },
+  "totalPages": 5,            // Total de páginas
+  "totalElements": 47,        // Total de elementos
+  "last": false,              // É a última página?
+  "first": true,              // É a primeira página?
+  "numberOfElements": 10,     // Quantidade de elementos na página atual
+  "size": 10,                 // Tamanho da página
+  "number": 0,                // Número da página atual
+  "sort": {...},
+  "empty": false
+}
+```
+
+#### Arquivos Modificados
+
+**Product**
+- `repository/ProductRepository.java` - Adicionado método `findByNameContainingIgnoreCase(String, Pageable)`
+- `service/ProductService.java` - Adicionados métodos:
+  - `findAllPaginated(Pageable)`
+  - `searchByNamePaginated(String, Pageable)`
+- `controller/ProductController.java` - Adicionados endpoints:
+  - `GET /products/paginated`
+  - `GET /products/search/paginated`
+
+**Cooperativa**
+- `repository/CooperativaRepository.java` - Adicionados métodos com `Pageable`:
+  - `findByNomeContainingIgnoreCase(String, Pageable)`
+  - `findByCidadeIgnoreCase(String, Pageable)`
+  - `findByUfIgnoreCase(String, Pageable)`
+  - `findByAtiva(Boolean, Pageable)`
+  - `findByCidadeIgnoreCaseAndUfIgnoreCase(String, String, Pageable)`
+- `service/CooperativaService.java` - Adicionados métodos:
+  - `findAllPaginated(Pageable)`
+  - `searchByNomePaginated(String, Pageable)`
+  - `findByCidadePaginated(String, Pageable)`
+  - `findByUfPaginated(String, Pageable)`
+  - `findByAtivaPaginated(Boolean, Pageable)`
+  - `findByCidadeAndUfPaginated(String, String, Pageable)`
+- `controller/CooperativaController.java` - Adicionados endpoints:
+  - `GET /cooperativa/paginated`
+  - `GET /cooperativa/search/paginated`
+  - `GET /cooperativa/cidade/{cidade}/paginated`
+  - `GET /cooperativa/uf/{uf}/paginated`
+  - `GET /cooperativa/ativa/{ativa}/paginated`
+  - `GET /cooperativa/cidade/{cidade}/uf/{uf}/paginated`
+
+#### Endpoints REST - Paginação
+
+**Product - Endpoints Paginados**
+
+| Método | Endpoint | Descrição | Parâmetros |
+|--------|----------|-----------|------------|
+| GET | `/products/paginated` | Lista produtos com paginação | page, size, sortBy, direction |
+| GET | `/products/search/paginated` | Busca por nome com paginação | name, page, size, sortBy, direction |
+
+**Cooperativa - Endpoints Paginados**
+
+| Método | Endpoint | Descrição | Parâmetros |
+|--------|----------|-----------|------------|
+| GET | `/cooperativa/paginated` | Lista cooperativas com paginação | page, size, sortBy, direction |
+| GET | `/cooperativa/search/paginated` | Busca por nome com paginação | nome, page, size, sortBy, direction |
+| GET | `/cooperativa/cidade/{cidade}/paginated` | Busca por cidade com paginação | cidade, page, size, sortBy, direction |
+| GET | `/cooperativa/uf/{uf}/paginated` | Busca por UF com paginação | uf, page, size, sortBy, direction |
+| GET | `/cooperativa/ativa/{ativa}/paginated` | Busca por status com paginação | ativa, page, size, sortBy, direction |
+| GET | `/cooperativa/cidade/{cidade}/uf/{uf}/paginated` | Busca por cidade e UF com paginação | cidade, uf, page, size, sortBy, direction |
+
+#### Exemplos de Uso
+
+**Listar produtos - primeira página, 10 itens, ordenado por nome**
+```bash
+curl -X GET "http://localhost:8080/products/paginated?page=0&size=10&sortBy=name&direction=ASC"
+```
+
+**Buscar cooperativas por cidade - segunda página, 20 itens**
+```bash
+curl -X GET "http://localhost:8080/cooperativa/cidade/São Paulo/paginated?page=1&size=20"
+```
+
+**Buscar produtos por nome com paginação**
+```bash
+curl -X GET "http://localhost:8080/products/search/paginated?name=teste&page=0&size=5&sortBy=price&direction=DESC"
+```
+
+#### Características Técnicas
+
+1. **Retrocompatibilidade**: Endpoints originais sem paginação continuam funcionando
+2. **Ordenação Flexível**: Permite ordenar por qualquer campo da entidade
+3. **Valores Padrão**: Todos os parâmetros possuem valores padrão sensatos
+4. **Documentação Swagger**: Todos os endpoints documentados com exemplos
+5. **Type-Safe**: Utiliza tipos do Spring Data (`Page<T>`, `Pageable`, `Sort`)
+6. **Performance**: Queries otimizadas pelo Spring Data JPA
+7. **Metadata Completa**: Response inclui informações sobre total de páginas, elementos, etc.
+
+#### Benefícios
+
+- **Performance**: Reduz carga de rede e processamento ao retornar apenas dados necessários
+- **UX**: Melhora experiência do usuário em listas grandes
+- **Escalabilidade**: Permite trabalhar com grandes volumes de dados
+- **Flexibilidade**: Ordenação customizável por qualquer campo
+- **Padrão REST**: Segue convenções REST para paginação
 
 ---
 
@@ -468,12 +813,16 @@ curl -X GET http://localhost:8080/cooperativa/ativa/true
 ### ✅ Concluído
 - [x] CRUD Product (exemplo base)
 - [x] CRUD Cooperativa completo
+- [x] CRUD Cliente completo com relacionamento ManyToOne
 - [x] Validações de dados
 - [x] Documentação Swagger
 - [x] Logs SLF4J
 - [x] Transações JPA
 - [x] Auditoria básica (timestamps)
 - [x] Buscas customizadas
+- [x] Paginação completa (Product, Cooperativa e Cliente)
+- [x] UUID único para Clientes
+- [x] Relacionamento Cliente-Cooperativa
 
 ### 🔄 Em Desenvolvimento
 - [ ] Testes unitários e integração
@@ -481,7 +830,6 @@ curl -X GET http://localhost:8080/cooperativa/ativa/true
 - [ ] Validação de CNPJ
 
 ### 📋 Backlog
-- [ ] Paginação
 - [ ] Cache
 - [ ] Segurança (JWT)
 - [ ] Soft delete
@@ -503,6 +851,27 @@ curl -X GET http://localhost:8080/cooperativa/ativa/true
 
 ## 🔄 Changelog
 
+### v1.3.0 - 30/10/2025
+- ✨ Implementado CRUD completo de Cliente
+- ✨ Relacionamento ManyToOne Cliente-Cooperativa
+- ✨ UUID único e automático para cada cliente
+- ✨ Validação de CNPJ/CPF único
+- ✨ Validação de cooperativa obrigatória para cooperados
+- ✨ Endereço completo (rua, bairro, complemento, número, CEP, cidade, UF)
+- ✨ Campos de contato (telefones e contatos)
+- ✨ 3 endpoints GET com paginação (todos, por ID, por cooperativa)
+- ✨ Paginação nativa em todos endpoints de listagem
+- 📝 Documentação completa no histórico de desenvolvimento
+
+### v1.2.0 - 30/10/2025
+- ✨ Implementada paginação completa em Product e Cooperativa
+- ✨ Adicionados 8 novos endpoints paginados
+- ✨ Suporte a ordenação customizável (ASC/DESC)
+- ✨ Resposta com metadata completa (total de páginas, elementos, etc.)
+- ✨ Endpoints retrocompatíveis (mantidos endpoints originais)
+- 📝 Documentação Swagger atualizada com endpoints paginados
+- 📝 Histórico de desenvolvimento atualizado
+
 ### v1.1.0 - 29/10/2025
 - ✨ Adicionado CRUD completo de Cooperativa
 - ✨ Endpoints REST para gerenciamento de cooperativas
@@ -520,6 +889,6 @@ curl -X GET http://localhost:8080/cooperativa/ativa/true
 
 ---
 
-**Última Atualização**: 29/10/2025
+**Última Atualização**: 30/10/2025
 **Desenvolvedor**: Claude Code
 **Branch Atual**: feature/cooperativa

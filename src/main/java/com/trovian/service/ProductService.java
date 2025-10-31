@@ -5,6 +5,8 @@ import com.trovian.entity.Product;
 import com.trovian.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -75,6 +77,28 @@ public class ProductService {
         return productRepository.findByNameContainingIgnoreCase(name).stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Busca todos os produtos com paginação
+     */
+    @Transactional(readOnly = true)
+    public Page<ProductDTO> findAllPaginated(Pageable pageable) {
+        log.info("Buscando todos os produtos com paginação - Página: {}, Tamanho: {}",
+                pageable.getPageNumber(), pageable.getPageSize());
+        Page<Product> products = productRepository.findAll(pageable);
+        return products.map(this::toDTO);
+    }
+
+    /**
+     * Busca produtos por nome com paginação
+     */
+    @Transactional(readOnly = true)
+    public Page<ProductDTO> searchByNamePaginated(String name, Pageable pageable) {
+        log.info("Buscando produtos por nome: {} com paginação - Página: {}, Tamanho: {}",
+                name, pageable.getPageNumber(), pageable.getPageSize());
+        Page<Product> products = productRepository.findByNameContainingIgnoreCase(name, pageable);
+        return products.map(this::toDTO);
     }
 
     private ProductDTO toDTO(Product product) {

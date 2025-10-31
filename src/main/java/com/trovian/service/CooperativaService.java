@@ -5,6 +5,8 @@ import com.trovian.entity.Cooperativa;
 import com.trovian.repository.CooperativaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -175,6 +177,72 @@ public class CooperativaService {
                 .stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Busca todas as cooperativas com paginação
+     */
+    @Transactional(readOnly = true)
+    public Page<CooperativaDTO> findAllPaginated(Pageable pageable) {
+        log.info("Buscando todas as cooperativas com paginação - Página: {}, Tamanho: {}",
+                pageable.getPageNumber(), pageable.getPageSize());
+        Page<Cooperativa> cooperativas = cooperativaRepository.findAll(pageable);
+        return cooperativas.map(this::toDTO);
+    }
+
+    /**
+     * Busca cooperativas por nome com paginação
+     */
+    @Transactional(readOnly = true)
+    public Page<CooperativaDTO> searchByNomePaginated(String nome, Pageable pageable) {
+        log.info("Buscando cooperativas com nome contendo: {} com paginação - Página: {}, Tamanho: {}",
+                nome, pageable.getPageNumber(), pageable.getPageSize());
+        Page<Cooperativa> cooperativas = cooperativaRepository.findByNomeContainingIgnoreCase(nome, pageable);
+        return cooperativas.map(this::toDTO);
+    }
+
+    /**
+     * Busca cooperativas por cidade com paginação
+     */
+    @Transactional(readOnly = true)
+    public Page<CooperativaDTO> findByCidadePaginated(String cidade, Pageable pageable) {
+        log.info("Buscando cooperativas na cidade: {} com paginação - Página: {}, Tamanho: {}",
+                cidade, pageable.getPageNumber(), pageable.getPageSize());
+        Page<Cooperativa> cooperativas = cooperativaRepository.findByCidadeIgnoreCase(cidade, pageable);
+        return cooperativas.map(this::toDTO);
+    }
+
+    /**
+     * Busca cooperativas por UF com paginação
+     */
+    @Transactional(readOnly = true)
+    public Page<CooperativaDTO> findByUfPaginated(String uf, Pageable pageable) {
+        log.info("Buscando cooperativas na UF: {} com paginação - Página: {}, Tamanho: {}",
+                uf, pageable.getPageNumber(), pageable.getPageSize());
+        Page<Cooperativa> cooperativas = cooperativaRepository.findByUfIgnoreCase(uf, pageable);
+        return cooperativas.map(this::toDTO);
+    }
+
+    /**
+     * Busca cooperativas ativas ou inativas com paginação
+     */
+    @Transactional(readOnly = true)
+    public Page<CooperativaDTO> findByAtivaPaginated(Boolean ativa, Pageable pageable) {
+        log.info("Buscando cooperativas ativas: {} com paginação - Página: {}, Tamanho: {}",
+                ativa, pageable.getPageNumber(), pageable.getPageSize());
+        Page<Cooperativa> cooperativas = cooperativaRepository.findByAtiva(ativa, pageable);
+        return cooperativas.map(this::toDTO);
+    }
+
+    /**
+     * Busca cooperativas por cidade e UF com paginação
+     */
+    @Transactional(readOnly = true)
+    public Page<CooperativaDTO> findByCidadeAndUfPaginated(String cidade, String uf, Pageable pageable) {
+        log.info("Buscando cooperativas na cidade: {} e UF: {} com paginação - Página: {}, Tamanho: {}",
+                cidade, uf, pageable.getPageNumber(), pageable.getPageSize());
+        Page<Cooperativa> cooperativas = cooperativaRepository.findByCidadeIgnoreCaseAndUfIgnoreCase(cidade, uf, pageable);
+        return cooperativas.map(this::toDTO);
     }
 
     /**

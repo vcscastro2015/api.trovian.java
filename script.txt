@@ -1,20 +1,38 @@
-Agora vamos fazer um CRUD do Objeto Cooperativa na estrutura bem definida do projeto java
+Agora vamos fazer um CRUD do Objeto Cliente na estrutura bem definida do projeto java
 Vamos ter os seguinte atributos:
-Nome -> texto
-CNJP -> texto
-Endereço -> texto
-Cidade -> texto
-UF -> texto
-CEP -> texto
-Ativa -> Booleano
-Data do Cadastro - Date
-Criar toda a infra necessaria, desde o modelo ate o rest
+ private Integer id;
+  private String nome;
+  private UUID uuid;
+    private Date dataCadastro;
+    private String cnpjCpf;
+    private String ie;
+    private String endereco;
+
+    private String bairro;
+    private String complemento;
+  
+    private String numero;
+    
+   
+    private String cep;
+   
+    private String cidade;
+    
+    private String contatos;
+   
+    private String telefones;
+   
+    private String uf;
+   
+    private Boolean status;
+	private Boolean cooperado;
+	
+Se for cooperado vai poder inserir uma cooperativa cadastrada, que ja fizemos a implementação.
+
+o metodo GetMapping ter somente tres:
+Um para buscar todos os clientes com paginação
+Um para buscar o cliente pelo id
+Um para buscar pela Cooperativa com paginação
 
 
-import { environment } from '../../environments/environment';
-
-@Injectable({
-  providedIn: 'root'
-})
-export class CooperativaService {
-  private apiUrl = `${environment.apiUrl}/trovian/cooperativa`;
+Criar toda a infra necessaria, desde o modelo ate o rest baseado na operação Product
