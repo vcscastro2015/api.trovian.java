@@ -534,6 +534,160 @@ curl -X GET "http://localhost:8080/products/search/paginated?name=teste&page=0&s
 
 ---
 
+### 3. CRUD Modelo
+**Data**: 31/10/2025
+**Branch**: `feature/modelo`
+
+#### Atributos Implementados
+- **id** (Long) - Chave primária, auto-gerado
+- **fabricante** (String, 200 chars) - Obrigatório
+- **marca** (String, 200 chars) - Obrigatório
+- **tipo** (String, 50 chars) - Obrigatório, valores aceitos: "Equipamento" ou "Veiculo"
+- **status** (Boolean) - Obrigatório, Default: true
+- **createdAt** (LocalDateTime) - Auto-gerado
+- **updatedAt** (LocalDateTime) - Auto-atualizado
+
+#### Arquivos Criados
+
+**Entity**
+```java
+src/main/java/com/trovian/entity/Modelo.java
+```
+- Anotações JPA (@Entity, @Table, @Id, @GeneratedValue)
+- Validações Jakarta (@NotBlank, @NotNull, @Size)
+- Auditoria com @PrePersist e @PreUpdate
+- Lombok (@Data, @NoArgsConstructor, @AllArgsConstructor)
+
+**DTO**
+```java
+src/main/java/com/trovian/dto/ModeloDTO.java
+```
+- Validações de entrada
+- Documentação Swagger (@Schema)
+- Campos read-only (id, createdAt, updatedAt)
+- allowableValues para campo tipo
+
+**Repository**
+```java
+src/main/java/com/trovian/repository/ModeloRepository.java
+```
+- Extende JpaRepository<Modelo, Long>
+- Query method customizado:
+  - `findByTipoIgnoreCase(String tipo, Pageable pageable)`
+
+**Service**
+```java
+src/main/java/com/trovian/service/ModeloService.java
+```
+- CRUD completo com transações
+- Validação de tipo (apenas "Equipamento" ou "Veiculo")
+- Logs SLF4J em todas operações
+- Conversão manual DTO ↔ Entity
+- Métodos de busca customizados com paginação
+
+**Controller**
+```java
+src/main/java/com/trovian/controller/ModeloController.java
+```
+- Base path: `/modelo`
+- Documentação Swagger completa
+- Response entities com status HTTP corretos
+- Suporte a paginação e ordenação
+
+#### Endpoints REST - Modelo
+
+| Método | Endpoint | Descrição | Status Code |
+|--------|----------|-----------|-------------|
+| GET | `/modelo/{id}` | Busca modelo por ID | 200 / 404 |
+| GET | `/modelo/equipamentos` | Lista modelos tipo Equipamento (paginado) | 200 |
+| GET | `/modelo/veiculos` | Lista modelos tipo Veiculo (paginado) | 200 |
+| POST | `/modelo` | Cria novo modelo | 201 |
+| PUT | `/modelo/{id}` | Atualiza modelo | 200 / 404 |
+| DELETE | `/modelo/{id}` | Deleta modelo | 204 / 404 |
+
+#### Parâmetros de Paginação
+
+Os endpoints `/modelo/equipamentos` e `/modelo/veiculos` suportam os seguintes parâmetros:
+
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| page | int | 0 | Número da página (inicia em 0) |
+| size | int | 10 | Tamanho da página |
+| sortBy | String | id | Campo para ordenação (id, fabricante, marca, tipo, status) |
+| direction | String | ASC | Direção da ordenação (ASC ou DESC) |
+
+#### Regras de Negócio
+
+1. **Validação de Tipo**: Campo "tipo" aceita apenas "Equipamento" ou "Veiculo" (case-insensitive)
+2. **Status Padrão**: Modelo criado como ativo (true) por padrão
+3. **Auditoria Automática**:
+   - `createdAt` definido no momento da criação
+   - `updatedAt` atualizado em cada modificação
+4. **Buscas Case-Insensitive**: Busca por tipo ignora maiúsculas/minúsculas
+5. **Paginação Obrigatória**: Endpoints de listagem retornam dados paginados para melhor performance
+
+---
+
+## 🧪 Exemplos de Uso - Modelo (cURL)
+
+### Criar Modelo Equipamento
+```bash
+curl -X POST http://localhost:8080/modelo \
+  -H "Content-Type: application/json" \
+  -d '{
+    "fabricante": "Caterpillar",
+    "marca": "D8T",
+    "tipo": "Equipamento",
+    "status": true
+  }'
+```
+
+### Criar Modelo Veículo
+```bash
+curl -X POST http://localhost:8080/modelo \
+  -H "Content-Type: application/json" \
+  -d '{
+    "fabricante": "Volkswagen",
+    "marca": "Gol",
+    "tipo": "Veiculo",
+    "status": true
+  }'
+```
+
+### Listar Equipamentos (Paginado)
+```bash
+curl -X GET "http://localhost:8080/modelo/equipamentos?page=0&size=10&sortBy=fabricante&direction=ASC"
+```
+
+### Listar Veículos (Paginado)
+```bash
+curl -X GET "http://localhost:8080/modelo/veiculos?page=0&size=10&sortBy=marca&direction=DESC"
+```
+
+### Buscar por ID
+```bash
+curl -X GET http://localhost:8080/modelo/1
+```
+
+### Atualizar Modelo
+```bash
+curl -X PUT http://localhost:8080/modelo/1 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "fabricante": "Caterpillar",
+    "marca": "D8T Pro",
+    "tipo": "Equipamento",
+    "status": true
+  }'
+```
+
+### Deletar Modelo
+```bash
+curl -X DELETE http://localhost:8080/modelo/1
+```
+
+---
+
 ## 🎯 Padrões e Convenções Adotados
 
 ### Nomenclatura
@@ -813,16 +967,15 @@ curl -X GET http://localhost:8080/cooperativa/ativa/true
 ### ✅ Concluído
 - [x] CRUD Product (exemplo base)
 - [x] CRUD Cooperativa completo
-- [x] CRUD Cliente completo com relacionamento ManyToOne
+- [x] CRUD Modelo completo (Equipamentos e Veículos)
 - [x] Validações de dados
 - [x] Documentação Swagger
 - [x] Logs SLF4J
 - [x] Transações JPA
 - [x] Auditoria básica (timestamps)
 - [x] Buscas customizadas
-- [x] Paginação completa (Product, Cooperativa e Cliente)
-- [x] UUID único para Clientes
-- [x] Relacionamento Cliente-Cooperativa
+- [x] Paginação (Product, Cooperativa e Modelo)
+- [x] Validação de tipo para Modelo (Equipamento/Veiculo)
 
 ### 🔄 Em Desenvolvimento
 - [ ] Testes unitários e integração
@@ -850,6 +1003,17 @@ curl -X GET http://localhost:8080/cooperativa/ativa/true
 ---
 
 ## 🔄 Changelog
+
+### v1.4.0 - 31/10/2025
+- ✨ Implementado CRUD completo de Modelo
+- ✨ Validação de tipo (apenas "Equipamento" ou "Veiculo")
+- ✨ Endpoints GET especializados por tipo com paginação
+- ✨ Suporte a ordenação customizável por qualquer campo
+- ✨ Auditoria automática (createdAt, updatedAt)
+- ✨ Logs SLF4J em todas operações
+- ✨ Status padrão (true) para novos modelos
+- 📝 Documentação Swagger completa
+- 📝 Exemplos de uso (cURL) no histórico
 
 ### v1.3.0 - 30/10/2025
 - ✨ Implementado CRUD completo de Cliente
@@ -889,6 +1053,6 @@ curl -X GET http://localhost:8080/cooperativa/ativa/true
 
 ---
 
-**Última Atualização**: 30/10/2025
+**Última Atualização**: 31/10/2025
 **Desenvolvedor**: Claude Code
-**Branch Atual**: feature/cooperativa
+**Branch Atual**: feature/modelo
