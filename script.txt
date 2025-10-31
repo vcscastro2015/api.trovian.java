@@ -1,16 +1,31 @@
-Agora vamos fazer um CRUD do Objeto Modelo na estrutura bem definida do projeto java
+Agora vamos fazer um CRUD do Objeto Equipamento na estrutura bem definida do projeto java
 Vamos ter os seguinte atributos:
     private Integer id;
-    private String fabricante;
-    private String marca;
-    private String tipo;
+    private Date dataCadastro;
+    private String imei;
+    private String numeroCelular;
+    private String numeroSerial;
+    @Column(name = "observacao", columnDefinition = "TEXT")
+    private String observacao;
+    @Basic(optional = false)
+    @NotNull
+    @Size(min = 1, max = 15)
+    @Column(name = "operadora")
+    private String operadora;
+    @Column(name = "status")
     private Boolean status;
+    @Column(name = "tipo_equipamento", length = 3)
+    private String tipoEquipamento;//PR = Proprietario PA = Particular
+    @Column(name = "tipo_chip", length = 3)
+    private String tipoChip;//PR = Proprietario PA = Particular
+    @JoinColumn(name = "modelo", referencedColumnName = "id")
+    @ManyToOne(optional = false)
+    private Modelo modelo;
+    @Column(name = "equipamento_alocado")
+    private Boolean equipamentoAlocado;
 	
-O campo tipo vai receber somente dois valores: Equipamento ou veiculo
-
 o metodo GetMapping ter somente esses:
-Um para buscar todos os Modelos com o tipo equipamento com paginação
-Um para buscar todos os Modelos com o tipo veiculo com paginação
-Um para buscar o modelo pelo id
+Um para buscar todos os Equipamento com paginação
+Um para buscar o Equipamento pelo id
 
 Criar toda a infra necessaria, desde o modelo ate o rest baseado na operação Product

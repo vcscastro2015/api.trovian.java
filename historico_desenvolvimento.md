@@ -688,6 +688,166 @@ curl -X DELETE http://localhost:8080/modelo/1
 
 ---
 
+### 4. CRUD Equipamento
+**Data**: 31/10/2025
+**Branch**: `feature/modelo`
+
+#### Atributos Implementados
+- **id** (Long) - Chave primária, auto-gerado
+- **dataCadastro** (Date) - Auto-gerado na criação
+- **imei** (String, 50 chars) - Opcional
+- **numeroCelular** (String, 20 chars) - Opcional
+- **numeroSerial** (String, 100 chars) - Opcional
+- **observacao** (TEXT) - Opcional
+- **operadora** (String, 1-15 chars) - Obrigatório
+- **status** (Boolean) - Default: true
+- **tipoEquipamento** (String, 3 chars) - "PR" (Proprietário) ou "PA" (Particular)
+- **tipoChip** (String, 3 chars) - "PR" (Proprietário) ou "PA" (Particular)
+- **modelo** (ManyToOne com Modelo) - Obrigatório
+- **equipamentoAlocado** (Boolean) - Default: false
+- **updatedAt** (LocalDateTime) - Auto-atualizado
+
+#### Arquivos Criados
+
+**Entity**
+```java
+src/main/java/com/trovian/entity/Equipamento.java
+```
+- Anotações JPA (@Entity, @Table, @Id, @GeneratedValue)
+- Validações Jakarta (@NotNull, @Size)
+- Relacionamento @ManyToOne com Modelo (FetchType.LAZY)
+- Auditoria com @PrePersist e @PreUpdate
+- Lombok (@Data, @NoArgsConstructor, @AllArgsConstructor)
+- @Temporal para campo Date
+
+**DTO**
+```java
+src/main/java/com/trovian/dto/EquipamentoDTO.java
+```
+- Validações de entrada completas
+- Documentação Swagger (@Schema)
+- Campos read-only (id, dataCadastro, updatedAt, modeloMarca, modeloFabricante)
+- Expõe relacionamento via modeloId + informações adicionais do modelo
+- allowableValues para tipoEquipamento e tipoChip
+
+**Repository**
+```java
+src/main/java/com/trovian/repository/EquipamentoRepository.java
+```
+- Extende JpaRepository<Equipamento, Long>
+- Suporte nativo a paginação
+
+**Service**
+```java
+src/main/java/com/trovian/service/EquipamentoService.java
+```
+- CRUD completo com transações
+- Validação de tipoEquipamento (apenas "PR" ou "PA")
+- Validação de tipoChip (apenas "PR" ou "PA")
+- Validação de existência do Modelo antes de salvar/atualizar
+- Logs SLF4J em todas operações
+- Conversão manual DTO ↔ Entity
+- toDTO inclui informações do Modelo relacionado
+
+**Controller**
+```java
+src/main/java/com/trovian/controller/EquipamentoController.java
+```
+- Base path: `/equipamento`
+- Documentação Swagger completa
+- Response entities com status HTTP corretos
+- Suporte a paginação e ordenação
+
+#### Endpoints REST - Equipamento
+
+| Método | Endpoint | Descrição | Status Code |
+|--------|----------|-----------|-------------|
+| GET | `/equipamento` | Lista todos equipamentos (paginado) | 200 |
+| GET | `/equipamento/{id}` | Busca equipamento por ID | 200 / 404 |
+| POST | `/equipamento` | Cria novo equipamento | 201 |
+| PUT | `/equipamento/{id}` | Atualiza equipamento | 200 / 404 |
+| DELETE | `/equipamento/{id}` | Deleta equipamento | 204 / 404 |
+
+#### Parâmetros de Paginação
+
+O endpoint `/equipamento` suporta os seguintes parâmetros:
+
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| page | int | 0 | Número da página (inicia em 0) |
+| size | int | 10 | Tamanho da página |
+| sortBy | String | id | Campo para ordenação |
+| direction | String | ASC | Direção da ordenação (ASC ou DESC) |
+
+#### Regras de Negócio
+
+1. **Validação de Tipo de Equipamento**: Campo aceita apenas "PR" (Proprietário) ou "PA" (Particular)
+2. **Validação de Tipo de Chip**: Campo aceita apenas "PR" (Proprietário) ou "PA" (Particular)
+3. **Modelo Obrigatório**: Todo equipamento deve estar vinculado a um modelo válido
+4. **Validação de Modelo**: Sistema valida se o modelo existe antes de criar/atualizar equipamento
+5. **Status Padrão**: Equipamento criado como ativo (true) por padrão
+6. **Equipamento Alocado**: Default false ao criar novo equipamento
+7. **Auditoria Automática**:
+   - `dataCadastro` definido no momento da criação (Date)
+   - `updatedAt` atualizado em cada modificação (LocalDateTime)
+
+---
+
+## 🧪 Exemplos de Uso - Equipamento (cURL)
+
+### Criar Equipamento
+```bash
+curl -X POST http://localhost:8080/equipamento \
+  -H "Content-Type: application/json" \
+  -d '{
+    "imei": "123456789012345",
+    "numeroCelular": "(11) 98765-4321",
+    "numeroSerial": "SN123456789",
+    "observacao": "Equipamento novo",
+    "operadora": "Vivo",
+    "status": true,
+    "tipoEquipamento": "PR",
+    "tipoChip": "PR",
+    "modeloId": 1,
+    "equipamentoAlocado": false
+  }'
+```
+
+### Listar Equipamentos (Paginado)
+```bash
+curl -X GET "http://localhost:8080/equipamento?page=0&size=10&sortBy=id&direction=ASC"
+```
+
+### Buscar por ID
+```bash
+curl -X GET http://localhost:8080/equipamento/1
+```
+
+### Atualizar Equipamento
+```bash
+curl -X PUT http://localhost:8080/equipamento/1 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "imei": "123456789012345",
+    "numeroCelular": "(11) 98765-4321",
+    "numeroSerial": "SN123456789",
+    "observacao": "Equipamento atualizado",
+    "operadora": "Claro",
+    "status": true,
+    "tipoEquipamento": "PA",
+    "tipoChip": "PA",
+    "modeloId": 1,
+    "equipamentoAlocado": true
+  }'
+```
+
+### Deletar Equipamento
+```bash
+curl -X DELETE http://localhost:8080/equipamento/1
+```
+
+---
+
 ## 🎯 Padrões e Convenções Adotados
 
 ### Nomenclatura
@@ -968,14 +1128,17 @@ curl -X GET http://localhost:8080/cooperativa/ativa/true
 - [x] CRUD Product (exemplo base)
 - [x] CRUD Cooperativa completo
 - [x] CRUD Modelo completo (Equipamentos e Veículos)
+- [x] CRUD Equipamento completo com relacionamento ManyToOne
 - [x] Validações de dados
 - [x] Documentação Swagger
 - [x] Logs SLF4J
 - [x] Transações JPA
 - [x] Auditoria básica (timestamps)
 - [x] Buscas customizadas
-- [x] Paginação (Product, Cooperativa e Modelo)
+- [x] Paginação (Product, Cooperativa, Modelo e Equipamento)
 - [x] Validação de tipo para Modelo (Equipamento/Veiculo)
+- [x] Validação de tipo para Equipamento (PR/PA)
+- [x] Relacionamento Equipamento-Modelo
 
 ### 🔄 Em Desenvolvimento
 - [ ] Testes unitários e integração
@@ -1003,6 +1166,20 @@ curl -X GET http://localhost:8080/cooperativa/ativa/true
 ---
 
 ## 🔄 Changelog
+
+### v1.5.0 - 31/10/2025
+- ✨ Implementado CRUD completo de Equipamento
+- ✨ Relacionamento ManyToOne Equipamento-Modelo
+- ✨ Validação de tipoEquipamento (apenas "PR" ou "PA")
+- ✨ Validação de tipoChip (apenas "PR" ou "PA")
+- ✨ Validação de existência do Modelo antes de salvar/atualizar
+- ✨ DTO expõe informações do Modelo relacionado (marca e fabricante)
+- ✨ Suporte a paginação e ordenação customizável
+- ✨ Auditoria com Date (dataCadastro) e LocalDateTime (updatedAt)
+- ✨ Campo observacao como TEXT
+- ✨ Status e equipamentoAlocado com valores padrão
+- 📝 Documentação Swagger completa
+- 📝 Exemplos de uso (cURL) no histórico
 
 ### v1.4.0 - 31/10/2025
 - ✨ Implementado CRUD completo de Modelo
