@@ -848,6 +848,287 @@ curl -X DELETE http://localhost:8080/equipamento/1
 
 ---
 
+### 5. CRUD Veículo
+**Data**: 31/10/2025
+**Branch**: `feature/veiculo`
+
+#### Atributos Implementados
+
+**Dados Básicos do Veículo**
+- **id** (Long) - Chave primária, auto-gerado
+- **anoFabricacao** (String, 5 chars) - Obrigatório
+- **anoModelo** (String, 5 chars) - Obrigatório
+- **chassi** (String, 20 chars) - Obrigatório
+- **cor** (String, 15 chars) - Obrigatório
+- **placa** (String, 15 chars) - Obrigatório, Único
+- **renavam** (String, 255 chars) - Obrigatório
+- **tipo** (String, 20 chars) - Obrigatório (Moto, Carro, Onibus, Caminhao, Carreta, Implemento)
+- **status** (Boolean) - Obrigatório, Default: true
+- **observacao** (TEXT) - Opcional
+- **dataCadastro** (Date) - Auto-gerado
+- **updatedAt** (LocalDateTime) - Auto-atualizado
+
+**Configurações de Velocidade**
+- **velocidadeMaxima** (Integer) - Opcional
+- **velocidadeMaximaChuva** (Integer) - Opcional
+- **velocidadeMaximaDesaceleracao** (Integer) - Opcional
+- **velocidadeMaximaCurva** (Integer) - Opcional
+
+**Capacidade e Combustível**
+- **capacidadeMaximaTracao** (Double) - Opcional
+- **cargaMaxima** (Double) - Opcional
+- **combustivel** (String) - Opcional (Gasolina, Alcool, Diesel)
+
+**Entradas Digitais**
+- **usaEntradaDigitalUm** (Boolean) - Opcional
+- **usaEntradaDigitalDois** (Boolean) - Opcional
+- **usaEntradaDigitalTres** (Boolean) - Opcional
+- **usaEntradaDigitalQuatro** (Boolean) - Opcional
+
+**Alertas e Monitoramento**
+- **excessoVelocidade** (Boolean) - Opcional
+- **bateriaCarroBaixa** (Boolean) - Opcional
+- **faltaEnergiaPrincipal** (Boolean) - Opcional
+- **quantidadeDiasSemTrasmissao** (Boolean) - Opcional
+- **semComunicacao** (Boolean) - Opcional
+
+**Configurações de Mapa e Validação**
+- **ativaRotaNoMapa** (Boolean) - Opcional
+- **ativaValidacaoDeCerca** (Boolean) - Opcional
+- **geraEnderecoAutomatico** (Boolean) - Opcional
+- **validarIbutton** (Boolean) - Opcional
+- **validarRota** (Boolean) - Opcional
+- **trocaDeHorimetro** (Boolean) - Opcional
+
+**Configurações de RPM**
+- **rpmModoEconomicoMinimo** (Integer) - Opcional
+- **rpmModoEconomicoMaximo** (Integer) - Opcional
+- **rpmMaximo** (Integer) - Opcional
+- **rpmInicioFaixaAzul** (Integer) - Opcional
+- **rpmFimFaixaAzul** (Integer) - Opcional
+- **rpmInicioFaixaEconomica** (Integer) - Opcional
+- **rpmFimFaixaEconomica** (Integer) - Opcional
+- **rpmInicioFaixaVerde** (Integer) - Opcional
+- **rpmFimFaixaVerde** (Integer) - Opcional
+- **rpmInicioFaixaAmarela** (Integer) - Opcional
+- **rpmFimFaixaAmarela** (Integer) - Opcional
+- **rpmInicioMarchaLenta** (Integer) - Opcional
+- **rpmFimMarchaLenta** (Integer) - Opcional
+
+**Relacionamentos**
+- **modelo** (ManyToOne com Modelo) - Obrigatório
+- **equipamento** (ManyToOne com Equipamento) - Opcional, com cascade ALL
+- **cliente** (ManyToOne com Cliente) - Obrigatório
+
+#### Arquivos Criados
+
+**Entity**
+```java
+src/main/java/com/trovian/entity/Veiculo.java
+```
+- Anotações JPA (@Entity, @Table, @Id, @GeneratedValue)
+- Validações Jakarta (@NotNull, @Size)
+- Relacionamentos:
+  - @ManyToOne com Modelo (FetchType.LAZY, obrigatório)
+  - @ManyToOne com Equipamento (FetchType.LAZY, opcional, cascade ALL)
+  - @ManyToOne com Cliente (FetchType.LAZY, obrigatório)
+- Auditoria com @PrePersist e @PreUpdate
+- @Temporal para campo Date
+- Lombok (@Data, @NoArgsConstructor, @AllArgsConstructor)
+
+**DTO**
+```java
+src/main/java/com/trovian/dto/VeiculoDTO.java
+```
+- Validações de entrada completas
+- Documentação Swagger (@Schema)
+- Campos read-only (id, dataCadastro, updatedAt, modeloMarca, modeloFabricante, equipamentoImei, clienteNome)
+- Expõe relacionamentos via IDs + informações adicionais
+- allowableValues para campos tipo e combustivel
+
+**Repository**
+```java
+src/main/java/com/trovian/repository/VeiculoRepository.java
+```
+- Extende JpaRepository<Veiculo, Long>
+- Query method customizado:
+  - `findByClienteId(Long clienteId, Pageable pageable)` - Busca veículos por cliente com paginação
+
+**Service**
+```java
+src/main/java/com/trovian/service/VeiculoService.java
+```
+- CRUD completo com transações
+- Validação de tipo de veículo (apenas valores permitidos)
+- Validação de tipo de combustível (Gasolina, Alcool, Diesel)
+- Validação de existência do Modelo, Cliente e Equipamento (se informado)
+- Logs SLF4J em todas operações
+- Conversão manual DTO ↔ Entity
+- Métodos de busca com paginação
+- toDTO inclui informações do Modelo, Equipamento e Cliente relacionados
+
+**Controller**
+```java
+src/main/java/com/trovian/controller/VeiculoController.java
+```
+- Base path: `/veiculo`
+- Documentação Swagger completa
+- Response entities com status HTTP corretos
+- Suporte a paginação e ordenação
+- 3 endpoints GET (conforme especificado)
+
+#### Endpoints REST - Veículo
+
+| Método | Endpoint | Descrição | Status Code |
+|--------|----------|-----------|-------------|
+| GET | `/veiculo` | Lista todos veículos (paginado) | 200 |
+| GET | `/veiculo/{id}` | Busca veículo por ID | 200 / 404 |
+| GET | `/veiculo/cliente/{clienteId}` | Busca veículos por cliente (paginado) | 200 |
+| POST | `/veiculo` | Cria novo veículo | 201 |
+| PUT | `/veiculo/{id}` | Atualiza veículo | 200 / 404 |
+| DELETE | `/veiculo/{id}` | Deleta veículo | 204 / 404 |
+
+#### Parâmetros de Paginação
+
+Os endpoints `/veiculo` e `/veiculo/cliente/{clienteId}` suportam os seguintes parâmetros:
+
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| page | int | 0 | Número da página (inicia em 0) |
+| size | int | 10 | Tamanho da página |
+| sortBy | String | id | Campo para ordenação |
+| direction | String | ASC | Direção da ordenação (ASC ou DESC) |
+
+#### Regras de Negócio
+
+1. **Campos Obrigatórios**: placa, status, modelo e cliente
+2. **Validação de Tipo**: Campo "tipo" aceita apenas: Moto, Carro, Onibus, Caminhao, Carreta, Implemento
+3. **Validação de Combustível**: Campo "combustivel" aceita apenas: Gasolina, Alcool, Diesel
+4. **Modelo Obrigatório**: Todo veículo deve estar vinculado a um modelo válido
+5. **Cliente Obrigatório**: Todo veículo deve estar vinculado a um cliente válido
+6. **Equipamento Opcional**: Veículo pode ou não ter equipamento associado
+7. **Status Padrão**: Veículo criado como ativo (true) por padrão
+8. **Auditoria Automática**:
+   - `dataCadastro` definido no momento da criação (Date)
+   - `updatedAt` atualizado em cada modificação (LocalDateTime)
+9. **Cascade para Equipamento**: Relacionamento com cascade ALL permite operações em cascata
+
+---
+
+## 🧪 Exemplos de Uso - Veículo (cURL)
+
+### Criar Veículo Completo
+```bash
+curl -X POST http://localhost:8080/veiculo \
+  -H "Content-Type: application/json" \
+  -d '{
+    "anoFabricacao": "2023",
+    "anoModelo": "2024",
+    "chassi": "9BWZZZ377VT004251",
+    "cor": "Branco",
+    "placa": "ABC-1234",
+    "renavam": "12345678901",
+    "tipo": "Carro",
+    "status": true,
+    "observacao": "Veículo da frota principal",
+    "velocidadeMaxima": 120,
+    "velocidadeMaximaChuva": 100,
+    "velocidadeMaximaDesaceleracao": 80,
+    "velocidadeMaximaCurva": 60,
+    "capacidadeMaximaTracao": 5.0,
+    "cargaMaxima": 10.5,
+    "combustivel": "Diesel",
+    "excessoVelocidade": true,
+    "ativaRotaNoMapa": true,
+    "ativaValidacaoDeCerca": true,
+    "geraEnderecoAutomatico": true,
+    "validarRota": true,
+    "rpmMaximo": 5000,
+    "rpmModoEconomicoMinimo": 1000,
+    "rpmModoEconomicoMaximo": 1500,
+    "modeloId": 1,
+    "equipamentoId": 1,
+    "clienteId": 1
+  }'
+```
+
+### Criar Veículo Simples (apenas campos obrigatórios)
+```bash
+curl -X POST http://localhost:8080/veiculo \
+  -H "Content-Type: application/json" \
+  -d '{
+    "anoFabricacao": "2020",
+    "anoModelo": "2020",
+    "chassi": "ABC123XYZ456",
+    "cor": "Preto",
+    "placa": "XYZ-9876",
+    "renavam": "98765432109",
+    "tipo": "Caminhao",
+    "status": true,
+    "modeloId": 1,
+    "clienteId": 1
+  }'
+```
+
+### Listar Todos os Veículos (Paginado)
+```bash
+curl -X GET "http://localhost:8080/veiculo?page=0&size=10&sortBy=placa&direction=ASC"
+```
+
+### Buscar Veículo por ID
+```bash
+curl -X GET http://localhost:8080/veiculo/1
+```
+
+### Buscar Veículos por Cliente (Paginado)
+```bash
+curl -X GET "http://localhost:8080/veiculo/cliente/1?page=0&size=20&sortBy=placa&direction=ASC"
+```
+
+### Atualizar Veículo
+```bash
+curl -X PUT http://localhost:8080/veiculo/1 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "anoFabricacao": "2023",
+    "anoModelo": "2024",
+    "chassi": "9BWZZZ377VT004251",
+    "cor": "Azul",
+    "placa": "ABC-1234",
+    "renavam": "12345678901",
+    "tipo": "Carro",
+    "status": true,
+    "observacao": "Veículo atualizado - nova cor",
+    "velocidadeMaxima": 130,
+    "combustivel": "Gasolina",
+    "modeloId": 1,
+    "equipamentoId": 2,
+    "clienteId": 1
+  }'
+```
+
+### Deletar Veículo
+```bash
+curl -X DELETE http://localhost:8080/veiculo/1
+```
+
+---
+
+#### Características Técnicas
+
+1. **Modelo de Dados Completo**: 50+ atributos para configuração detalhada de veículos
+2. **Relacionamentos Múltiplos**: ManyToOne com Modelo, Cliente e Equipamento
+3. **Equipamento Opcional**: Veículo pode existir sem equipamento associado
+4. **Validações Robustas**: Tipo de veículo e combustível validados
+5. **Paginação Nativa**: Todos endpoints de listagem suportam paginação
+6. **Configurações de RPM**: Suporte completo para faixas de RPM (azul, verde, amarela, econômica, marcha lenta)
+7. **Alertas Configuráveis**: Diversos alertas (velocidade, bateria, comunicação, etc.)
+8. **Configurações de Rota**: Validação de rota, cerca virtual, geração de endereço automático
+9. **Auditoria Completa**: Rastreamento de criação e atualização
+10. **Documentação Swagger**: API totalmente documentada com exemplos
+
+---
+
 ## 🎯 Padrões e Convenções Adotados
 
 ### Nomenclatura
@@ -1127,18 +1408,23 @@ curl -X GET http://localhost:8080/cooperativa/ativa/true
 ### ✅ Concluído
 - [x] CRUD Product (exemplo base)
 - [x] CRUD Cooperativa completo
+- [x] CRUD Cliente completo com UUID e relacionamento
 - [x] CRUD Modelo completo (Equipamentos e Veículos)
 - [x] CRUD Equipamento completo com relacionamento ManyToOne
+- [x] CRUD Veículo completo com relacionamentos múltiplos
 - [x] Validações de dados
 - [x] Documentação Swagger
 - [x] Logs SLF4J
 - [x] Transações JPA
 - [x] Auditoria básica (timestamps)
 - [x] Buscas customizadas
-- [x] Paginação (Product, Cooperativa, Modelo e Equipamento)
+- [x] Paginação (Product, Cooperativa, Cliente, Modelo, Equipamento e Veículo)
 - [x] Validação de tipo para Modelo (Equipamento/Veiculo)
 - [x] Validação de tipo para Equipamento (PR/PA)
+- [x] Validação de tipo para Veículo (Moto, Carro, Onibus, Caminhao, Carreta, Implemento)
+- [x] Validação de combustível para Veículo (Gasolina, Alcool, Diesel)
 - [x] Relacionamento Equipamento-Modelo
+- [x] Relacionamento Veiculo-Modelo-Equipamento-Cliente
 
 ### 🔄 Em Desenvolvimento
 - [ ] Testes unitários e integração
@@ -1166,6 +1452,25 @@ curl -X GET http://localhost:8080/cooperativa/ativa/true
 ---
 
 ## 🔄 Changelog
+
+### v1.6.0 - 31/10/2025
+- ✨ Implementado CRUD completo de Veículo
+- ✨ Relacionamentos múltiplos: ManyToOne com Modelo, Cliente e Equipamento
+- ✨ 50+ atributos para configuração detalhada de veículos
+- ✨ Validação de tipo de veículo (Moto, Carro, Onibus, Caminhao, Carreta, Implemento)
+- ✨ Validação de tipo de combustível (Gasolina, Alcool, Diesel)
+- ✨ Configurações de RPM (faixas azul, verde, amarela, econômica, marcha lenta)
+- ✨ Configurações de velocidade (máxima, chuva, desaceleração, curva)
+- ✨ Alertas configuráveis (velocidade, bateria, comunicação)
+- ✨ Configurações de rota e validação (cerca virtual, rota, iButton)
+- ✨ Entradas digitais configuráveis (1-4)
+- ✨ Equipamento opcional com cascade ALL
+- ✨ 3 endpoints GET com paginação (todos, por ID, por cliente)
+- ✨ Suporte a paginação e ordenação customizável
+- ✨ Auditoria com Date (dataCadastro) e LocalDateTime (updatedAt)
+- ✨ Status padrão (true) para novos veículos
+- 📝 Documentação Swagger completa
+- 📝 Exemplos de uso (cURL) no histórico
 
 ### v1.5.0 - 31/10/2025
 - ✨ Implementado CRUD completo de Equipamento
@@ -1232,4 +1537,4 @@ curl -X GET http://localhost:8080/cooperativa/ativa/true
 
 **Última Atualização**: 31/10/2025
 **Desenvolvedor**: Claude Code
-**Branch Atual**: feature/modelo
+**Branch Atual**: feature/veiculo
