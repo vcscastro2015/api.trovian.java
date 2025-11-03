@@ -1403,6 +1403,302 @@ curl -X GET http://localhost:8080/cooperativa/ativa/true
 
 ---
 
+### 6. CRUD Local
+**Data**: 02/11/2025
+**Branch**: `feature/local`
+
+#### Atributos Implementados
+
+**Dados Básicos**
+- **id** (Long) - Chave primária, auto-gerado
+- **nome** (String, max 255) - Obrigatório
+- **ativo** (Boolean) - Obrigatório, Default: true
+- **codigoUnico** (Integer) - Opcional
+- **mostrarNoMapaPrincipal** (Boolean) - Opcional
+- **mostrarNomeNoMapa** (Boolean) - Opcional
+- **notificaEvento** (Boolean) - Opcional
+- **permiteDescanso** (Boolean) - Opcional
+
+**Endereço**
+- **endereco** (String) - Opcional
+- **bairro** (String) - Opcional
+- **complemento** (String) - Opcional
+- **cidade** (String) - Opcional
+- **uf** (String, 2 chars) - Opcional
+
+**Enums**
+- **funcao** (FuncaoLocal) - CARGA, DESCARGA, OUTROS
+- **tipo** (TipoLocal) - EMPRESA, OFICINA, POSTO_DE_ABASTECIMENTO, POSTO_DE_FISCALIZACAO
+
+**Relacionamentos**
+- **cliente** (ManyToOne com Cliente) - Obrigatório
+- **listaDeCoordenadas** (OneToMany com Coordenada) - Lista de coordenadas do local
+- **parametroLocal** (OneToOne com ParametroLocal) - Parâmetros do local
+
+**Auditoria**
+- **dataCadastro** (Date) - Auto-gerado
+- **updatedAt** (LocalDateTime) - Auto-atualizado
+
+#### Entidade Coordenada
+
+**Atributos**:
+- **id** (Long) - Chave primária
+- **sequencia** (Integer) - Ordem da coordenada
+- **latitude** (Double) - Coordenada de latitude
+- **longitude** (Double) - Coordenada de longitude
+- **isRaio** (Boolean) - Indica se usa raio
+- **raio** (Double) - Raio em metros
+
+**Relacionamento**:
+- **local** (ManyToOne com Local) - Local ao qual pertence
+
+#### Entidade ParametroLocal
+
+**Atributos**:
+- **id** (Long) - Chave primária
+- **limiteVeiculosMesmoLocal** (Integer) - Limite de veículos
+- **tempoMinimoDePermanencia** (Integer) - Tempo mínimo em minutos
+- **tempoMaximoDePermanencia** (Integer) - Tempo máximo em minutos
+
+#### Arquivos Criados
+
+**Enums**
+```java
+src/main/java/com/trovian/enums/FuncaoLocal.java
+src/main/java/com/trovian/enums/TipoLocal.java
+```
+- Enumerações para função (CARGA, DESCARGA, OUTROS)
+- Enumerações para tipo (EMPRESA, OFICINA, POSTO_DE_ABASTECIMENTO, POSTO_DE_FISCALIZACAO)
+
+**Entities**
+```java
+src/main/java/com/trovian/entity/ParametroLocal.java
+src/main/java/com/trovian/entity/Coordenada.java
+src/main/java/com/trovian/entity/Local.java
+```
+- Anotações JPA (@Entity, @Table, @Id, @GeneratedValue)
+- Validações Jakarta (@NotBlank, @NotNull, @Size)
+- Relacionamentos:
+  - Local → Cliente (ManyToOne, obrigatório)
+  - Local → Coordenada (OneToMany, cascade ALL, orphanRemoval)
+  - Local → ParametroLocal (OneToOne, cascade ALL)
+  - Coordenada → Local (ManyToOne)
+- Auditoria com @PrePersist e @PreUpdate
+- Helper methods para gerenciar coordenadas (addCoordenada, removeCoordenada)
+- Lombok (@Data, @NoArgsConstructor, @AllArgsConstructor)
+
+**DTOs**
+```java
+src/main/java/com/trovian/dto/ParametroLocalDTO.java
+src/main/java/com/trovian/dto/CoordenadaDTO.java
+src/main/java/com/trovian/dto/LocalDTO.java
+```
+- Validações de entrada completas
+- Documentação Swagger (@Schema)
+- Campos read-only (id, dataCadastro, updatedAt, clienteNome)
+- Expõe relacionamento via clienteId + nome do cliente
+- Listas de coordenadas e parâmetro local aninhados
+
+**Repository**
+```java
+src/main/java/com/trovian/repository/LocalRepository.java
+```
+- Extende JpaRepository<Local, Long>
+- Query method customizado:
+  - `findByClienteId(Long clienteId, Pageable pageable)` - Busca locais por cliente com paginação
+
+**Service**
+```java
+src/main/java/com/trovian/service/LocalService.java
+```
+- CRUD completo com transações
+- Validação de existência do Cliente antes de salvar/atualizar
+- Gerenciamento de coordenadas (OneToMany com cascade)
+- Gerenciamento de parâmetro local (OneToOne com cascade)
+- Logs SLF4J em todas operações
+- Conversão manual DTO ↔ Entity
+- Métodos de conversão para entidades aninhadas (Coordenada, ParametroLocal)
+
+**Controller**
+```java
+src/main/java/com/trovian/controller/LocalController.java
+```
+- Base path: `/local`
+- Documentação Swagger completa
+- Response entities com status HTTP corretos
+- Suporte a paginação e ordenação customizável
+- 3 endpoints GET (conforme especificado)
+
+#### Endpoints REST - Local
+
+| Método | Endpoint | Descrição | Status Code |
+|--------|----------|-----------|-------------|
+| GET | `/local` | Lista todos locais (paginado) | 200 |
+| GET | `/local/{id}` | Busca local por ID | 200 / 404 |
+| GET | `/local/cliente/{clienteId}` | Busca locais por cliente (paginado) | 200 |
+| POST | `/local` | Cria novo local | 201 |
+| PUT | `/local/{id}` | Atualiza local | 200 / 404 |
+| DELETE | `/local/{id}` | Deleta local | 204 / 404 |
+
+#### Parâmetros de Paginação
+
+Os endpoints `/local` e `/local/cliente/{clienteId}` suportam os seguintes parâmetros:
+
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| page | int | 0 | Número da página (inicia em 0) |
+| size | int | 10 | Tamanho da página |
+| sortBy | String | id | Campo para ordenação |
+| direction | String | ASC | Direção da ordenação (ASC ou DESC) |
+
+#### Regras de Negócio
+
+1. **Campos Obrigatórios**: id, nome e ativo
+2. **Cliente Obrigatório**: Todo local deve estar vinculado a um cliente válido
+3. **Validação de Enums**:
+   - Função aceita apenas: CARGA, DESCARGA, OUTROS
+   - Tipo aceita apenas: EMPRESA, OFICINA, POSTO_DE_ABASTECIMENTO, POSTO_DE_FISCALIZACAO
+4. **Status Padrão**: Local criado como ativo (true) por padrão
+5. **Coordenadas em Cascata**:
+   - Coordenadas são salvas/atualizadas/removidas junto com o local
+   - Orphan removal ativo (coordenadas órfãs são removidas)
+6. **Parâmetro Local em Cascata**: ParametroLocal é salvo/atualizado junto com o local
+7. **Auditoria Automática**:
+   - `dataCadastro` definido no momento da criação (Date)
+   - `updatedAt` atualizado em cada modificação (LocalDateTime)
+
+---
+
+## 🧪 Exemplos de Uso - Local (cURL)
+
+### Criar Local Completo
+```bash
+curl -X POST http://localhost:8080/local \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nome": "Armazém Central SP",
+    "ativo": true,
+    "codigoUnico": 1001,
+    "mostrarNoMapaPrincipal": true,
+    "mostrarNomeNoMapa": true,
+    "notificaEvento": true,
+    "funcao": "CARGA",
+    "endereco": "Av. Paulista, 1000",
+    "bairro": "Bela Vista",
+    "complemento": "Galpão 5",
+    "cidade": "São Paulo",
+    "uf": "SP",
+    "tipo": "EMPRESA",
+    "permiteDescanso": false,
+    "clienteId": 1,
+    "listaDeCoordenadas": [
+      {
+        "sequencia": 1,
+        "latitude": -23.5505,
+        "longitude": -46.6333,
+        "isRaio": true,
+        "raio": 500.0
+      },
+      {
+        "sequencia": 2,
+        "latitude": -23.5510,
+        "longitude": -46.6340,
+        "isRaio": false
+      }
+    ],
+    "parametroLocal": {
+      "limiteVeiculosMesmoLocal": 10,
+      "tempoMinimoDePermanencia": 30,
+      "tempoMaximoDePermanencia": 120
+    }
+  }'
+```
+
+### Criar Local Simples (apenas campos obrigatórios)
+```bash
+curl -X POST http://localhost:8080/local \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nome": "Posto de Combustível BR",
+    "ativo": true,
+    "clienteId": 1
+  }'
+```
+
+### Listar Todos os Locais (Paginado)
+```bash
+curl -X GET "http://localhost:8080/local?page=0&size=10&sortBy=nome&direction=ASC"
+```
+
+### Buscar Local por ID
+```bash
+curl -X GET http://localhost:8080/local/1
+```
+
+### Buscar Locais por Cliente (Paginado)
+```bash
+curl -X GET "http://localhost:8080/local/cliente/1?page=0&size=20&sortBy=nome&direction=ASC"
+```
+
+### Atualizar Local
+```bash
+curl -X PUT http://localhost:8080/local/1 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nome": "Armazém Central SP - Atualizado",
+    "ativo": true,
+    "codigoUnico": 1001,
+    "mostrarNoMapaPrincipal": true,
+    "mostrarNomeNoMapa": true,
+    "notificaEvento": false,
+    "funcao": "DESCARGA",
+    "endereco": "Av. Paulista, 2000",
+    "bairro": "Bela Vista",
+    "complemento": "Galpão 7",
+    "cidade": "São Paulo",
+    "uf": "SP",
+    "tipo": "EMPRESA",
+    "permiteDescanso": true,
+    "clienteId": 1,
+    "listaDeCoordenadas": [
+      {
+        "sequencia": 1,
+        "latitude": -23.5515,
+        "longitude": -46.6350,
+        "isRaio": true,
+        "raio": 800.0
+      }
+    ],
+    "parametroLocal": {
+      "limiteVeiculosMesmoLocal": 15,
+      "tempoMinimoDePermanencia": 45,
+      "tempoMaximoDePermanencia": 180
+    }
+  }'
+```
+
+### Deletar Local
+```bash
+curl -X DELETE http://localhost:8080/local/1
+```
+
+---
+
+#### Características Técnicas
+
+1. **Relacionamentos Complexos**: OneToMany com Coordenada e OneToOne com ParametroLocal
+2. **Cascade Operations**: Coordenadas e parâmetros salvos/atualizados/removidos em cascata
+3. **Orphan Removal**: Coordenadas órfãs são automaticamente removidas
+4. **Enums Tipados**: FuncaoLocal e TipoLocal para valores controlados
+5. **Paginação Nativa**: Todos endpoints de listagem suportam paginação
+6. **Helper Methods**: Métodos auxiliares para gerenciar coordenadas (addCoordenada, removeCoordenada)
+7. **Validações Robustas**: Nome obrigatório, cliente obrigatório
+8. **Flexibilidade**: Coordenadas e parâmetros são opcionais
+9. **Auditoria Completa**: Rastreamento de criação e atualização
+10. **Documentação Swagger**: API totalmente documentada com exemplos
+
+---
+
 ## 📊 Status do Projeto
 
 ### ✅ Concluído
@@ -1412,19 +1708,24 @@ curl -X GET http://localhost:8080/cooperativa/ativa/true
 - [x] CRUD Modelo completo (Equipamentos e Veículos)
 - [x] CRUD Equipamento completo com relacionamento ManyToOne
 - [x] CRUD Veículo completo com relacionamentos múltiplos
+- [x] CRUD Local completo com relacionamentos OneToMany e OneToOne
 - [x] Validações de dados
 - [x] Documentação Swagger
 - [x] Logs SLF4J
 - [x] Transações JPA
 - [x] Auditoria básica (timestamps)
 - [x] Buscas customizadas
-- [x] Paginação (Product, Cooperativa, Cliente, Modelo, Equipamento e Veículo)
+- [x] Paginação (Product, Cooperativa, Cliente, Modelo, Equipamento, Veículo e Local)
 - [x] Validação de tipo para Modelo (Equipamento/Veiculo)
 - [x] Validação de tipo para Equipamento (PR/PA)
 - [x] Validação de tipo para Veículo (Moto, Carro, Onibus, Caminhao, Carreta, Implemento)
 - [x] Validação de combustível para Veículo (Gasolina, Alcool, Diesel)
+- [x] Validação de enums para Local (FuncaoLocal e TipoLocal)
 - [x] Relacionamento Equipamento-Modelo
 - [x] Relacionamento Veiculo-Modelo-Equipamento-Cliente
+- [x] Relacionamento Local-Cliente-Coordenada-ParametroLocal
+- [x] Cascade operations (OneToMany e OneToOne)
+- [x] Orphan removal para coordenadas
 
 ### 🔄 Em Desenvolvimento
 - [ ] Testes unitários e integração
@@ -1452,6 +1753,26 @@ curl -X GET http://localhost:8080/cooperativa/ativa/true
 ---
 
 ## 🔄 Changelog
+
+### v1.7.0 - 02/11/2025
+- ✨ Implementado CRUD completo de Local
+- ✨ Entidades aninhadas: Coordenada e ParametroLocal
+- ✨ Relacionamentos complexos: OneToMany com Coordenada e OneToOne com ParametroLocal
+- ✨ Relacionamento ManyToOne com Cliente (obrigatório)
+- ✨ Cascade ALL para coordenadas e parâmetro local
+- ✨ Orphan removal para coordenadas (remoção automática de órfãs)
+- ✨ Enums FuncaoLocal (CARGA, DESCARGA, OUTROS)
+- ✨ Enums TipoLocal (EMPRESA, OFICINA, POSTO_DE_ABASTECIMENTO, POSTO_DE_FISCALIZACAO)
+- ✨ Helper methods para gerenciar coordenadas (addCoordenada, removeCoordenada)
+- ✨ Lista de coordenadas com sequência, latitude, longitude e raio
+- ✨ Parâmetros de local (limite de veículos, tempo mínimo e máximo de permanência)
+- ✨ 3 endpoints GET com paginação (todos, por ID, por cliente)
+- ✨ Suporte completo a paginação e ordenação
+- ✨ Validações robustas (nome obrigatório, cliente obrigatório)
+- ✨ Auditoria com Date (dataCadastro) e LocalDateTime (updatedAt)
+- ✨ Status padrão (true) para novos locais
+- 📝 Documentação Swagger completa
+- 📝 Exemplos de uso (cURL) no histórico
 
 ### v1.6.0 - 31/10/2025
 - ✨ Implementado CRUD completo de Veículo
@@ -1535,6 +1856,6 @@ curl -X GET http://localhost:8080/cooperativa/ativa/true
 
 ---
 
-**Última Atualização**: 31/10/2025
+**Última Atualização**: 02/11/2025
 **Desenvolvedor**: Claude Code
-**Branch Atual**: feature/veiculo
+**Branch Atual**: feature/local

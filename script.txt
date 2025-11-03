@@ -1,165 +1,79 @@
-Agora vamos fazer um CRUD do Objeto Veiculo na estrutura bem definida do projeto java
+Agora vamos fazer um CRUD do Objeto Local na estrutura bem definida do projeto java
 Vamos ter os seguinte atributos:
-       private Integer id;
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 5)
-    @Column(name = "ano_fabricacao")
-    private String anoFabricacao;
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 5)
-    @Column(name = "ano_modelo")
-    private String anoModelo;
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 20)
-    @Column(name = "chassi")
-    private String chassi;
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 15)
-    @Column(name = "cor")
-    private String cor;
-    @Basic(optional = false)
-    @NotNull
-    @Column(name = "data_cadastro")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date dataCadastro;
-    @Column(name = "observacao", columnDefinition = "TEXT")
-    private String observacao;
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 15)
-    @Column(name = "placa")
-    private String placa;
-    @Column(name = "velocidade_maxima")
-    private Integer velocidadeMaxima;
-    @Column(name = "velocidade_maxima_chuva")
-    private Integer velocidadeMaximaChuva;
-    @Column(name = "velocidade_maxima_desaceleracao")
-    private Integer velocidadeMaximaDesacelaracao;
-    @Column(name = "velocidade_maxima_curva")
-    private Integer velocidadeMaximaCurva;
+     private Integer id;
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 255)
-    @Column(name = "renavam")
-    private String renavam;
-    @Basic(optional = false)
-    @NotNull
-    @Column(name = "status")
-    private Boolean status;
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 20)
+    @Column(name = "nome")
+    private String nome;
+	 @NotNull
+    @Column(name = "ativo")
+    private Boolean ativo;
+	private Integer funcao;
+    @Column(name = "mostrar_mapa_principal")
+    private Boolean mostrarNoMapaPrincipal;
+    @Column(name = "mostrar_nome_mapa")
+    private Boolean mostrarNomeNoMapa;
+    @Column(name = "notifica_evento")
+    private Boolean notificaEvento;
+    @Column(name = "codigo_unico")
+    private Integer codigoUnico;
+    @Column(name = "funcao")
+    private Integer funcao//Carga, Descarga ou Outros;
+    @Column(name = "endereco")
+    private String endereco;
+    @Column(name = "bairro")
+    private String bairro;
+    @Column(name = "complemento")
+    private String complemento;
+    @Column(name = "cidade")
+    private String cidade;
+    @Column(name = "uf")
+    private String uf;
     @Column(name = "tipo")
-    private String tipo;//Moto Carro Onibus Caminhao Carreta Implemento
-	private Double capacidadeMaximaTracao
-    
-    
-    @Column(name = "usa_entrada_digital_um")
-    private Boolean usaEntradaDigitalUm;
-    @Column(name = "usa_entrada_digital_dois")
-    private Boolean usaEntradaDigitalDois;
-    @Column(name = "usa_entrada_digital_tres")
-    private Boolean usaEntradaDigitalTres;
-    @Column(name = "usa_entrada_digital_quatro")
-    private Boolean usaEntradaDigitalQuatro;
-    @Column(name = "excesso_velocidade")
-    private Boolean excessoVelocidade;
-	
- 
-    @Column(name = "bateria_carro_baixa")
-    private Boolean bateriaCarroBaixa;
-    @Column(name = "falta_energia_principal")
-    private Boolean faltaEnergiaPrincipal;
-    
-    @Column(name = "quantidade_dias_sem_trasmissao")
-    private Boolean quantidadeDiasSemTrasmissao;
-	
-    @Column(name = "sem_comunicacao")
-    private Boolean semComunicacao;
-	
-    @Column(name = "ativa_rota_no_mapa")
-    private Boolean ativaRotaNoMapa;
-	
-    @Column(name = "ativa_validacao_cerca")
-    private Boolean ativaValidacaoDeCerca;
-	
-    @Column(name = "troca_de_horimetro")
-    private Boolean trocaDeHorimetro;
-	
-    @Column(name = "rpm_modo_eco_minimo")
-    private Integer rpmModoEconomicoMinimo;
-	
-    @Column(name = "rpm_modo_eco_maximo")
-    private Integer rpmModoEconomicoMaximo;
-	
-    @Column(name = "rpm_maximo")
-    private Integer rpmMaximo;
-	
-    @Column(name = "rpm_inicio_faixa_azul")
-    private Integer rpmInicioFaixaAzul;
-	
-    @Column(name = "rpm_fim_faixa_azul")
-     private Integer rpmFimFaixaAzul;
-	 
-    @Column(name = "rpm_inicio_faixa_economica")
-    private Integer rpmInicioFaixaEconomica;
-	
-    @Column(name = "rpm_fim_faixa_economica")
-    private Integer rpmFimFaixaEconomica;
-	
-    @Column(name = "rpm_inicio_faixa_verde")
-    private Integer rpmInicioFaixaVerde;
-	
-    @Column(name = "rpm_fim_faixa_verde")
-    private Integer rpmFimFaixaVerde;
-	
-    @Column(name = "rpm_inicio_faixa_amarela")
-    private Integer rpmInicioFaixaAmarela;
-	
-    @Column(name = "rpm_fim_faixa_amarela")
-    private Integer rpmFimFaixaAmarela;
-	
-    @Column(name = "rpm_inicio_marcha_lenta")
-    private Integer rpmInicioMarchaLenta;
-	
-    @Column(name = "rpm_fim_marcha_lenta")
-    private Integer rpmFimMarchaLenta;
-	
-    @Column(name = "gera_endereco")
-    private Boolean geraEnderecoAutomatico;
-	
-    @Column(name = "validar_ibotton")
-    private Boolean validarIbutton;
-	
-    @Column(name = "carga_maxima")
-    private Double cargaMaxima;
-	
-    @Column(name = "combustivel")
-    private String combustivel;//Gasolina Alcool ou Diesel
-
-    @Column(name = "validar_rota")
-    private Boolean validarRota;
-    
-    @JoinColumn(name = "modelo", referencedColumnName = "id")
+    private String tipo;
+    @Column(name = "permite_descanso")
+    private Boolean permiteDescanso;
+    @JoinColumn(name = "cliente", referencedColumnName = "id")
     @ManyToOne(optional = false)
-    @NotAudited
-    private Modelo modelo;
-    @JoinColumn(name = "equipamento", referencedColumnName = "id")
-    @ManyToOne(optional = true, cascade = CascadeType.ALL)
-    private Equipamento equipamento;
     private Cliente cliente;
+    private List<Coordenada> listaDeCoordenadas;
+    private ParametroLocal parametroLocal;
+	
+	Agora a estrutura Coordenada
+	
+	private Integer id;
+    @Column(name = "sequencia")
+    private Integer sequencia;
+    @Column(name = "latitude")
+    private Double latitude;
+    @Column(name = "longitude")
+    private Double longitude;
+    @Column(name = "is_raio")
+    private Boolean isRaio;
+    @Column(name = "raio")
+    private Double raio;
+	
+	Agora a estrutura de ParametroLocal
+	
+	private Integer id;
+   
+
+    @Column(name = "limite_veiculos_mesmo_local")
+    private Integer limiteVeiculosMesmoLocal;
+	private Integer tempoMinimoDePermanencia;
+	private Integer tempoMaximoDePermanencia;
 	
 o metodo GetMapping ter somente esses:
 Um para buscar todos os Veiculos com paginação
 Um para buscar o Veiculo pelo id
 Um para buscar os Veiculos pelo cliente
+Nao precisa criar serviços rest para ParametroLocal e Coordenada, uma vez que serao gravados juntos com o local.
 
 
+o Campo  private Integer funcao tera somente essas opçoes Carga, Descarga ou Outros, deixar como enum;
+o Campo  private Integer tipo tera somente essas opçoes Empresa, Oficina, Posto de abastecimento, posto de fiscalização, deixar como ENUM;
 
-Campos Obrigatorios: id, placa, status, modelo e cliente
+Campos Obrigatorios: id, nome e status
 
 Criar toda a infra necessaria, desde o modelo ate o rest baseado na operação Product
