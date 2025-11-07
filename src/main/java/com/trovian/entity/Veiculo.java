@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Date;
 
@@ -161,6 +162,15 @@ public class Veiculo {
 
     @Column(name = "carga_maxima")
     private Double cargaMaxima;
+
+    @Column(name = "capacidade_tanque", precision = 10, scale = 2)
+    private BigDecimal capacidadeTanque;
+
+    @Column(name = "numero_eixos")
+    private Integer numeroEixos;
+
+    @Column(name = "tara", precision = 10, scale = 2)
+    private BigDecimal tara;
 
     @Column(name = "combustivel", length = 10)
     private String combustivel; // Gasolina, Alcool, Diesel

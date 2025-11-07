@@ -877,6 +877,9 @@ curl -X DELETE http://localhost:8080/equipamento/1
 **Capacidade e Combustível**
 - **capacidadeMaximaTracao** (Double) - Opcional
 - **cargaMaxima** (Double) - Opcional
+- **capacidadeTanque** (BigDecimal) - Opcional, capacidade do tanque em litros
+- **numeroEixos** (Integer) - Opcional, número de eixos do veículo
+- **tara** (BigDecimal) - Opcional, tara do veículo em toneladas
 - **combustivel** (String) - Opcional (Gasolina, Alcool, Diesel)
 
 **Entradas Digitais**
@@ -1699,6 +1702,241 @@ curl -X DELETE http://localhost:8080/local/1
 
 ---
 
+### 7. CRUD Motorista
+**Data**: 06/11/2025
+**Branch**: `feature/motorista`
+
+#### Atributos Implementados
+
+**Dados Pessoais**
+- **id** (Long) - Chave primária, auto-gerado
+- **nome** (String, 100 chars) - Obrigatório
+- **dataNascimento** (Date) - Obrigatório
+- **sexo** (Enum Sexo) - MASCULINO ou FEMININO
+- **cpf** (String, 11 chars) - Obrigatório
+
+**Documentação CNH**
+- **numeroCnh** (String, 15 chars) - Obrigatório
+- **validadeCnh** (Date) - Obrigatório
+- **categoriaCnh** (String, 2 chars) - Obrigatório (A, B, C, D, E, AB, AC, AD, AE)
+- **dataAdmissao** (Date) - Opcional
+
+**Contato**
+- **telefone** (String, 15 chars) - Opcional
+
+**Endereço**
+- **logradouro** (String) - Opcional
+- **numero** (String) - Opcional
+- **bairro** (String, 45 chars) - Opcional
+- **cep** (String, 9 chars) - Opcional
+- **complemento** (String, 50 chars) - Opcional
+- **cidade** (String) - Opcional
+- **uf** (String, 2 chars) - Opcional
+
+**Relacionamentos**
+- **cliente** (ManyToOne com Cliente) - Obrigatório
+
+**Auditoria**
+- **dataCadastro** (Date) - Auto-gerado
+- **updatedAt** (LocalDateTime) - Auto-atualizado
+
+#### Arquivos Criados
+
+**Enum**
+```java
+src/main/java/com/trovian/enums/Sexo.java
+```
+- Valores: MASCULINO, FEMININO
+- Campo descricao para exibição
+
+**Entity**
+```java
+src/main/java/com/trovian/entity/Motorista.java
+```
+- Anotações JPA (@Entity, @Table, @Id, @GeneratedValue)
+- Validações Jakarta (@NotBlank, @NotNull, @Size)
+- Relacionamento ManyToOne com Cliente (FetchType.LAZY, obrigatório)
+- Enum Sexo com @Enumerated(EnumType.STRING)
+- Auditoria com @PrePersist e @PreUpdate
+- @Temporal para campos Date
+- Lombok (@Data, @NoArgsConstructor, @AllArgsConstructor)
+
+**DTO**
+```java
+src/main/java/com/trovian/dto/MotoristaDTO.java
+```
+- Validações de entrada completas
+- Documentação Swagger (@Schema)
+- Campos read-only (id, dataCadastro, updatedAt, clienteNome)
+- Expõe relacionamento via clienteId + nome do cliente
+- allowableValues para campo sexo
+
+**Repository**
+```java
+src/main/java/com/trovian/repository/MotoristaRepository.java
+```
+- Extende JpaRepository<Motorista, Long>
+- Query method customizado:
+  - `findByClienteId(Long clienteId, Pageable pageable)` - Busca motoristas por cliente com paginação
+
+**Service**
+```java
+src/main/java/com/trovian/service/MotoristaService.java
+```
+- CRUD completo com transações
+- Validação de existência do Cliente antes de salvar/atualizar
+- Logs SLF4J em todas operações
+- Conversão manual DTO ↔ Entity
+- Métodos de busca com paginação
+- toDTO inclui informações do Cliente relacionado
+
+**Controller**
+```java
+src/main/java/com/trovian/controller/MotoristaController.java
+```
+- Base path: `/motorista`
+- Documentação Swagger completa
+- Response entities com status HTTP corretos
+- Suporte a paginação e ordenação customizável
+- 3 endpoints GET (conforme especificado)
+
+#### Endpoints REST - Motorista
+
+| Método | Endpoint | Descrição | Status Code |
+|--------|----------|-----------|-------------|
+| GET | `/motorista` | Lista todos motoristas (paginado) | 200 |
+| GET | `/motorista/{id}` | Busca motorista por ID | 200 / 404 |
+| GET | `/motorista/cliente/{clienteId}` | Busca motoristas por cliente (paginado) | 200 |
+| POST | `/motorista` | Cria novo motorista | 201 |
+| PUT | `/motorista/{id}` | Atualiza motorista | 200 / 404 |
+| DELETE | `/motorista/{id}` | Deleta motorista | 204 / 404 |
+
+#### Parâmetros de Paginação
+
+Os endpoints `/motorista` e `/motorista/cliente/{clienteId}` suportam os seguintes parâmetros:
+
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| page | int | 0 | Número da página (inicia em 0) |
+| size | int | 10 | Tamanho da página |
+| sortBy | String | id | Campo para ordenação |
+| direction | String | ASC | Direção da ordenação (ASC ou DESC) |
+
+#### Regras de Negócio
+
+1. **Campos Obrigatórios**: nome, dataNascimento, cpf, numeroCnh, validadeCnh, categoriaCnh e cliente
+2. **Cliente Obrigatório**: Todo motorista deve estar vinculado a um cliente válido
+3. **Validação de Sexo**: Campo aceita apenas MASCULINO ou FEMININO
+4. **Auditoria Automática**:
+   - `dataCadastro` definido no momento da criação (Date)
+   - `updatedAt` atualizado em cada modificação (LocalDateTime)
+
+---
+
+## 🧪 Exemplos de Uso - Motorista (cURL)
+
+### Criar Motorista Completo
+```bash
+curl -X POST http://localhost:8080/motorista \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nome": "João da Silva",
+    "dataNascimento": "1985-03-15",
+    "sexo": "MASCULINO",
+    "cpf": "12345678900",
+    "numeroCnh": "12345678901",
+    "validadeCnh": "2026-12-31",
+    "dataAdmissao": "2020-01-10",
+    "categoriaCnh": "D",
+    "telefone": "11987654321",
+    "logradouro": "Rua das Flores",
+    "numero": "123",
+    "bairro": "Centro",
+    "cep": "12345-678",
+    "complemento": "Apto 101",
+    "cidade": "São Paulo",
+    "uf": "SP",
+    "clienteId": 1
+  }'
+```
+
+### Criar Motorista Simples (apenas campos obrigatórios)
+```bash
+curl -X POST http://localhost:8080/motorista \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nome": "Maria Santos",
+    "dataNascimento": "1990-07-20",
+    "sexo": "FEMININO",
+    "cpf": "98765432100",
+    "numeroCnh": "98765432109",
+    "validadeCnh": "2027-06-30",
+    "categoriaCnh": "C",
+    "clienteId": 1
+  }'
+```
+
+### Listar Todos os Motoristas (Paginado)
+```bash
+curl -X GET "http://localhost:8080/motorista?page=0&size=10&sortBy=nome&direction=ASC"
+```
+
+### Buscar Motorista por ID
+```bash
+curl -X GET http://localhost:8080/motorista/1
+```
+
+### Buscar Motoristas por Cliente (Paginado)
+```bash
+curl -X GET "http://localhost:8080/motorista/cliente/1?page=0&size=20&sortBy=nome&direction=ASC"
+```
+
+### Atualizar Motorista
+```bash
+curl -X PUT http://localhost:8080/motorista/1 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nome": "João da Silva - Atualizado",
+    "dataNascimento": "1985-03-15",
+    "sexo": "MASCULINO",
+    "cpf": "12345678900",
+    "numeroCnh": "12345678901",
+    "validadeCnh": "2028-12-31",
+    "dataAdmissao": "2020-01-10",
+    "categoriaCnh": "E",
+    "telefone": "11999887766",
+    "logradouro": "Rua das Flores",
+    "numero": "456",
+    "bairro": "Centro",
+    "cep": "12345-678",
+    "complemento": "Apto 202",
+    "cidade": "São Paulo",
+    "uf": "SP",
+    "clienteId": 1
+  }'
+```
+
+### Deletar Motorista
+```bash
+curl -X DELETE http://localhost:8080/motorista/1
+```
+
+---
+
+#### Características Técnicas
+
+1. **Enum Sexo**: Tipagem forte para gênero (MASCULINO/FEMININO)
+2. **Relacionamento ManyToOne**: Vários motoristas podem pertencer a um cliente
+3. **Lazy Loading**: Cliente carregado somente quando acessado
+4. **Validações Robustas**: Campos obrigatórios e tamanhos máximos
+5. **Paginação Nativa**: Todos endpoints de listagem suportam paginação
+6. **Endereço Completo**: Campos separados para endereço detalhado
+7. **Documentação CNH**: Validação de CNH com número, validade e categoria
+8. **Auditoria Completa**: Rastreamento de criação e atualização
+9. **Documentação Swagger**: API totalmente documentada com exemplos
+
+---
+
 ## 📊 Status do Projeto
 
 ### ✅ Concluído
@@ -1709,21 +1947,24 @@ curl -X DELETE http://localhost:8080/local/1
 - [x] CRUD Equipamento completo com relacionamento ManyToOne
 - [x] CRUD Veículo completo com relacionamentos múltiplos
 - [x] CRUD Local completo com relacionamentos OneToMany e OneToOne
+- [x] CRUD Motorista completo com enum Sexo e relacionamento ManyToOne
 - [x] Validações de dados
 - [x] Documentação Swagger
 - [x] Logs SLF4J
 - [x] Transações JPA
 - [x] Auditoria básica (timestamps)
 - [x] Buscas customizadas
-- [x] Paginação (Product, Cooperativa, Cliente, Modelo, Equipamento, Veículo e Local)
+- [x] Paginação (Product, Cooperativa, Cliente, Modelo, Equipamento, Veículo, Local e Motorista)
 - [x] Validação de tipo para Modelo (Equipamento/Veiculo)
 - [x] Validação de tipo para Equipamento (PR/PA)
 - [x] Validação de tipo para Veículo (Moto, Carro, Onibus, Caminhao, Carreta, Implemento)
 - [x] Validação de combustível para Veículo (Gasolina, Alcool, Diesel)
 - [x] Validação de enums para Local (FuncaoLocal e TipoLocal)
+- [x] Validação de enum Sexo para Motorista (MASCULINO/FEMININO)
 - [x] Relacionamento Equipamento-Modelo
 - [x] Relacionamento Veiculo-Modelo-Equipamento-Cliente
 - [x] Relacionamento Local-Cliente-Coordenada-ParametroLocal
+- [x] Relacionamento Motorista-Cliente
 - [x] Cascade operations (OneToMany e OneToOne)
 - [x] Orphan removal para coordenadas
 
@@ -1753,6 +1994,30 @@ curl -X DELETE http://localhost:8080/local/1
 ---
 
 ## 🔄 Changelog
+
+### v1.8.1 - 06/11/2025
+- ✨ Adicionados 3 novos campos no modelo Veículo:
+  - `capacidadeTanque` (BigDecimal) - Capacidade do tanque em litros
+  - `numeroEixos` (Integer) - Número de eixos do veículo
+  - `tara` (BigDecimal) - Tara do veículo em toneladas
+- 🔄 Atualizada Entity Veiculo com novos campos
+- 🔄 Atualizado DTO VeiculoDTO com documentação Swagger
+- 🔄 Atualizado VeiculoService com conversões DTO ↔ Entity
+
+### v1.8.0 - 06/11/2025
+- ✨ Implementado CRUD completo de Motorista
+- ✨ Enum Sexo (MASCULINO, FEMININO) com tipagem forte
+- ✨ Relacionamento ManyToOne com Cliente (obrigatório)
+- ✨ Validação de dados pessoais (nome, CPF, data de nascimento)
+- ✨ Validação de documentação CNH (número, validade, categoria)
+- ✨ Endereço completo (logradouro, número, bairro, CEP, complemento, cidade, UF)
+- ✨ 3 endpoints GET com paginação (todos, por ID, por cliente)
+- ✨ Suporte completo a paginação e ordenação
+- ✨ Validações robustas (campos obrigatórios e tamanhos máximos)
+- ✨ Auditoria com Date (dataCadastro) e LocalDateTime (updatedAt)
+- ✨ Lazy Loading para relacionamento com Cliente
+- 📝 Documentação Swagger completa
+- 📝 Exemplos de uso (cURL) no histórico
 
 ### v1.7.0 - 02/11/2025
 - ✨ Implementado CRUD completo de Local
@@ -1856,6 +2121,6 @@ curl -X DELETE http://localhost:8080/local/1
 
 ---
 
-**Última Atualização**: 02/11/2025
+**Última Atualização**: 06/11/2025
 **Desenvolvedor**: Claude Code
-**Branch Atual**: feature/local
+**Branch Atual**: feature/motorista

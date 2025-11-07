@@ -1,79 +1,66 @@
-Agora vamos fazer um CRUD do Objeto Local na estrutura bem definida do projeto java
+Agora vamos fazer um CRUD do Objeto Motorista na estrutura bem definida do projeto java
 Vamos ter os seguinte atributos:
+    
      private Integer id;
-    @Basic(optional = false)
-    @NotNull
-    @Size(min = 1, max = 255)
-    @Column(name = "nome")
+
+    @Column(name = "nome", length = 100, nullable = false)
     private String nome;
-	 @NotNull
-    @Column(name = "ativo")
-    private Boolean ativo;
-	private Integer funcao;
-    @Column(name = "mostrar_mapa_principal")
-    private Boolean mostrarNoMapaPrincipal;
-    @Column(name = "mostrar_nome_mapa")
-    private Boolean mostrarNomeNoMapa;
-    @Column(name = "notifica_evento")
-    private Boolean notificaEvento;
-    @Column(name = "codigo_unico")
-    private Integer codigoUnico;
-    @Column(name = "funcao")
-    private Integer funcao//Carga, Descarga ou Outros;
-    @Column(name = "endereco")
-    private String endereco;
-    @Column(name = "bairro")
+
+    @Column(name = "data_nascimento", nullable = false)
+    @Temporal(TemporalType.DATE)
+    private Date dataNascimento;
+
+    @Column(name = "sexo")
+    private String sexo; 
+
+    @Column(name = "cpf", length = 11, nullable = false)
+    private String cpf;
+
+    @Column(name = "numero_cnh", length = 15, nullable = false)
+    private String numeroCnh;
+
+    @Column(name = "validade_cnh", nullable = false)
+    @Temporal(TemporalType.DATE)
+    private Date validadeCnh;
+
+    @Column(name = "data_admissao")
+    @Temporal(TemporalType.DATE)
+    private Date dataAdmissao;
+
+    @Column(name = "categoria_cnh", length = 2, nullable = false)
+    private String categoriaCnh;
+
+    @Column(name = "telefone", length = 15)
+    private String telefone;
+	
+	@Column(name = "logradouro")
+    private String logradouro;
+
+    @Column(name = "numero")
+    private String numero;
+
+    @Column(name = "bairro", length = 45)
     private String bairro;
-    @Column(name = "complemento")
+
+    @Column(name = "cep", length = 9)
+    private String cep;
+
+    @Column(name = "complemento", length = 50)
     private String complemento;
-    @Column(name = "cidade")
-    private String cidade;
-    @Column(name = "uf")
-    private String uf;
-    @Column(name = "tipo")
-    private String tipo;
-    @Column(name = "permite_descanso")
-    private Boolean permiteDescanso;
-    @JoinColumn(name = "cliente", referencedColumnName = "id")
-    @ManyToOne(optional = false)
-    private Cliente cliente;
-    private List<Coordenada> listaDeCoordenadas;
-    private ParametroLocal parametroLocal;
 	
-	Agora a estrutura Coordenada
+	private String cidade
+	private String uf
 	
-	private Integer id;
-    @Column(name = "sequencia")
-    private Integer sequencia;
-    @Column(name = "latitude")
-    private Double latitude;
-    @Column(name = "longitude")
-    private Double longitude;
-    @Column(name = "is_raio")
-    private Boolean isRaio;
-    @Column(name = "raio")
-    private Double raio;
+	private Cliente cliente //Obrigatorio
 	
-	Agora a estrutura de ParametroLocal
-	
-	private Integer id;
    
-
-    @Column(name = "limite_veiculos_mesmo_local")
-    private Integer limiteVeiculosMesmoLocal;
-	private Integer tempoMinimoDePermanencia;
-	private Integer tempoMaximoDePermanencia;
-	
+   
 o metodo GetMapping ter somente esses:
-Um para buscar todos os Veiculos com paginação
-Um para buscar o Veiculo pelo id
-Um para buscar os Veiculos pelo cliente
-Nao precisa criar serviços rest para ParametroLocal e Coordenada, uma vez que serao gravados juntos com o local.
+Um para buscar todos os Motorista com paginação
+Um para buscar o Motorista pelo id
+Um para buscar os Motorista pelo cliente
 
 
-o Campo  private Integer funcao tera somente essas opçoes Carga, Descarga ou Outros, deixar como enum;
-o Campo  private Integer tipo tera somente essas opçoes Empresa, Oficina, Posto de abastecimento, posto de fiscalização, deixar como ENUM;
-
-Campos Obrigatorios: id, nome e status
+o Campo  pprivate String sexo tera somente essas opçoes Masculino e Feminino, deixar como enum;
 
 Criar toda a infra necessaria, desde o modelo ate o rest baseado na operação Product

@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Date;
 
@@ -158,6 +159,15 @@ public class VeiculoDTO {
 
     @Schema(description = "Carga máxima (toneladas)", example = "10.5")
     private Double cargaMaxima;
+
+    @Schema(description = "Capacidade do tanque (litros)", example = "300.50")
+    private BigDecimal capacidadeTanque;
+
+    @Schema(description = "Número de eixos do veículo", example = "3")
+    private Integer numeroEixos;
+
+    @Schema(description = "Tara do veículo (toneladas)", example = "8.75")
+    private BigDecimal tara;
 
     @Schema(description = "Tipo de combustível", example = "Diesel",
             allowableValues = {"Gasolina", "Alcool", "Diesel"})

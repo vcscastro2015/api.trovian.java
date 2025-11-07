@@ -149,6 +149,9 @@ public class VeiculoService {
         veiculo.setGeraEnderecoAutomatico(veiculoDTO.getGeraEnderecoAutomatico());
         veiculo.setValidarIbutton(veiculoDTO.getValidarIbutton());
         veiculo.setCargaMaxima(veiculoDTO.getCargaMaxima());
+        veiculo.setCapacidadeTanque(veiculoDTO.getCapacidadeTanque());
+        veiculo.setNumeroEixos(veiculoDTO.getNumeroEixos());
+        veiculo.setTara(veiculoDTO.getTara());
         veiculo.setCombustivel(veiculoDTO.getCombustivel());
         veiculo.setValidarRota(veiculoDTO.getValidarRota());
         veiculo.setModelo(modelo);
@@ -248,6 +251,9 @@ public class VeiculoService {
         dto.setGeraEnderecoAutomatico(veiculo.getGeraEnderecoAutomatico());
         dto.setValidarIbutton(veiculo.getValidarIbutton());
         dto.setCargaMaxima(veiculo.getCargaMaxima());
+        dto.setCapacidadeTanque(veiculo.getCapacidadeTanque());
+        dto.setNumeroEixos(veiculo.getNumeroEixos());
+        dto.setTara(veiculo.getTara());
         dto.setCombustivel(veiculo.getCombustivel());
         dto.setValidarRota(veiculo.getValidarRota());
         dto.setUpdatedAt(veiculo.getUpdatedAt());
@@ -318,6 +324,9 @@ public class VeiculoService {
         veiculo.setGeraEnderecoAutomatico(dto.getGeraEnderecoAutomatico());
         veiculo.setValidarIbutton(dto.getValidarIbutton());
         veiculo.setCargaMaxima(dto.getCargaMaxima());
+        veiculo.setCapacidadeTanque(dto.getCapacidadeTanque());
+        veiculo.setNumeroEixos(dto.getNumeroEixos());
+        veiculo.setTara(dto.getTara());
         veiculo.setCombustivel(dto.getCombustivel());
         veiculo.setValidarRota(dto.getValidarRota());
         return veiculo;
