@@ -52,6 +52,14 @@ public class LocalService {
         return locais.map(this::toDTO);
     }
 
+    @Transactional(readOnly = true)
+    public Page<LocalDTO> findByTipo(com.trovian.enums.TipoLocal tipo, Pageable pageable) {
+        log.info("Buscando locais do tipo: {} - Página: {}, Tamanho: {}",
+                tipo, pageable.getPageNumber(), pageable.getPageSize());
+        Page<Local> locais = localRepository.findByTipo(tipo, pageable);
+        return locais.map(this::toDTO);
+    }
+
     @Transactional
     public LocalDTO create(LocalDTO localDTO) {
         log.info("Criando novo local com nome: {}", localDTO.getNome());

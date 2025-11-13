@@ -1,66 +1,30 @@
-Agora vamos fazer um CRUD do Objeto Motorista na estrutura bem definida do projeto java
+Agora vamos fazer um CRUD do Objeto Abastecimento na estrutura bem definida do projeto java
 Vamos ter os seguinte atributos:
     
      private Integer id;
 
-    @Column(name = "nome", length = 100, nullable = false)
-    private String nome;
+   veiculo_id (FK) - qual caminhão foi abastecido
+motorista_id (FK) - quem fez o abastecimento
+rota_id (FK) - em qual rota ocorreu (opcional, mas útil)
 
-    @Column(name = "data_nascimento", nullable = false)
-    @Temporal(TemporalType.DATE)
-    private Date dataNascimento;
 
-    @Column(name = "sexo")
-    private String sexo; 
+data_hora - timestamp exato
+km_odometro - leitura do odômetro NO momento do abastecimento
+litros_abastecidos - volume em litros
+valor_total - quanto foi gasto
+preco_litro - para auditoria
 
-    @Column(name = "cpf", length = 11, nullable = false)
-    private String cpf;
+private Local local //não obrigatorio
 
-    @Column(name = "numero_cnh", length = 15, nullable = false)
-    private String numeroCnh;
+combustivel_tipo - diesel, gasolina, etc
+tanque_cheio - boolean (abastecimento completo ou parcial?)
+observacoes - campo livre (problemas, clima, etc)
 
-    @Column(name = "validade_cnh", nullable = false)
-    @Temporal(TemporalType.DATE)
-    private Date validadeCnh;
-
-    @Column(name = "data_admissao")
-    @Temporal(TemporalType.DATE)
-    private Date dataAdmissao;
-
-    @Column(name = "categoria_cnh", length = 2, nullable = false)
-    private String categoriaCnh;
-
-    @Column(name = "telefone", length = 15)
-    private String telefone;
-	
-	@Column(name = "logradouro")
-    private String logradouro;
-
-    @Column(name = "numero")
-    private String numero;
-
-    @Column(name = "bairro", length = 45)
-    private String bairro;
-
-    @Column(name = "cep", length = 9)
-    private String cep;
-
-    @Column(name = "complemento", length = 50)
-    private String complemento;
-	
-	private String cidade
-	private String uf
+criado_em - timestamp de criação
+atualizado_em - timestamp de atualização
+status - soft delete
 	
 	private Cliente cliente //Obrigatorio
 	
-   
-   
-o metodo GetMapping ter somente esses:
-Um para buscar todos os Motorista com paginação
-Um para buscar o Motorista pelo id
-Um para buscar os Motorista pelo cliente
-
-
-o Campo  pprivate String sexo tera somente essas opçoes Masculino e Feminino, deixar como enum;
 
 Criar toda a infra necessaria, desde o modelo ate o rest baseado na operação Product

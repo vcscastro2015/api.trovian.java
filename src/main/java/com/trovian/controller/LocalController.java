@@ -1,6 +1,7 @@
 package com.trovian.controller;
 
 import com.trovian.dto.LocalDTO;
+import com.trovian.enums.TipoLocal;
 import com.trovian.service.LocalService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -90,6 +91,34 @@ public class LocalController {
         Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
         Page<LocalDTO> locais = localService.findByClienteId(clienteId, pageable);
+        return ResponseEntity.ok(locais);
+    }
+
+    @Operation(summary = "Busca locais por tipo com paginação",
+               description = "Retorna uma página de locais filtrados por tipo (EMPRESA, OFICINA, POSTO_DE_ABASTECIMENTO, POSTO_DE_FISCALIZACAO)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Página de locais retornada com sucesso",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = Page.class)))
+    })
+    @GetMapping(value = "/tipo/{tipo}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Page<LocalDTO>> getLocaisByTipo(
+            @Parameter(description = "Tipo do local (EMPRESA, OFICINA, POSTO_DE_ABASTECIMENTO, POSTO_DE_FISCALIZACAO)",
+                       required = true,
+                       example = "EMPRESA")
+            @PathVariable TipoLocal tipo,
+            @Parameter(description = "Número da página (inicia em 0)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Tamanho da página", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Campo para ordenação", example = "nome")
+            @RequestParam(defaultValue = "id") String sortBy,
+            @Parameter(description = "Direção da ordenação (ASC ou DESC)", example = "ASC")
+            @RequestParam(defaultValue = "ASC") String direction) {
+
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+        Page<LocalDTO> locais = localService.findByTipo(tipo, pageable);
         return ResponseEntity.ok(locais);
     }
 
