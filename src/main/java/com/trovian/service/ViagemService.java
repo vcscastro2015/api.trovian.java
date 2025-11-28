@@ -1,5 +1,6 @@
 package com.trovian.service;
 
+import com.trovian.dto.ComissaoMotoristaDTO;
 import com.trovian.dto.ConsumoDetalhadoDTO;
 import com.trovian.dto.ViagemDTO;
 import com.trovian.entity.*;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Objects;
 
 /**
  * Service para lógica de negócio de Viagem
@@ -29,6 +31,7 @@ public class ViagemService {
     private final AbastecimentoRepository abastecimentoRepository;
     private final ClienteRepository clienteRepository;
     private final ConsumoDetalhadoRepository consumoDetalhadoRepository;
+    private final ComissaoMotoristaService comissaoMotoristaService;
 
     /**
      * Busca todas as viagens com paginação
@@ -183,7 +186,7 @@ public class ViagemService {
         Viagem viagem = toEntity(calculado);
         Viagem saved = viagemRepository.save(viagem);
         log.info("Viagem criada com sucesso. ID: {}", saved.getId());
-
+        criarComissaoMotorista(saved, dto.getComissaoMotorista());
         return toDTO(saved);
     }
 
@@ -948,5 +951,24 @@ public class ViagemService {
         dto.setDistanciaTotal(entity.getDistanciaTotal());
 
         return dto;
+    }
+
+    private void criarComissaoMotorista(Viagem viagem, BigDecimal comissaoMotorista){
+        try {
+            ComissaoMotoristaDTO comissaoDTO = new ComissaoMotoristaDTO();
+            comissaoDTO.setMotoristaId(viagem.getMotorista().getId());
+            comissaoDTO.setViagemId(viagem.getId());
+            comissaoDTO.setClienteId(viagem.getCliente().getId());
+            comissaoDTO.setPercentualComissao(BigDecimal.valueOf(viagem.getMotorista().getComissao()));
+            comissaoDTO.setValorComissao(comissaoMotorista);
+            comissaoDTO.setOrigem(viagem.getRotaIda().getNome());
+            if (Objects.nonNull(viagem.getRotaVolta())) {
+                comissaoDTO.setDestino(viagem.getRotaVolta().getNome());
+            }
+            comissaoMotoristaService.create(comissaoDTO);
+        }catch (Exception e){
+            log.error("criarComissaoMotorista",e);
+        }
+
     }
 }

@@ -1,77 +1,58 @@
-Vamos melhorar essa ideia, ja foi implementado o CRUD Abastecimento.
-Quero fazer uma funcionalidade chamada Viajem, que vai entrar também os cálculos de combustível tambem.
-Vou dar algumas dicas e vamos afinando.
-Pensei em ter:
-Rota de Ida
-Rota de Volta
-As rotas ja vao ter a distancia
-Quantidade de tn que vamos levar por rota
-O Material que vai carregar em cada rota
-Valor tonelada bruta por rota
-Valor base do imposto inserido manualmente para se ter uma ideia por rota
-Valor total bruto que Valor tn + quantidade
-Poder inserir a media do Veiculo
-Pegar a quantidade de combustivel pelo ultimo abastecimento
-valor do combustivel  pelo ultimo abastecimento
-Valor total de combustivel que vai ser gasto
-A comissao do motorista
-O Valor total livre que cada rota vai render
-quantidad de pedagios por rota
-VIAGEM
-├─ IDA
-│  ├─ Rota (distância)
-│  ├─ Carga (toneladas + material)
-│  ├─ Receita (valor/ton + imposto)
-│  └─ Custos (pedagios)
-│
-├─ VOLTA
-│  ├─ Rota (distância)
-│  ├─ Carga (toneladas + material)
-│  ├─ Receita (valor/ton + imposto)
-│  └─ Custos (pedagios)
-│
-├─ COMBUSTÍVEL
-│  ├─ Histórico (último abastecimento)
-│  ├─ Consumo (baseado em média + peso)
-│  └─ Custo total
-│
-└─ RESULTADO FINAL
-   ├─ Receita bruta total
-   ├─ Custos (combustível + pedágio + comissão)
-   └─ Valor líquido
-  
-Fator de Carga vamos calcular tambem via sistema
-Comissão do Motorista: é fixa no cadastro do mesmo
-Imposto Base é valor fixo por rotsa
-Média do Veículo vamos implementar depois quando formos fazer a telemetria, por hora vamos informar manualmente mesmo
-Ja temos as Rotas
-Quantidade de pedagios  ja sabemos quantos pedagios e valor por eixo, no cadastro de veiculo ja temos a quantidade de  eixo
-Tara do caminhão tambem ja esta no cadastro de veiculo
-Comissão do motorista ja tem a porcentagem no cadastro de motorista
+Agora vamos fazer um CRUD do Objeto comissão de motorista na estrutura bem definida do projeto java
+Vamos ter os seguinte atributos:
+    
+Campos Principais
+Identificação e Relacionamento:
 
-Fluxo Completo de Cálculos
-PASSO 1: RECEITA BRUTA
-├─ valor_total_bruto_ida = (quantidade_toneladas_ida × valor_tonelada_bruta_ida) + imposto_base_ida
-├─ valor_total_bruto_volta = (quantidade_toneladas_volta × valor_tonelada_bruta_volta) + imposto_base_volta
-└─ valor_total_bruto_viagem = valor_total_bruto_ida + valor_total_bruto_volta
+id - INT (auto-increment, primary key)
+motorista_id - INT (foreign key, NOT NULL)
+viagem_id - INT (foreign key, nullable)
 
-PASSO 2: FATOR DE CARGA
-└─ fator_carga = (tara_caminhao + quantidade_toneladas_ida + quantidade_toneladas_volta) / capacidade_carga_maxima_caminhao
+Valores Financeiros:
 
-PASSO 3: COMBUSTÍVEL
-├─ distancia_total_km = distancia_ida_km + distancia_volta_km
-├─ consumo_estimado_litros = (distancia_total_km / media_veiculo_kmL) × fator_carga
-└─ valor_total_combustivel = consumo_estimado_litros × preco_combustivel_ultimo_abastecimento
+valor_corrida - DECIMAL(10,2)
+percentual_comissao - DECIMAL(5,2)
+valor_comissao - DECIMAL(10,2)
+valor_liquido_motorista - DECIMAL(10,2)
+descontos - DECIMAL(10,2) (default: 0.00)
 
-PASSO 4: PEDÁGIOS
-├─ valor_pedagios_ida = quantidade_pedagios_ida × valor_pedagio_por_eixo × numero_eixos_caminhao
-├─ valor_pedagios_volta = quantidade_pedagios_volta × valor_pedagio_por_eixo × numero_eixos_caminhao
-└─ valor_total_pedagios = valor_pedagios_ida + valor_pedagios_volta
+Datas e Período:
 
-PASSO 5: COMISSÃO DO MOTORISTA
-└─ comissao_motorista = valor_total_bruto_viagem × (percentual_comissao_motorista / 100)
+data_corrida - DATE
+data_calculo - DATETIME
+data_pagamento - DATE (nullable)
+periodo_referencia - VARCHAR(7) (formato: YYYY-MM)
 
-PASSO 6: RESULTADO FINAL
-├─ valor_total_custos = valor_total_pedagios + valor_total_combustivel + comissao_motorista
-├─ valor_total_liquido = valor_total_bruto_viagem - valor_total_custos
-└─ margem_percentual = (valor_total_liquido / valor_total_bruto_viagem) × 100
+Status e Controle:
+
+status - ENUM('pendente', 'calculada', 'paga', 'cancelada')
+tipo_comissao - ENUM('por_viagem', 'mensal', 'por_km')
+forma_pagamento - VARCHAR(50) (nullable)
+
+Informações Complementares:
+
+quilometragem - DECIMAL(10,2) (nullable)
+observacoes - TEXT (nullable)
+usuario_registro_id - INT (foreign key)
+created_at - TIMESTAMP (default: CURRENT_TIMESTAMP)
+updated_at - TIMESTAMP (default: CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)
+
+Campos Opcionais
+
+bonificacoes - DECIMAL(10,2) (default: 0.00)
+penalidades - DECIMAL(10,2) (default: 0.00)
+taxa_plataforma - DECIMAL(10,2) (default: 0.00)
+origem - VARCHAR(255) (nullable)
+destino - VARCHAR(255) (nullable)
+numero_nota_fiscal - VARCHAR(50) (nullable)
+
+	
+	private Cliente cliente //Obrigatorio
+	
+
+o metodo GetMapping ter somente esses:
+Um para buscar todos as comissoes com paginação
+Um para buscar a Comissao pelo id
+Um para buscar a Comissao pelo Cliente
+
+Criar toda a infra necessaria, desde o modelo ate o rest baseado na operação Product
