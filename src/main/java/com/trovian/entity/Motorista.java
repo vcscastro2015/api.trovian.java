@@ -72,6 +72,9 @@ public class Motorista {
     @Column(name = "status", nullable = false)
     private Boolean status;
 
+    @Column(name = "comissao")
+    private Double comissao;
+
     @Column(name = "logradouro")
     private String logradouro;
 

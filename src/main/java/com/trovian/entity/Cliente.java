@@ -87,6 +87,10 @@ public class Cliente {
     @JoinColumn(name = "cooperativa_id")
     private Cooperativa cooperativa;
 
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "aliquota_imposto_id")
+    private AliquotaImposto aliquotaImposto;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime dataCadastro;
 

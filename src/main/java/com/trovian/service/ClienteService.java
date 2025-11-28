@@ -1,8 +1,10 @@
 package com.trovian.service;
 
 import com.trovian.dto.ClienteDTO;
+import com.trovian.entity.AliquotaImposto;
 import com.trovian.entity.Cliente;
 import com.trovian.entity.Cooperativa;
+import com.trovian.repository.AliquotaImpostoRepository;
 import com.trovian.repository.ClienteRepository;
 import com.trovian.repository.CooperativaRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +14,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -19,6 +23,7 @@ public class ClienteService {
 
     private final ClienteRepository clienteRepository;
     private final CooperativaRepository cooperativaRepository;
+    private final AliquotaImpostoRepository aliquotaImpostoRepository;
 
     /**
      * Busca todos os clientes com paginação
@@ -137,6 +142,14 @@ public class ClienteService {
             cliente.setCooperativa(null);
         }
 
+        // Atualiza alíquota de imposto
+        if (isAliquotaValida(clienteDTO)) {
+            AliquotaImposto aliquotaImposto = toAliquotaImpostoEntity(clienteDTO, cliente);
+            cliente.setAliquotaImposto(aliquotaImposto);
+        } else {
+            cliente.setAliquotaImposto(null);
+        }
+
         Cliente updatedCliente = clienteRepository.save(cliente);
         log.info("Cliente atualizado com sucesso. ID: {}", id);
         return toDTO(updatedCliente);
@@ -186,6 +199,11 @@ public class ClienteService {
             dto.setCooperativaNome(cliente.getCooperativa().getNome());
         }
 
+        if (cliente.getAliquotaImposto() != null) {
+            dto.setAliquotaCooperativa(cliente.getAliquotaImposto().getAliquotaCooperativa());
+            dto.setAliquotaSimples(cliente.getAliquotaImposto().getAliquotaSimples());
+        }
+
         return dto;
     }
 
@@ -216,6 +234,29 @@ public class ClienteService {
             cliente.setCooperativa(cooperativa);
         }
 
+        // Se tiver alíquota de imposto, cria ou carrega
+        if (isAliquotaValida(dto)) {
+            AliquotaImposto aliquotaImposto = toAliquotaImpostoEntity(dto, cliente);
+            cliente.setAliquotaImposto(aliquotaImposto);
+        }
+
         return cliente;
+    }
+
+    /**
+     * Converte AliquotaImpostoDTO para Entity
+     */
+    private AliquotaImposto toAliquotaImpostoEntity(ClienteDTO dto, Cliente cliente) {
+        AliquotaImposto aliquotaImposto = new AliquotaImposto();
+        if(Objects.nonNull(cliente.getAliquotaImposto())){
+            aliquotaImposto = cliente.getAliquotaImposto();
+        }
+        aliquotaImposto.setAliquotaSimples(dto.getAliquotaSimples());
+        aliquotaImposto.setAliquotaCooperativa(dto.getAliquotaCooperativa());
+        return aliquotaImposto;
+    }
+
+    private boolean isAliquotaValida(ClienteDTO clienteDTO){
+        return Objects.nonNull(clienteDTO.getAliquotaSimples()) && Objects.nonNull(clienteDTO.getAliquotaCooperativa());
     }
 }

@@ -1,6 +1,7 @@
 package com.trovian.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -8,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -92,4 +94,14 @@ public class ClienteDTO {
 
     @Schema(description = "Data da última atualização", accessMode = Schema.AccessMode.READ_ONLY, example = "2025-10-30T10:00:00")
     private LocalDateTime updatedAt;
+
+    @NotNull(message = "Alíquota Simples é obrigatória")
+    @DecimalMin(value = "0.0", inclusive = true, message = "Alíquota Simples deve ser maior ou igual a 0")
+    @Schema(description = "Alíquota para clientes simples (em porcentagem)", required = true, example = "5.50")
+    private BigDecimal aliquotaSimples;
+
+    @NotNull(message = "Alíquota Cooperativa é obrigatória")
+    @DecimalMin(value = "0.0", inclusive = true, message = "Alíquota Cooperativa deve ser maior ou igual a 0")
+    @Schema(description = "Alíquota para clientes cooperados (em porcentagem)", required = true, example = "3.25")
+    private BigDecimal aliquotaCooperativa;
 }

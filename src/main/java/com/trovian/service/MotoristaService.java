@@ -116,6 +116,7 @@ public class MotoristaService {
         motorista.setCategoriaCnh(dto.getCategoriaCnh());
         motorista.setTelefone(dto.getTelefone());
         motorista.setStatus(dto.getStatus());
+        motorista.setComissao(dto.getComissao());
         motorista.setLogradouro(dto.getLogradouro());
         motorista.setNumero(dto.getNumero());
         motorista.setBairro(dto.getBairro());
@@ -167,6 +168,7 @@ public class MotoristaService {
         dto.setCategoriaCnh(motorista.getCategoriaCnh());
         dto.setTelefone(motorista.getTelefone());
         dto.setStatus(motorista.getStatus());
+        dto.setComissao(motorista.getComissao());
         dto.setLogradouro(motorista.getLogradouro());
         dto.setNumero(motorista.getNumero());
         dto.setBairro(motorista.getBairro());
@@ -199,6 +201,7 @@ public class MotoristaService {
         motorista.setCategoriaCnh(dto.getCategoriaCnh());
         motorista.setTelefone(dto.getTelefone());
         motorista.setStatus(dto.getStatus());
+        motorista.setComissao(dto.getComissao());
         motorista.setLogradouro(dto.getLogradouro());
         motorista.setNumero(dto.getNumero());
         motorista.setBairro(dto.getBairro());

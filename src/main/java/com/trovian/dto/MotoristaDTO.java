@@ -66,6 +66,9 @@ public class MotoristaDTO {
     @Column(name = "status", nullable = false)
     private Boolean status;
 
+    @Schema(description = "Comissão do motorista no frete (%)", example = "5.5")
+    private Double comissao;
+
     @Schema(description = "Logradouro", example = "Rua das Flores")
     private String logradouro;
 
