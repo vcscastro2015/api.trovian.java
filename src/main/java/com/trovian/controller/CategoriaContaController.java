@@ -1,0 +1,67 @@
+package com.trovian.controller;
+
+import com.trovian.dto.CategoriaContaDTO;
+import com.trovian.service.CategoriaContaService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/categoria-conta")
+@RequiredArgsConstructor
+@Slf4j
+@Tag(name = "Categorias de Conta", description = "Gerenciamento de categorias de contas")
+public class CategoriaContaController {
+
+    private final CategoriaContaService categoriaContaService;
+
+    @PostMapping
+    @Operation(summary = "Criar nova categoria")
+    public ResponseEntity<CategoriaContaDTO> create(@Valid @RequestBody CategoriaContaDTO dto) {
+        CategoriaContaDTO created = categoriaContaService.create(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    @GetMapping
+    @Operation(summary = "Listar todas as categorias (paginado)")
+    public ResponseEntity<Page<CategoriaContaDTO>> findAll(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size,
+        @RequestParam(defaultValue = "nome") String sortBy,
+        @RequestParam(defaultValue = "ASC") String direction
+    ) {
+        Page<CategoriaContaDTO> categorias = categoriaContaService.findAll(page, size, sortBy, direction);
+        return ResponseEntity.ok(categorias);
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Buscar categoria por ID")
+    public ResponseEntity<CategoriaContaDTO> findById(@PathVariable Long id) {
+        CategoriaContaDTO categoria = categoriaContaService.findById(id);
+        return ResponseEntity.ok(categoria);
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Atualizar categoria")
+    public ResponseEntity<CategoriaContaDTO> update(
+        @PathVariable Long id,
+        @Valid @RequestBody CategoriaContaDTO dto
+    ) {
+        CategoriaContaDTO updated = categoriaContaService.update(id, dto);
+        return ResponseEntity.ok(updated);
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Deletar categoria")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        categoriaContaService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+}
