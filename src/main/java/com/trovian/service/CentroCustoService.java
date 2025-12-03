@@ -3,8 +3,10 @@ package com.trovian.service;
 import com.trovian.dto.CentroCustoDTO;
 import com.trovian.entity.CentroCusto;
 import com.trovian.entity.Cliente;
+import com.trovian.entity.Veiculo;
 import com.trovian.repository.CentroCustoRepository;
 import com.trovian.repository.ClienteRepository;
+import com.trovian.repository.VeiculoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -21,6 +23,7 @@ public class CentroCustoService {
 
     private final CentroCustoRepository centroCustoRepository;
     private final ClienteRepository clienteRepository;
+    private final VeiculoRepository veiculoRepository;
 
     @Transactional
     public CentroCustoDTO create(CentroCustoDTO dto) {
@@ -75,6 +78,10 @@ public class CentroCustoService {
             dto.setClienteId(entity.getCliente().getId());
             dto.setClienteNome(entity.getCliente().getNome());
         }
+        if (entity.getVeiculo() != null) {
+            dto.setVeiculoId(entity.getVeiculo().getId());
+            dto.setVeiculoPlaca(entity.getVeiculo().getPlaca());
+        }
         return dto;
     }
 
@@ -87,6 +94,10 @@ public class CentroCustoService {
         if (dto.getClienteId() != null) {
             Cliente cliente = clienteRepository.findById(dto.getClienteId()).orElse(null);
             entity.setCliente(cliente);
+        }
+        if (dto.getVeiculoId() != null) {
+            Veiculo veiculo = veiculoRepository.findById(dto.getVeiculoId()).orElse(null);
+            entity.setVeiculo(veiculo);
         }
         return entity;
     }
@@ -101,6 +112,12 @@ public class CentroCustoService {
             entity.setCliente(cliente);
         } else {
             entity.setCliente(null);
+        }
+        if (dto.getVeiculoId() != null) {
+            Veiculo veiculo = veiculoRepository.findById(dto.getVeiculoId()).orElse(null);
+            entity.setVeiculo(veiculo);
+        } else {
+            entity.setVeiculo(null);
         }
     }
 }

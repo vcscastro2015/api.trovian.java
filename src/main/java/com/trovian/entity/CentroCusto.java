@@ -31,6 +31,10 @@ public class CentroCusto {
     @JoinColumn(name = "cliente_id")
     private Cliente cliente;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "veiculo_id")
+    private Veiculo veiculo;
+
     @Column(nullable = false)
     private Boolean status = true;
 

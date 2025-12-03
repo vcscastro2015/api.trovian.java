@@ -34,6 +34,12 @@ public class CentroCustoDTO {
     @Schema(description = "Nome do cliente associado")
     private String clienteNome;
 
+    @Schema(description = "ID do veículo associado")
+    private Long veiculoId;
+
+    @Schema(description = "Placa do veículo associado")
+    private String veiculoPlaca;
+
     @Schema(description = "Status ativo/inativo", example = "true")
     private Boolean status;
 }
