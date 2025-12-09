@@ -1,6 +1,7 @@
 package com.trovian.controller;
 
 import com.trovian.dto.CategoriaContaDTO;
+import com.trovian.enums.TipoConta;
 import com.trovian.service.CategoriaContaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -9,6 +10,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -46,6 +49,19 @@ public class CategoriaContaController {
     public ResponseEntity<CategoriaContaDTO> findById(@PathVariable Long id) {
         CategoriaContaDTO categoria = categoriaContaService.findById(id);
         return ResponseEntity.ok(categoria);
+    }
+
+    @GetMapping("/tipo/{tipo}")
+    @Operation(summary = "Buscar categorias por tipo (PAGAR ou RECEBER)")
+    public ResponseEntity<Page<CategoriaContaDTO>> findByTipo(
+        @Parameter(description = "Tipo da conta: PAGAR ou RECEBER", required = true)
+        @PathVariable String tipo,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "100") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<CategoriaContaDTO> categorias = categoriaContaService.findByTipo(tipo.toUpperCase(), pageable);
+        return ResponseEntity.ok(categorias);
     }
 
     @PutMapping("/{id}")
