@@ -1,58 +1,667 @@
-Agora vamos fazer um CRUD do Objeto comissão de motorista na estrutura bem definida do projeto java
-Vamos ter os seguinte atributos:
-    
-Campos Principais
-Identificação e Relacionamento:
+Estratégia de Implementação - Módulo de Manutenção
+Fase 1: Entidades Core (Semana 1)
+1.1 TipoManutencao (Enum/Tabela)
 
-id - INT (auto-increment, primary key)
-motorista_id - INT (foreign key, NOT NULL)
-viagem_id - INT (foreign key, nullable)
+Preventiva
+Corretiva
+Preditiva
+Revisão Programada
 
-Valores Financeiros:
+1.2 OrdemServico (Entidade Principal)
+- ID, numeroOS
+- veiculo_id (FK)
+- motorista_id (FK - opcional, quem detectou o problema)
+- tipo_manutencao
+- km_veiculo (odômetro no momento)
+- data_abertura, data_prevista, data_conclusao
+- status (ABERTA, EM_ANDAMENTO, AGUARDANDO_PECAS, CONCLUIDA, CANCELADA)
+- descricao_problema
+- diagnostico
+- valor_total
+- observacoes
+1.3 ItemManutencao (Serviços/Peças)
+- ID
+- ordem_servico_id (FK)
+- tipo (SERVICO ou PECA)
+- descricao
+- quantidade
+- valor_unitario
+- valor_total
+- fornecedor_id (FK - já existe no seu sistema de contas)
 
-valor_corrida - DECIMAL(10,2)
-percentual_comissao - DECIMAL(5,2)
-valor_comissao - DECIMAL(10,2)
-valor_liquido_motorista - DECIMAL(10,2)
-descontos - DECIMAL(10,2) (default: 0.00)
+Fase 2: Gestão de Peças (Semana 2)
+2.1 Peca (Catálogo)
+- ID
+- codigo
+- descricao
+- categoria (Pneu, Filtro, Óleo, etc.)
+- estoque_minimo
+- estoque_atual
+- valor_medio
+- aplicacao_veiculos (quais modelos usam)
+2.2 MovimentacaoEstoque
+- ID
+- peca_id (FK)
+- ordem_servico_id (FK - opcional)
+- tipo_movimentacao (ENTRADA, SAIDA, AJUSTE)
+- quantidade
+- data_movimentacao
+- valor_unitario
 
-Datas e Período:
+Fase 3: Integrações & Regras (Semana 3)
+3.1 Integração com Abastecimento
 
-data_corrida - DATE
-data_calculo - DATETIME
-data_pagamento - DATE (nullable)
-periodo_referencia - VARCHAR(7) (formato: YYYY-MM)
+Ao registrar abastecimento, verificar km e alertar se está próximo de manutenção preventiva
 
-Status e Controle:
+3.2 Integração com Viagem
 
-status - ENUM('pendente', 'calculada', 'paga', 'cancelada')
-tipo_comissao - ENUM('por_viagem', 'mensal', 'por_km')
-forma_pagamento - VARCHAR(50) (nullable)
+Ao criar viagem, validar se veículo tem manutenção pendente
+Bloquear viagem se manutenção crítica
 
-Informações Complementares:
+3.3 Integração com Contas a Pagar
 
-quilometragem - DECIMAL(10,2) (nullable)
-observacoes - TEXT (nullable)
-usuario_registro_id - INT (foreign key)
-created_at - TIMESTAMP (default: CURRENT_TIMESTAMP)
-updated_at - TIMESTAMP (default: CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)
+Gerar conta a pagar automaticamente ao concluir OS
+Vincular despesa à categoria "Manutenção" e ao veículo
 
-Campos Opcionais
+3.4 Regras de Negócio
+java// Alerta de manutenção preventiva
+if (km_atual - km_ultima_revisao >= 10000) {
+    gerar_alerta("Revisão preventiva necessária");
+}
 
-bonificacoes - DECIMAL(10,2) (default: 0.00)
-penalidades - DECIMAL(10,2) (default: 0.00)
-taxa_plataforma - DECIMAL(10,2) (default: 0.00)
-origem - VARCHAR(255) (nullable)
-destino - VARCHAR(255) (nullable)
-numero_nota_fiscal - VARCHAR(50) (nullable)
+// Controle de pneus
+if (km_pneus >= 80000) {
+    gerar_alerta("Trocar pneus");
+}
 
-	
-	private Cliente cliente //Obrigatorio
-	
+Dicas Importantes
+Reaproveite o que já existe:
 
-o metodo GetMapping ter somente esses:
-Um para buscar todos as comissoes com paginação
-Um para buscar a Comissao pelo id
-Um para buscar a Comissao pelo Cliente
+Fornecedor (contas a pagar)
+FormaPagamento (contas a pagar)
+Veículo (já tem km, modelo, etc.)
+Motorista (pode reportar problemas)
 
-Criar toda a infra necessaria, desde o modelo ate o rest baseado na operação Product
+Campos calculados úteis:
+sql-- Custo por km de manutenção
+valor_total_manutencoes / km_total_rodado
+
+-- Tempo médio de reparo
+AVG(data_conclusao - data_abertura)
+
+================================================================================
+DOCUMENTAÇÃO PARA IMPLEMENTAÇÃO FRONT-END
+================================================================================
+
+ENUMS DISPONÍVEIS
+-----------------
+
+TipoManutencao:
+- PREVENTIVA
+- CORRETIVA
+- PREDITIVA
+- REVISAO_PROGRAMADA
+
+StatusOrdemServico:
+- ABERTA
+- EM_ANDAMENTO
+- AGUARDANDO_PECAS
+- CONCLUIDA
+- CANCELADA
+
+TipoItemManutencao:
+- SERVICO
+- PECA
+
+TipoMovimentacaoEstoque:
+- ENTRADA
+- SAIDA
+- AJUSTE
+
+TipoAlerta:
+- REVISAO_PREVENTIVA
+- TROCA_PNEUS
+- TROCA_OLEO
+- MANUTENCAO_PENDENTE
+- MANUTENCAO_CRITICA
+- ESTOQUE_BAIXO
+- ORDEM_SERVICO_ATRASADA
+
+PrioridadeAlerta:
+- BAIXA
+- MEDIA
+- ALTA
+- CRITICA
+
+================================================================================
+ESTRUTURA DOS DTOs (MODELOS DE DADOS)
+================================================================================
+
+OrdemServicoDTO:
+- id: Long
+- numeroOs: String (obrigatório, max 50 chars)
+- veiculoId: Long (obrigatório)
+- veiculoPlaca: String
+- motoristaId: Long (opcional)
+- motoristaNome: String
+- tipoManutencao: TipoManutencao (obrigatório)
+- kmVeiculo: Integer
+- dataAbertura: LocalDate (obrigatório)
+- dataPrevista: LocalDate
+- dataConclusao: LocalDate
+- status: StatusOrdemServico (obrigatório)
+- descricaoProblema: String (max 5000 chars)
+- diagnostico: String (max 5000 chars)
+- valorTotal: BigDecimal
+- observacoes: String (max 5000 chars)
+- itens: List<ItemManutencaoDTO>
+
+ItemManutencaoDTO:
+- id: Long
+- ordemServicoId: Long
+- tipo: TipoItemManutencao (obrigatório - SERVICO ou PECA)
+- descricao: String (obrigatório, max 500 chars)
+- quantidade: Integer (obrigatório, min 1)
+- valorUnitario: BigDecimal (obrigatório, min 0.01)
+- valorTotal: BigDecimal (calculado automaticamente)
+- fornecedorId: Long
+- fornecedorNome: String
+
+PecaDTO:
+- id: Long
+- codigo: String (obrigatório, max 50 chars)
+- descricao: String (obrigatório, max 500 chars)
+- categoria: String (obrigatório, max 100 chars)
+- estoqueMinimo: Integer (obrigatório, min 0)
+- estoqueAtual: Integer
+- valorMedio: BigDecimal (min 0.00)
+- aplicacaoVeiculos: String (max 5000 chars)
+- status: Boolean
+- observacoes: String (max 5000 chars)
+- estoqueBaixo: Boolean (calculado)
+
+MovimentacaoEstoqueDTO:
+- id: Long
+- pecaId: Long (obrigatório)
+- pecaCodigo: String
+- pecaDescricao: String
+- ordemServicoId: Long (opcional)
+- ordemServicoNumero: String
+- tipoMovimentacao: TipoMovimentacaoEstoque (obrigatório)
+- quantidade: Integer (obrigatório, min 1)
+- dataMovimentacao: LocalDateTime (obrigatório)
+- valorUnitario: BigDecimal (min 0.00)
+- observacao: String (max 5000 chars)
+- usuario: String (max 100 chars)
+
+AlertaManutencaoDTO:
+- id: Long
+- tipoAlerta: TipoAlerta (obrigatório)
+- prioridade: PrioridadeAlerta (obrigatório)
+- veiculoId: Long (obrigatório)
+- veiculoPlaca: String
+- ordemServicoId: Long
+- ordemServicoNumero: String
+- pecaId: Long
+- pecaCodigo: String
+- titulo: String (obrigatório, max 200 chars)
+- mensagem: String (obrigatório, max 5000 chars)
+- kmVeiculo: Integer
+- dataGeracao: LocalDateTime
+- dataLeitura: LocalDateTime
+- lido: Boolean
+- resolvido: Boolean
+- dataResolucao: LocalDateTime
+- observacaoResolucao: String
+
+================================================================================
+ENDPOINTS DA API
+================================================================================
+
+BASE URL: /api (ajuste conforme sua configuração)
+
+----- ORDENS DE SERVIÇO (/ordem-servico) -----
+
+POST /ordem-servico
+- Criar nova ordem de serviço
+- Body: OrdemServicoDTO
+- Response: OrdemServicoDTO (201 Created)
+
+GET /ordem-servico?page=0&size=20&sortBy=id&direction=DESC
+- Listar todas as ordens de serviço (paginado)
+- Response: Page<OrdemServicoDTO>
+
+GET /ordem-servico/{id}
+- Buscar ordem de serviço por ID
+- Response: OrdemServicoDTO
+
+GET /ordem-servico/numero/{numeroOs}
+- Buscar ordem de serviço por número
+- Response: OrdemServicoDTO
+
+GET /ordem-servico/status/{status}?page=0&size=20
+- Buscar ordens por status (ABERTA, EM_ANDAMENTO, etc.)
+- Response: Page<OrdemServicoDTO>
+
+GET /ordem-servico/veiculo/{veiculoId}?page=0&size=20
+- Buscar ordens de um veículo específico
+- Response: Page<OrdemServicoDTO>
+
+GET /ordem-servico/atrasadas
+- Listar ordens de serviço atrasadas
+- Response: List<OrdemServicoDTO>
+
+PUT /ordem-servico/{id}
+- Atualizar ordem de serviço
+- Body: OrdemServicoDTO
+- Response: OrdemServicoDTO
+
+PATCH /ordem-servico/{id}/concluir?diagnostico=texto
+- Concluir ordem de serviço
+- Response: OrdemServicoDTO
+
+DELETE /ordem-servico/{id}
+- Deletar ordem de serviço
+- Response: 204 No Content
+
+----- PEÇAS (/peca) -----
+
+POST /peca
+- Criar nova peça
+- Body: PecaDTO
+- Response: PecaDTO (201 Created)
+
+GET /peca?page=0&size=20&sortBy=descricao&direction=ASC
+- Listar todas as peças (paginado)
+- Response: Page<PecaDTO>
+
+GET /peca/{id}
+- Buscar peça por ID
+- Response: PecaDTO
+
+GET /peca/codigo/{codigo}
+- Buscar peça por código
+- Response: PecaDTO
+
+GET /peca/categoria/{categoria}?page=0&size=20
+- Buscar peças por categoria
+- Response: Page<PecaDTO>
+
+GET /peca/estoque-baixo
+- Listar peças com estoque baixo
+- Response: List<PecaDTO>
+
+GET /peca/categorias
+- Listar todas as categorias de peças
+- Response: List<String>
+
+GET /peca/buscar?descricao=texto&page=0&size=20
+- Buscar peças por descrição
+- Response: Page<PecaDTO>
+
+PUT /peca/{id}
+- Atualizar peça
+- Body: PecaDTO
+- Response: PecaDTO
+
+DELETE /peca/{id}
+- Deletar peça
+- Response: 204 No Content
+
+----- MOVIMENTAÇÃO DE ESTOQUE (/movimentacao-estoque) -----
+
+POST /movimentacao-estoque
+- Criar nova movimentação
+- Body: MovimentacaoEstoqueDTO
+- Response: MovimentacaoEstoqueDTO (201 Created)
+
+GET /movimentacao-estoque?page=0&size=20&sortBy=dataMovimentacao&direction=DESC
+- Listar todas as movimentações (paginado)
+- Response: Page<MovimentacaoEstoqueDTO>
+
+GET /movimentacao-estoque/{id}
+- Buscar movimentação por ID
+- Response: MovimentacaoEstoqueDTO
+
+GET /movimentacao-estoque/peca/{pecaId}?page=0&size=20
+- Buscar movimentações de uma peça específica
+- Response: Page<MovimentacaoEstoqueDTO>
+
+GET /movimentacao-estoque/ordem-servico/{ordemServicoId}
+- Buscar movimentações de uma ordem de serviço
+- Response: List<MovimentacaoEstoqueDTO>
+
+GET /movimentacao-estoque/tipo/{tipo}?page=0&size=20
+- Buscar movimentações por tipo (ENTRADA, SAIDA, AJUSTE)
+- Response: Page<MovimentacaoEstoqueDTO>
+
+DELETE /movimentacao-estoque/{id}
+- Deletar movimentação (somente AJUSTE)
+- Response: 204 No Content
+
+----- ALERTAS DE MANUTENÇÃO (/alerta-manutencao) -----
+
+POST /alerta-manutencao
+- Criar novo alerta
+- Body: AlertaManutencaoDTO
+- Response: AlertaManutencaoDTO (201 Created)
+
+GET /alerta-manutencao?page=0&size=20&sortBy=dataGeracao&direction=DESC
+- Listar todos os alertas (paginado)
+- Response: Page<AlertaManutencaoDTO>
+
+GET /alerta-manutencao/{id}
+- Buscar alerta por ID
+- Response: AlertaManutencaoDTO
+
+GET /alerta-manutencao/nao-lidos
+- Listar alertas não lidos e não resolvidos
+- Response: List<AlertaManutencaoDTO>
+
+GET /alerta-manutencao/veiculo/{veiculoId}/nao-resolvidos
+- Listar alertas não resolvidos de um veículo
+- Response: List<AlertaManutencaoDTO>
+
+GET /alerta-manutencao/criticos
+- Listar alertas críticos não resolvidos
+- Response: List<AlertaManutencaoDTO>
+
+PATCH /alerta-manutencao/{id}/marcar-lido
+- Marcar alerta como lido
+- Response: AlertaManutencaoDTO
+
+PATCH /alerta-manutencao/{id}/marcar-resolvido?observacao=texto
+- Marcar alerta como resolvido
+- Response: AlertaManutencaoDTO
+
+POST /alerta-manutencao/verificar-abastecimento?veiculoId=1&kmAtual=50000
+- Verificar necessidade de manutenção ao abastecer
+- Response: 200 OK
+
+POST /alerta-manutencao/verificar-estoque
+- Verificar peças com estoque baixo
+- Response: 200 OK
+
+GET /alerta-manutencao/validar-veiculo-viagem/{veiculoId}
+- Validar se veículo pode realizar viagem
+- Response: Boolean
+
+DELETE /alerta-manutencao/{id}
+- Deletar alerta
+- Response: 204 No Content
+
+----- ITENS DE MANUTENÇÃO (/item-manutencao) -----
+
+POST /item-manutencao
+- Criar novo item
+- Body: ItemManutencaoDTO
+- Response: ItemManutencaoDTO (201 Created)
+
+GET /item-manutencao?page=0&size=20&sortBy=id&direction=DESC
+- Listar todos os itens (paginado)
+- Response: Page<ItemManutencaoDTO>
+
+GET /item-manutencao/{id}
+- Buscar item por ID
+- Response: ItemManutencaoDTO
+
+GET /item-manutencao/ordem-servico/{ordemServicoId}
+- Buscar itens de uma ordem de serviço
+- Response: List<ItemManutencaoDTO>
+
+GET /item-manutencao/tipo/{tipo}?page=0&size=20
+- Buscar itens por tipo (SERVICO ou PECA)
+- Response: Page<ItemManutencaoDTO>
+
+PUT /item-manutencao/{id}
+- Atualizar item
+- Body: ItemManutencaoDTO
+- Response: ItemManutencaoDTO
+
+DELETE /item-manutencao/{id}
+- Deletar item
+- Response: 204 No Content
+
+================================================================================
+TELAS A IMPLEMENTAR
+================================================================================
+
+1. DASHBOARD DE MANUTENÇÃO
+   - Cards com indicadores principais:
+     * Total de OS abertas
+     * OS em andamento
+     * OS atrasadas
+     * Alertas críticos não resolvidos
+     * Peças com estoque baixo
+   - Gráfico de OS por status
+   - Gráfico de custos de manutenção por período
+   - Lista de próximas manutenções preventivas
+
+2. ORDENS DE SERVIÇO
+   - Listagem de OS com filtros:
+     * Por status
+     * Por veículo
+     * Por tipo de manutenção
+     * Por período
+   - Formulário de criação/edição de OS:
+     * Seleção de veículo (autocomplete)
+     * Seleção de motorista (opcional)
+     * Tipo de manutenção (select)
+     * KM do veículo
+     * Datas (abertura, prevista, conclusão)
+     * Status
+     * Descrição do problema (textarea)
+     * Diagnóstico (textarea)
+     * Observações (textarea)
+     * Adição de itens (serviços e peças):
+       - Tipo (SERVICO ou PECA)
+       - Descrição
+       - Quantidade
+       - Valor unitário
+       - Fornecedor (opcional)
+       - Cálculo automático do valor total do item
+     * Cálculo automático do valor total da OS
+   - Visualização detalhada de OS:
+     * Informações da OS
+     * Lista de itens
+     * Histórico de status
+     * Botão "Concluir OS"
+   - Listagem de OS atrasadas (destaque visual)
+
+3. PEÇAS E ESTOQUE
+   - Listagem de peças com filtros:
+     * Por categoria
+     * Por descrição (busca)
+     * Estoque baixo (toggle)
+   - Cards indicadores:
+     * Total de peças cadastradas
+     * Peças com estoque baixo
+     * Valor total do estoque
+   - Formulário de criação/edição de peça:
+     * Código
+     * Descrição
+     * Categoria (autocomplete com categorias existentes)
+     * Estoque mínimo
+     * Estoque atual
+     * Valor médio
+     * Aplicação em veículos
+     * Status (ativo/inativo)
+     * Observações
+   - Indicador visual de estoque baixo
+   - Histórico de movimentações por peça
+
+4. MOVIMENTAÇÃO DE ESTOQUE
+   - Listagem de movimentações com filtros:
+     * Por tipo (ENTRADA, SAIDA, AJUSTE)
+     * Por peça
+     * Por período
+     * Por ordem de serviço
+   - Formulário de entrada/saída/ajuste:
+     * Seleção de peça (autocomplete)
+     * Tipo de movimentação (select)
+     * Quantidade
+     * Valor unitário
+     * Ordem de serviço (opcional, para SAIDA)
+     * Observação
+     * Usuário (preenchido automaticamente)
+   - Exibição do estoque atual após movimentação
+
+5. ALERTAS DE MANUTENÇÃO
+   - Badge com contador de alertas não lidos (sempre visível)
+   - Painel de notificações:
+     * Alertas não lidos (destaque)
+     * Filtro por prioridade
+     * Filtro por tipo
+     * Ações: marcar como lido, marcar como resolvido
+   - Listagem de alertas com filtros:
+     * Por tipo
+     * Por prioridade
+     * Por veículo
+     * Resolvidos/não resolvidos
+   - Cores diferentes por prioridade:
+     * BAIXA: azul
+     * MEDIA: amarelo
+     * ALTA: laranja
+     * CRITICA: vermelho
+   - Formulário para resolver alerta:
+     * Observação de resolução
+     * Data automática
+
+6. RELATÓRIOS
+   - Relatório de custos por veículo:
+     * Filtro por período
+     * Agrupamento por veículo
+     * Total de OS por veículo
+     * Valor total gasto
+     * Custo por KM
+   - Relatório de manutenções realizadas:
+     * Filtro por período
+     * Filtro por tipo de manutenção
+     * Filtro por veículo
+     * Exportação para PDF/Excel
+   - Relatório de peças mais utilizadas:
+     * Ranking de peças
+     * Quantidade consumida
+     * Valor total
+   - Relatório de tempo médio de reparo:
+     * Por tipo de manutenção
+     * Por veículo
+
+================================================================================
+FLUXOS DE INTEGRAÇÃO
+================================================================================
+
+1. INTEGRAÇÃO COM ABASTECIMENTO
+   - Ao registrar abastecimento:
+     * Chamar: POST /alerta-manutencao/verificar-abastecimento
+     * Parâmetros: veiculoId, kmAtual
+     * Verificar se retornou alertas novos
+     * Exibir badge de notificação se houver alertas
+
+2. INTEGRAÇÃO COM VIAGEM
+   - Ao criar viagem:
+     * Chamar: GET /alerta-manutencao/validar-veiculo-viagem/{veiculoId}
+     * Se retornar false:
+       - Bloquear criação da viagem
+       - Exibir mensagem: "Veículo com manutenção crítica pendente"
+       - Listar alertas críticos do veículo
+
+3. INTEGRAÇÃO COM CONTAS A PAGAR
+   - Ao concluir OS:
+     * Gerar automaticamente conta a pagar
+     * Vincular à categoria "Manutenção"
+     * Vincular ao veículo
+     * Valor = valorTotal da OS
+     * Fornecedores dos itens como opções de pagamento
+
+4. ALERTAS AUTOMÁTICOS
+   - Verificação periódica (job/cron no backend):
+     * Revisão preventiva (a cada 10.000 km)
+     * Troca de pneus (80.000 km)
+     * Estoque baixo de peças
+     * OS atrasadas
+   - Front-end deve:
+     * Consultar alertas não lidos ao iniciar sessão
+     * Atualizar contador de alertas periodicamente (polling ou WebSocket)
+
+5. MOVIMENTAÇÃO AUTOMÁTICA DE ESTOQUE
+   - Ao adicionar item tipo PECA em OS:
+     * Verificar estoque disponível
+     * Ao concluir OS:
+       - Criar automaticamente MovimentacaoEstoque tipo SAIDA
+       - Atualizar estoque da peça
+       - Vincular à OS
+
+================================================================================
+FUNCIONALIDADES ESPECIAIS
+================================================================================
+
+1. GERAÇÃO AUTOMÁTICA DE NÚMERO DE OS
+   - Formato sugerido: OS-YYYY-NNNN
+   - Exemplo: OS-2024-0001
+   - Sequencial por ano
+
+2. VALIDAÇÕES NO FRONT-END
+   - Não permitir concluir OS sem itens
+   - Não permitir adicionar peça sem estoque suficiente
+   - Validar datas (data conclusão >= data abertura)
+   - Validar valores (não negativos)
+
+3. CÁLCULOS AUTOMÁTICOS
+   - Valor total do item = quantidade × valorUnitario
+   - Valor total da OS = soma dos valores totais dos itens
+   - Estoque baixo = estoqueAtual < estoqueMinimo
+
+4. INDICADORES VISUAIS
+   - Cores por status de OS:
+     * ABERTA: azul
+     * EM_ANDAMENTO: amarelo
+     * AGUARDANDO_PECAS: laranja
+     * CONCLUIDA: verde
+     * CANCELADA: cinza
+   - Badge de "ATRASADA" em OS com dataPrevista < hoje e status != CONCLUIDA
+   - Badge de "ESTOQUE BAIXO" em peças
+
+5. BUSCA E FILTROS
+   - Autocomplete para seleção de:
+     * Veículos (por placa)
+     * Peças (por código ou descrição)
+     * Motoristas (por nome)
+     * Fornecedores (por nome)
+   - Filtros combinados (múltiplos filtros simultaneamente)
+   - Paginação em todas as listagens
+
+6. EXPORTAÇÃO
+   - Exportar listagens para CSV/Excel
+   - Exportar relatórios para PDF
+   - Imprimir OS (formato de ordem de serviço oficial)
+
+================================================================================
+SUGESTÕES DE COMPONENTIZAÇÃO
+================================================================================
+
+Componentes Reutilizáveis:
+- StatusBadge (status de OS com cores)
+- PriorityBadge (prioridade de alertas com cores)
+- VehicleSelect (autocomplete de veículos)
+- PartSelect (autocomplete de peças)
+- DateRangePicker (seleção de período)
+- DataTable (tabela paginada com filtros)
+- FormCard (card para formulários)
+- StatCard (card de indicadores)
+- AlertNotification (notificação de alertas)
+- ItemManutencaoForm (formulário de itens)
+
+================================================================================
+OBSERVAÇÕES IMPORTANTES
+================================================================================
+
+1. Todas as respostas da API seguem o padrão REST
+2. Erros retornam status HTTP apropriados (400, 404, 500, etc.)
+3. Validações são feitas no backend (Bean Validation)
+4. Paginação usa o padrão Spring Data (Page<T>)
+5. Datas no formato ISO-8601 (yyyy-MM-dd ou yyyy-MM-dd'T'HH:mm:ss)
+6. Valores monetários em BigDecimal (precisão de 2 casas decimais)
+7. A API possui documentação Swagger/OpenAPI acessível em /swagger-ui.html
+
+================================================================================

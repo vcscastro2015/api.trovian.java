@@ -1,0 +1,11 @@
+package com.trovian.enums;
+
+public enum TipoAlerta {
+    REVISAO_PREVENTIVA,
+    TROCA_PNEUS,
+    TROCA_OLEO,
+    MANUTENCAO_PENDENTE,
+    MANUTENCAO_CRITICA,
+    ESTOQUE_BAIXO,
+    ORDEM_SERVICO_ATRASADA
+}
