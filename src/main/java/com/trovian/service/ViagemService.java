@@ -32,6 +32,7 @@ public class ViagemService {
     private final ClienteRepository clienteRepository;
     private final ConsumoDetalhadoRepository consumoDetalhadoRepository;
     private final ComissaoMotoristaService comissaoMotoristaService;
+    private final ChecklistRealizadoService checklistRealizadoService;
 
     /**
      * Busca todas as viagens com paginação
@@ -178,6 +179,15 @@ public class ViagemService {
     @Transactional
     public ViagemDTO create(ViagemDTO dto) {
         log.info("Criando nova viagem");
+
+        // Validação de Checklist Obrigatório
+        if (dto.getVeiculoId() != null) {
+            boolean temChecklistAprovado = checklistRealizadoService.verificarChecklistObrigatorio(dto.getVeiculoId());
+            if (!temChecklistAprovado) {
+                throw new RuntimeException("Checklist obrigatório não realizado ou reprovado. Realize o checklist antes de iniciar a viagem.");
+            }
+            log.info("Checklist obrigatório validado com sucesso para o veículo ID: {}", dto.getVeiculoId());
+        }
 
         // Recalcula para garantir valores corretos
         ViagemDTO calculado = calcular(dto);

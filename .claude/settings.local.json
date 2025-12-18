@@ -3,7 +3,8 @@
     "allow": [
       "Bash(mvn clean compile:*)",
       "Bash(mvn compile:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(javac:*)"
     ],
     "deny": [],
     "ask": []
