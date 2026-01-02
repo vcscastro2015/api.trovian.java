@@ -94,6 +94,15 @@ public class MotoristaDTO {
     @Size(max = 2, message = "UF deve ter no máximo 2 caracteres")
     private String uf;
 
+    @Schema(description = "Liberar abastecimento via WhatsApp", example = "true")
+    private Boolean liberarAbastecimentoWpp;
+
+    @Schema(description = "Liberar checklist via WhatsApp", example = "true")
+    private Boolean liberarCheckListWpp;
+
+    @Schema(description = "Liberar documentos via WhatsApp", example = "true")
+    private Boolean liberarDocumentosWpp;
+
     @Schema(description = "ID do cliente ao qual o motorista pertence", example = "1", required = true)
     @NotNull(message = "Cliente é obrigatório")
     private Long clienteId;
