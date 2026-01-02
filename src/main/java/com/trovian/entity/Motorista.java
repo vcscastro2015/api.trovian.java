@@ -100,6 +100,15 @@ public class Motorista {
     @Size(max = 2, message = "UF deve ter no máximo 2 caracteres")
     private String uf;
 
+    @Column(name = "liberar_abastecimento_wpp")
+    private Boolean liberarAbastecimentoWpp;
+
+    @Column(name = "liberar_check_list_wpp")
+    private Boolean liberarCheckListWpp;
+
+    @Column(name = "liberar_documentos_wpp")
+    private Boolean liberarDocumentosWpp;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cliente_id", nullable = false)
     @NotNull(message = "Cliente é obrigatório")

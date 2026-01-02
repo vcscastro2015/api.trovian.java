@@ -124,6 +124,9 @@ public class MotoristaService {
         motorista.setComplemento(dto.getComplemento());
         motorista.setCidade(dto.getCidade());
         motorista.setUf(dto.getUf());
+        motorista.setLiberarAbastecimentoWpp(dto.getLiberarAbastecimentoWpp());
+        motorista.setLiberarCheckListWpp(dto.getLiberarCheckListWpp());
+        motorista.setLiberarDocumentosWpp(dto.getLiberarDocumentosWpp());
         motorista.setCliente(cliente);
 
         Motorista updatedMotorista = motoristaRepository.save(motorista);
@@ -176,6 +179,9 @@ public class MotoristaService {
         dto.setComplemento(motorista.getComplemento());
         dto.setCidade(motorista.getCidade());
         dto.setUf(motorista.getUf());
+        dto.setLiberarAbastecimentoWpp(motorista.getLiberarAbastecimentoWpp());
+        dto.setLiberarCheckListWpp(motorista.getLiberarCheckListWpp());
+        dto.setLiberarDocumentosWpp(motorista.getLiberarDocumentosWpp());
         dto.setClienteId(motorista.getCliente().getId());
         dto.setClienteNome(motorista.getCliente().getNome());
         dto.setDataCadastro(motorista.getDataCadastro());
@@ -209,6 +215,9 @@ public class MotoristaService {
         motorista.setComplemento(dto.getComplemento());
         motorista.setCidade(dto.getCidade());
         motorista.setUf(dto.getUf());
+        motorista.setLiberarAbastecimentoWpp(dto.getLiberarAbastecimentoWpp());
+        motorista.setLiberarCheckListWpp(dto.getLiberarCheckListWpp());
+        motorista.setLiberarDocumentosWpp(dto.getLiberarDocumentosWpp());
         return motorista;
     }
 }
