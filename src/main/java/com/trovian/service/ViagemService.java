@@ -104,6 +104,20 @@ public class ViagemService {
     }
 
     /**
+     * Busca viagens por status da viagem (ABERTA, ANALISE, FECHADA) com paginação
+     *
+     * @param statusViagem Status da viagem
+     * @param pageable     Configuração de paginação
+     * @return Página de viagens
+     */
+    @Transactional(readOnly = true)
+    public Page<ViagemDTO> findByStatusViagem(com.trovian.enums.StatusViagem statusViagem, Pageable pageable) {
+        log.info("Buscando viagens com status {} com paginação: {}", statusViagem, pageable);
+        Page<Viagem> viagens = viagemRepository.findByStatusViagem(statusViagem, pageable);
+        return viagens.map(this::toDTO);
+    }
+
+    /**
      * CALCULA a viagem SEM SALVAR no banco
      * Usado quando usuário clica em "Calcular" no front
      *
@@ -179,15 +193,6 @@ public class ViagemService {
     @Transactional
     public ViagemDTO create(ViagemDTO dto) {
         log.info("Criando nova viagem");
-
-        // Validação de Checklist Obrigatório
-        if (dto.getVeiculoId() != null) {
-            boolean temChecklistAprovado = checklistRealizadoService.verificarChecklistObrigatorio(dto.getVeiculoId());
-            if (!temChecklistAprovado) {
-                throw new RuntimeException("Checklist obrigatório não realizado ou reprovado. Realize o checklist antes de iniciar a viagem.");
-            }
-            log.info("Checklist obrigatório validado com sucesso para o veículo ID: {}", dto.getVeiculoId());
-        }
 
         // Recalcula para garantir valores corretos
         ViagemDTO calculado = calcular(dto);
@@ -511,6 +516,7 @@ public class ViagemService {
 
         dto.setDataViagem(viagem.getDataViagem());
         dto.setStatus(viagem.getStatus());
+        dto.setStatusViagem(viagem.getStatusViagem());
 
         // Dados da ida
         dto.setQuantidadeToneladasIda(viagem.getQuantidadeToneladasIda());
@@ -596,6 +602,7 @@ public class ViagemService {
 
         viagem.setDataViagem(dto.getDataViagem());
         viagem.setStatus(dto.getStatus());
+        viagem.setStatusViagem(dto.getStatusViagem());
 
         // Dados da ida
         viagem.setQuantidadeToneladasIda(dto.getQuantidadeToneladasIda());
@@ -683,6 +690,7 @@ public class ViagemService {
 
         viagem.setDataViagem(dto.getDataViagem());
         viagem.setStatus(dto.getStatus());
+        viagem.setStatusViagem(dto.getStatusViagem());
 
         // Dados da ida
         viagem.setQuantidadeToneladasIda(dto.getQuantidadeToneladasIda());

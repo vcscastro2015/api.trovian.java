@@ -1,6 +1,7 @@
 package com.trovian.controller;
 
 import com.trovian.dto.ViagemDTO;
+import com.trovian.enums.StatusViagem;
 import com.trovian.service.ViagemService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -126,6 +127,28 @@ public class ViagemController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
 
         Page<ViagemDTO> viagens = viagemService.findByCliente(clienteId, pageable);
+        return ResponseEntity.ok(viagens);
+    }
+
+    /**
+     * Busca viagens por status da viagem (ABERTA, ANALISE, FECHADA)
+     */
+    @GetMapping("/status-viagem/{statusViagem}")
+    @Operation(summary = "Busca viagens por status da viagem", description = "Retorna lista paginada de viagens por status (ABERTA, ANALISE, FECHADA)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de viagens retornada com sucesso")
+    })
+    public ResponseEntity<Page<ViagemDTO>> findByStatusViagem(
+            @Parameter(description = "Status da viagem (ABERTA, ANALISE, FECHADA)") @PathVariable StatusViagem statusViagem,
+            @Parameter(description = "Número da página (inicia em 0)") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Tamanho da página") @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Campo para ordenação") @RequestParam(defaultValue = "id") String sortBy,
+            @Parameter(description = "Direção da ordenação (ASC ou DESC)") @RequestParam(defaultValue = "ASC") String direction) {
+
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+
+        Page<ViagemDTO> viagens = viagemService.findByStatusViagem(statusViagem, pageable);
         return ResponseEntity.ok(viagens);
     }
 

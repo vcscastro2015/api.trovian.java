@@ -1,5 +1,6 @@
 package com.trovian.dto;
 
+import com.trovian.enums.StatusViagem;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -79,6 +80,10 @@ public class ViagemDTO {
     @Schema(description = "Status da viagem", example = "true", required = true)
     @NotNull(message = "Status é obrigatório")
     private Boolean status = true;
+
+    @Schema(description = "Status da viagem (ABERTA, ANALISE, FECHADA)", example = "ABERTA", required = true)
+    @NotNull(message = "Status da viagem é obrigatório")
+    private StatusViagem statusViagem = StatusViagem.ABERTA;
 
     // ==================== DADOS DA IDA ====================
 
