@@ -1,6 +1,7 @@
 package com.trovian.repository;
 
 import com.trovian.entity.Viagem;
+import com.trovian.enums.StatusViagem;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,7 +11,7 @@ import org.springframework.stereotype.Repository;
  * Repository para operações de banco de dados de Viagem
  */
 @Repository
-public interface ViagemRepository extends JpaRepository<Viagem, Long> {
+public interface ViagemRepository extends JpaRepository<Viagem, Long>, ViagemRepositoryCustom {
 
     /**
      * Busca viagens por veículo com paginação
@@ -47,4 +48,13 @@ public interface ViagemRepository extends JpaRepository<Viagem, Long> {
      * @return Página de viagens
      */
     Page<Viagem> findByClienteId(Long clienteId, Pageable pageable);
+
+    /**
+     * Busca viagens por status da viagem (ABERTA, ANALISE, FECHADA) com paginação
+     *
+     * @param statusViagem Status da viagem
+     * @param pageable     Configuração de paginação
+     * @return Página de viagens
+     */
+    Page<Viagem> findByStatusViagem(StatusViagem statusViagem, Pageable pageable);
 }

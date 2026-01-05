@@ -1,5 +1,6 @@
 package com.trovian.entity;
 
+import com.trovian.enums.StatusViagem;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -72,6 +73,11 @@ public class Viagem {
     @NotNull(message = "Status é obrigatório")
     @Column(name = "status", nullable = false)
     private Boolean status = true;
+
+    @NotNull(message = "Status da viagem é obrigatório")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status_viagem", nullable = false, length = 20)
+    private StatusViagem statusViagem = StatusViagem.ABERTA;
 
     // ==================== DADOS DA IDA ====================
 
@@ -174,6 +180,9 @@ public class Viagem {
         this.updatedAt = LocalDateTime.now();
         if (this.status == null) {
             this.status = true;
+        }
+        if (this.statusViagem == null) {
+            this.statusViagem = StatusViagem.ABERTA;
         }
     }
 

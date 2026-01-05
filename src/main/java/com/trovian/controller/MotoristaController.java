@@ -43,7 +43,12 @@ public class MotoristaController {
             @Parameter(description = "Direção da ordenação (ASC ou DESC)") @RequestParam(defaultValue = "ASC") String direction) {
 
         Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+
+        // Suporta múltiplos campos separados por vírgula
+        String[] sortFields = sortBy.split(",");
+        Sort sort = Sort.by(sortDirection, sortFields);
+
+        Pageable pageable = PageRequest.of(page, size, sort);
 
         Page<MotoristaDTO> motoristas = motoristaService.findAll(pageable);
         return ResponseEntity.ok(motoristas);
@@ -80,7 +85,12 @@ public class MotoristaController {
             @Parameter(description = "Direção da ordenação (ASC ou DESC)") @RequestParam(defaultValue = "ASC") String direction) {
 
         Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+
+        // Suporta múltiplos campos separados por vírgula
+        String[] sortFields = sortBy.split(",");
+        Sort sort = Sort.by(sortDirection, sortFields);
+
+        Pageable pageable = PageRequest.of(page, size, sort);
 
         Page<MotoristaDTO> motoristas = motoristaService.findByCliente(clienteId, pageable);
         return ResponseEntity.ok(motoristas);

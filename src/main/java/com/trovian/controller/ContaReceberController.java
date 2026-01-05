@@ -1,6 +1,7 @@
 package com.trovian.controller;
 
 import com.trovian.dto.ContaReceberDTO;
+import com.trovian.dto.DocumentoCteDTO;
 import com.trovian.service.ContaReceberService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -39,6 +40,19 @@ public class ContaReceberController {
     public ResponseEntity<ContaReceberDTO> create(@Valid @RequestBody ContaReceberDTO dto) {
         log.info("Request para criar conta a receber: {}", dto.getDescricao());
         ContaReceberDTO created = contaReceberService.create(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    @PostMapping("/processar-cte")
+    @Operation(summary = "Processar CT-e e criar conta a receber automaticamente")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "CT-e processado e conta a receber criada com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Dados do CT-e inválidos"),
+        @ApiResponse(responseCode = "500", description = "Erro ao processar CT-e")
+    })
+    public ResponseEntity<ContaReceberDTO> processarCte(@Valid @RequestBody DocumentoCteDTO cteDTO) {
+        log.info("Request para processar CT-e: {}", cteDTO.getNumero());
+        ContaReceberDTO created = contaReceberService.processarDocumentoCte(cteDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 

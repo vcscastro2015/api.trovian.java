@@ -10,4 +10,6 @@ import org.springframework.stereotype.Repository;
 public interface VeiculoRepository extends JpaRepository<Veiculo, Long> {
 
     Page<Veiculo> findByClienteId(Long clienteId, Pageable pageable);
+
+    Integer countByClienteIdAndStatusTrue(Long clienteId);
 }

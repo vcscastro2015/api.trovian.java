@@ -37,6 +37,16 @@ spring:
   jms:
     pub-sub-domain: false
 
+  # Configuração do MongoDB
+  data:
+    mongodb:
+      host: ${MONGODB_HOST:localhost}
+      port: ${MONGODB_PORT:27017}
+      database: ${MONGODB_DATABASE:troviandb}
+      username: ${MONGODB_USER:trovian}
+      password: ${MONGODB_PASSWORD:trovian123}
+      authentication-database: ${MONGODB_AUTH_DB:admin}
+
 # Configuração do servidor
 server:
   port: ${SERVER_PORT:8080}

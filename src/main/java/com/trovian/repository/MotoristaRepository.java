@@ -20,4 +20,12 @@ public interface MotoristaRepository extends JpaRepository<Motorista, Long> {
      * @return Página de motoristas
      */
     Page<Motorista> findByClienteId(Long clienteId, Pageable pageable);
+
+    /**
+     * Conta motoristas ativos por cliente
+     *
+     * @param clienteId ID do cliente
+     * @return Quantidade de motoristas ativos
+     */
+    Integer countByClienteIdAndStatusTrue(Long clienteId);
 }

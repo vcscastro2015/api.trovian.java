@@ -1,5 +1,8 @@
-Adicionar na classe motorista os seguintes atributos
-private Boolean liberarAbastecimentoWpp;
-private Boolean liberarCheckListWpp;
-private Boolean liberarDocumentosWpp;
-Com isso ajustar esse campos nos DTO's
+No metodo validarCteBasico da classe DocumentoCteListener,antes de jogar o  throw para a frente, gravar o objeto DocumentoCteDTO no mongodb.Criar a estrutura de gravação do mongodb no projeto
+Dados para acessar o mongodb:
+spring.data.mongodb.host=localhost
+spring.data.mongodb.port=27017
+spring.data.mongodb.database=troviandb
+spring.data.mongodb.username=trovian
+spring.data.mongodb.password=trovian123
+spring.data.mongodb.authentication-database=admin
