@@ -47,6 +47,23 @@ spring:
       password: ${MONGODB_PASSWORD:trovian123}
       authentication-database: ${MONGODB_AUTH_DB:admin}
 
+  security:
+    user:
+      name: ${SECURITY_USER:admin}
+      password: ${SECURITY_PASSWORD:admin123}
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${EMAIL_USERNAME:seu-email@gmail.com}
+    password: ${EMAIL_PASSWORD:sua-senha-de-app}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 # Configuração do servidor
 server:
   port: ${SERVER_PORT:8080}
@@ -71,3 +88,16 @@ management:
   endpoint:
     health:
       show-details: always
+
+# JWT Configuration
+jwt:
+  secret: TrovianSecretKeyMuitoSeguraComMinimo256BitsParaHS256AlgorithmQueDeveSerTrocadaEmProducao
+  access-token:
+    expiration: 900000
+  refresh-token:
+    expiration: 604800000
+
+# Trovian App URL
+trovian:
+  app:
+    url: ${APP_URL:http://localhost:4200}
