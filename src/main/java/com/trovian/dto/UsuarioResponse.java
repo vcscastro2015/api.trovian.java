@@ -1,0 +1,27 @@
+package com.trovian.dto;
+
+import com.trovian.entity.Role;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+import java.util.Set;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class UsuarioResponse {
+
+    private Long id;
+    private String nome;
+    private String email;
+    private String telefone;
+    private Boolean ativo;
+    private Set<Role> roles;
+    private LocalDateTime ultimoLogin;
+    private LocalDateTime criadoEm;
+    private LocalDateTime atualizadoEm;
+}

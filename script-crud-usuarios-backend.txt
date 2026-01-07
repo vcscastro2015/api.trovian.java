@@ -1,0 +1,1100 @@
+================================================================================
+SCRIPT DE IMPLEMENTAÇÃO - CRUD DE USUÁRIOS (BACKEND)
+Sistema: Trovian Backend
+Tecnologia: Spring Boot 3.x + Java 17 + PostgreSQL
+Módulo: Gerenciamento de Usuários (Admin)
+================================================================================
+
+ÍNDICE:
+1. DTOs (Data Transfer Objects)
+2. Repository (Queries Customizadas)
+3. Service (UsuarioService)
+4. Controller (UsuarioController)
+5. Validações Customizadas
+6. Instruções de Execução
+
+================================================================================
+1. DTOs (Data Transfer Objects)
+================================================================================
+
+1.1 - UsuarioCriarRequest.java
+Localização: src/main/java/com/trovian/dto/UsuarioCriarRequest.java
+--------------------------------------------------------------------------------
+
+package com.trovian.dto;
+
+import com.trovian.entity.Role;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
+import lombok.Data;
+
+import java.util.Set;
+
+@Data
+public class UsuarioCriarRequest {
+
+    @NotBlank(message = "Nome é obrigatório")
+    @Size(min = 3, max = 100, message = "Nome deve ter entre 3 e 100 caracteres")
+    private String nome;
+
+    @NotBlank(message = "Email é obrigatório")
+    @Email(message = "Email inválido")
+    private String email;
+
+    @NotBlank(message = "Senha é obrigatória")
+    @Size(min = 6, message = "Senha deve ter no mínimo 6 caracteres")
+    private String senha;
+
+    @Size(max = 20, message = "Telefone deve ter no máximo 20 caracteres")
+    private String telefone;
+
+    @NotEmpty(message = "Pelo menos uma role é obrigatória")
+    private Set<Role> roles;
+
+    private Boolean ativo = true;
+}
+
+--------------------------------------------------------------------------------
+1.2 - UsuarioAtualizarRequest.java
+Localização: src/main/java/com/trovian/dto/UsuarioAtualizarRequest.java
+--------------------------------------------------------------------------------
+
+package com.trovian.dto;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Size;
+import lombok.Data;
+
+@Data
+public class UsuarioAtualizarRequest {
+
+    @Size(min = 3, max = 100, message = "Nome deve ter entre 3 e 100 caracteres")
+    private String nome;
+
+    @Email(message = "Email inválido")
+    private String email;
+
+    @Size(max = 20, message = "Telefone deve ter no máximo 20 caracteres")
+    private String telefone;
+
+    private Boolean ativo;
+}
+
+--------------------------------------------------------------------------------
+1.3 - UsuarioTrocarSenhaRequest.java
+Localização: src/main/java/com/trovian/dto/UsuarioTrocarSenhaRequest.java
+--------------------------------------------------------------------------------
+
+package com.trovian.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.Data;
+
+@Data
+public class UsuarioTrocarSenhaRequest {
+
+    @NotBlank(message = "Senha atual é obrigatória")
+    private String senhaAtual;
+
+    @NotBlank(message = "Nova senha é obrigatória")
+    @Size(min = 6, message = "Senha deve ter no mínimo 6 caracteres")
+    private String novaSenha;
+}
+
+--------------------------------------------------------------------------------
+1.4 - UsuarioTrocarSenhaAdminRequest.java
+Localização: src/main/java/com/trovian/dto/UsuarioTrocarSenhaAdminRequest.java
+--------------------------------------------------------------------------------
+
+package com.trovian.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.Data;
+
+@Data
+public class UsuarioTrocarSenhaAdminRequest {
+
+    @NotBlank(message = "Nova senha é obrigatória")
+    @Size(min = 6, message = "Senha deve ter no mínimo 6 caracteres")
+    private String novaSenha;
+}
+
+--------------------------------------------------------------------------------
+1.5 - UsuarioRolesRequest.java
+Localização: src/main/java/com/trovian/dto/UsuarioRolesRequest.java
+--------------------------------------------------------------------------------
+
+package com.trovian.dto;
+
+import com.trovian.entity.Role;
+import jakarta.validation.constraints.NotEmpty;
+import lombok.Data;
+
+import java.util.Set;
+
+@Data
+public class UsuarioRolesRequest {
+
+    @NotEmpty(message = "Pelo menos uma role é obrigatória")
+    private Set<Role> roles;
+}
+
+--------------------------------------------------------------------------------
+1.6 - UsuarioResponse.java (ATUALIZAR/SUBSTITUIR O ANTERIOR UsuarioDTO.java)
+Localização: src/main/java/com/trovian/dto/UsuarioResponse.java
+--------------------------------------------------------------------------------
+
+package com.trovian.dto;
+
+import com.trovian.entity.Role;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+import java.util.Set;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class UsuarioResponse {
+
+    private Long id;
+    private String nome;
+    private String email;
+    private String telefone;
+    private Boolean ativo;
+    private Set<Role> roles;
+    private LocalDateTime ultimoLogin;
+    private LocalDateTime criadoEm;
+    private LocalDateTime atualizadoEm;
+}
+
+--------------------------------------------------------------------------------
+1.7 - UsuarioPageResponse.java
+Localização: src/main/java/com/trovian/dto/UsuarioPageResponse.java
+--------------------------------------------------------------------------------
+
+package com.trovian.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class UsuarioPageResponse {
+
+    private List<UsuarioResponse> usuarios;
+    private int paginaAtual;
+    private int totalPaginas;
+    private long totalElementos;
+    private int tamanhoPagina;
+    private boolean primeira;
+    private boolean ultima;
+}
+
+--------------------------------------------------------------------------------
+1.8 - UsuarioFiltroRequest.java
+Localização: src/main/java/com/trovian/dto/UsuarioFiltroRequest.java
+--------------------------------------------------------------------------------
+
+package com.trovian.dto;
+
+import com.trovian.entity.Role;
+import lombok.Data;
+
+@Data
+public class UsuarioFiltroRequest {
+
+    private String nome;
+    private String email;
+    private Boolean ativo;
+    private Role role;
+}
+
+================================================================================
+2. REPOSITORY (Queries Customizadas)
+================================================================================
+
+2.1 - UsuarioRepository.java (ATUALIZAR O EXISTENTE)
+Localização: src/main/java/com/trovian/repository/UsuarioRepository.java
+--------------------------------------------------------------------------------
+
+package com.trovian.repository;
+
+import com.trovian.entity.Role;
+import com.trovian.entity.Usuario;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
+
+    Optional<Usuario> findByEmail(String email);
+
+    Boolean existsByEmail(String email);
+
+    Optional<Usuario> findByTokenRecuperacaoSenha(String token);
+
+    @Modifying
+    @Query("UPDATE Usuario u SET u.tokenDispositivo = null WHERE u.tokenDispositivo = :tokenDispositivo AND u.id != :usuarioId")
+    void invalidarTokenDispositivoOutrosUsuarios(String tokenDispositivo, Long usuarioId);
+
+    // Queries customizadas para CRUD
+    Page<Usuario> findByAtivoTrue(Pageable pageable);
+
+    Page<Usuario> findByAtivoFalse(Pageable pageable);
+
+    @Query("SELECT u FROM Usuario u WHERE " +
+           "(:nome IS NULL OR LOWER(u.nome) LIKE LOWER(CONCAT('%', :nome, '%'))) AND " +
+           "(:email IS NULL OR LOWER(u.email) LIKE LOWER(CONCAT('%', :email, '%'))) AND " +
+           "(:ativo IS NULL OR u.ativo = :ativo)")
+    Page<Usuario> findByFiltros(
+            @Param("nome") String nome,
+            @Param("email") String email,
+            @Param("ativo") Boolean ativo,
+            Pageable pageable
+    );
+
+    @Query("SELECT u FROM Usuario u JOIN u.roles r WHERE r = :role")
+    Page<Usuario> findByRole(@Param("role") Role role, Pageable pageable);
+
+    @Query("SELECT u FROM Usuario u WHERE " +
+           "(:nome IS NULL OR LOWER(u.nome) LIKE LOWER(CONCAT('%', :nome, '%'))) AND " +
+           "(:email IS NULL OR LOWER(u.email) LIKE LOWER(CONCAT('%', :email, '%'))) AND " +
+           "(:ativo IS NULL OR u.ativo = :ativo) AND " +
+           "(:role IS NULL OR :role MEMBER OF u.roles)")
+    Page<Usuario> findByFiltrosCompletos(
+            @Param("nome") String nome,
+            @Param("email") String email,
+            @Param("ativo") Boolean ativo,
+            @Param("role") Role role,
+            Pageable pageable
+    );
+
+    @Query("SELECT COUNT(u) FROM Usuario u WHERE u.ativo = true")
+    long countUsuariosAtivos();
+
+    @Query("SELECT COUNT(u) FROM Usuario u WHERE u.ativo = false")
+    long countUsuariosInativos();
+
+    @Query("SELECT u FROM Usuario u WHERE LOWER(u.nome) LIKE LOWER(CONCAT('%', :termo, '%')) " +
+           "OR LOWER(u.email) LIKE LOWER(CONCAT('%', :termo, '%'))")
+    List<Usuario> buscarPorTermo(@Param("termo") String termo);
+}
+
+================================================================================
+3. SERVICE (UsuarioService)
+================================================================================
+
+3.1 - UsuarioService.java
+Localização: src/main/java/com/trovian/service/UsuarioService.java
+--------------------------------------------------------------------------------
+
+package com.trovian.service;
+
+import com.trovian.dto.*;
+import com.trovian.entity.Usuario;
+import com.trovian.repository.UsuarioRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class UsuarioService {
+
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final RefreshTokenService refreshTokenService;
+
+    // Listar todos com paginação
+    @Transactional(readOnly = true)
+    public UsuarioPageResponse listarTodos(int pagina, int tamanho, String ordenarPor, String direcao) {
+        Sort.Direction sortDirection = direcao.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(pagina, tamanho, Sort.by(sortDirection, ordenarPor));
+
+        Page<Usuario> paginaUsuarios = usuarioRepository.findAll(pageable);
+
+        return construirPageResponse(paginaUsuarios);
+    }
+
+    // Listar com filtros
+    @Transactional(readOnly = true)
+    public UsuarioPageResponse listarComFiltros(
+            UsuarioFiltroRequest filtro,
+            int pagina,
+            int tamanho,
+            String ordenarPor,
+            String direcao) {
+
+        Sort.Direction sortDirection = direcao.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(pagina, tamanho, Sort.by(sortDirection, ordenarPor));
+
+        Page<Usuario> paginaUsuarios = usuarioRepository.findByFiltrosCompletos(
+                filtro.getNome(),
+                filtro.getEmail(),
+                filtro.getAtivo(),
+                filtro.getRole(),
+                pageable
+        );
+
+        return construirPageResponse(paginaUsuarios);
+    }
+
+    // Buscar por ID
+    @Transactional(readOnly = true)
+    public UsuarioResponse buscarPorId(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado com ID: " + id));
+
+        return converterParaResponse(usuario);
+    }
+
+    // Criar novo usuário
+    @Transactional
+    public UsuarioResponse criar(UsuarioCriarRequest request) {
+        // Validar email único
+        if (usuarioRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email já cadastrado: " + request.getEmail());
+        }
+
+        Usuario usuario = new Usuario();
+        usuario.setNome(request.getNome());
+        usuario.setEmail(request.getEmail());
+        usuario.setSenha(passwordEncoder.encode(request.getSenha()));
+        usuario.setTelefone(request.getTelefone());
+        usuario.setAtivo(request.getAtivo() != null ? request.getAtivo() : true);
+        usuario.setRoles(request.getRoles());
+
+        usuario = usuarioRepository.save(usuario);
+
+        return converterParaResponse(usuario);
+    }
+
+    // Atualizar usuário
+    @Transactional
+    public UsuarioResponse atualizar(Long id, UsuarioAtualizarRequest request) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado com ID: " + id));
+
+        // Atualizar apenas campos não nulos
+        if (request.getNome() != null) {
+            usuario.setNome(request.getNome());
+        }
+
+        if (request.getEmail() != null && !request.getEmail().equals(usuario.getEmail())) {
+            // Validar se novo email já existe
+            if (usuarioRepository.existsByEmail(request.getEmail())) {
+                throw new RuntimeException("Email já cadastrado: " + request.getEmail());
+            }
+            usuario.setEmail(request.getEmail());
+        }
+
+        if (request.getTelefone() != null) {
+            usuario.setTelefone(request.getTelefone());
+        }
+
+        if (request.getAtivo() != null) {
+            usuario.setAtivo(request.getAtivo());
+            
+            // Se desativar, invalidar sessões
+            if (!request.getAtivo()) {
+                usuario.setTokenDispositivo(null);
+                refreshTokenService.deleteByUsuario(usuario);
+            }
+        }
+
+        usuario = usuarioRepository.save(usuario);
+
+        return converterParaResponse(usuario);
+    }
+
+    // Deletar usuário (soft delete - apenas desativa)
+    @Transactional
+    public MessageResponse deletar(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado com ID: " + id));
+
+        // Desativar ao invés de deletar
+        usuario.setAtivo(false);
+        usuario.setTokenDispositivo(null);
+        usuarioRepository.save(usuario);
+
+        // Invalidar refresh tokens
+        refreshTokenService.deleteByUsuario(usuario);
+
+        return new MessageResponse("Usuário desativado com sucesso");
+    }
+
+    // Deletar permanentemente (usar com cuidado)
+    @Transactional
+    public MessageResponse deletarPermanente(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado com ID: " + id));
+
+        // Invalidar refresh tokens antes de deletar
+        refreshTokenService.deleteByUsuario(usuario);
+
+        usuarioRepository.delete(usuario);
+
+        return new MessageResponse("Usuário deletado permanentemente");
+    }
+
+    // Ativar usuário
+    @Transactional
+    public MessageResponse ativar(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado com ID: " + id));
+
+        usuario.setAtivo(true);
+        usuarioRepository.save(usuario);
+
+        return new MessageResponse("Usuário ativado com sucesso");
+    }
+
+    // Desativar usuário
+    @Transactional
+    public MessageResponse desativar(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado com ID: " + id));
+
+        usuario.setAtivo(false);
+        usuario.setTokenDispositivo(null);
+        usuarioRepository.save(usuario);
+
+        // Invalidar sessões
+        refreshTokenService.deleteByUsuario(usuario);
+
+        return new MessageResponse("Usuário desativado com sucesso");
+    }
+
+    // Atualizar roles
+    @Transactional
+    public UsuarioResponse atualizarRoles(Long id, UsuarioRolesRequest request) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado com ID: " + id));
+
+        usuario.setRoles(request.getRoles());
+        usuario = usuarioRepository.save(usuario);
+
+        // Invalidar sessões para forçar novo login com novas permissões
+        usuario.setTokenDispositivo(null);
+        refreshTokenService.deleteByUsuario(usuario);
+
+        return converterParaResponse(usuario);
+    }
+
+    // Trocar senha (pelo próprio usuário)
+    @Transactional
+    public MessageResponse trocarSenha(Long id, UsuarioTrocarSenhaRequest request) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado com ID: " + id));
+
+        // Validar senha atual
+        if (!passwordEncoder.matches(request.getSenhaAtual(), usuario.getSenha())) {
+            throw new RuntimeException("Senha atual incorreta");
+        }
+
+        // Validar se nova senha é diferente da atual
+        if (passwordEncoder.matches(request.getNovaSenha(), usuario.getSenha())) {
+            throw new RuntimeException("A nova senha deve ser diferente da senha atual");
+        }
+
+        usuario.setSenha(passwordEncoder.encode(request.getNovaSenha()));
+        usuarioRepository.save(usuario);
+
+        // Invalidar sessões para forçar novo login
+        usuario.setTokenDispositivo(null);
+        refreshTokenService.deleteByUsuario(usuario);
+
+        return new MessageResponse("Senha alterada com sucesso. Faça login novamente.");
+    }
+
+    // Trocar senha (por admin - não requer senha atual)
+    @Transactional
+    public MessageResponse trocarSenhaAdmin(Long id, UsuarioTrocarSenhaAdminRequest request) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado com ID: " + id));
+
+        usuario.setSenha(passwordEncoder.encode(request.getNovaSenha()));
+        usuarioRepository.save(usuario);
+
+        // Invalidar sessões
+        usuario.setTokenDispositivo(null);
+        refreshTokenService.deleteByUsuario(usuario);
+
+        return new MessageResponse("Senha alterada com sucesso pelo administrador");
+    }
+
+    // Buscar por termo (autocomplete)
+    @Transactional(readOnly = true)
+    public List<UsuarioResponse> buscarPorTermo(String termo) {
+        List<Usuario> usuarios = usuarioRepository.buscarPorTermo(termo);
+        return usuarios.stream()
+                .map(this::converterParaResponse)
+                .collect(Collectors.toList());
+    }
+
+    // Estatísticas
+    @Transactional(readOnly = true)
+    public UsuarioEstatisticasResponse obterEstatisticas() {
+        long totalUsuarios = usuarioRepository.count();
+        long usuariosAtivos = usuarioRepository.countUsuariosAtivos();
+        long usuariosInativos = usuarioRepository.countUsuariosInativos();
+
+        return UsuarioEstatisticasResponse.builder()
+                .totalUsuarios(totalUsuarios)
+                .usuariosAtivos(usuariosAtivos)
+                .usuariosInativos(usuariosInativos)
+                .build();
+    }
+
+    // Métodos auxiliares
+    private UsuarioResponse converterParaResponse(Usuario usuario) {
+        return UsuarioResponse.builder()
+                .id(usuario.getId())
+                .nome(usuario.getNome())
+                .email(usuario.getEmail())
+                .telefone(usuario.getTelefone())
+                .ativo(usuario.getAtivo())
+                .roles(usuario.getRoles())
+                .ultimoLogin(usuario.getUltimoLogin())
+                .criadoEm(usuario.getCriadoEm())
+                .atualizadoEm(usuario.getAtualizadoEm())
+                .build();
+    }
+
+    private UsuarioPageResponse construirPageResponse(Page<Usuario> paginaUsuarios) {
+        List<UsuarioResponse> usuarios = paginaUsuarios.getContent().stream()
+                .map(this::converterParaResponse)
+                .collect(Collectors.toList());
+
+        return UsuarioPageResponse.builder()
+                .usuarios(usuarios)
+                .paginaAtual(paginaUsuarios.getNumber())
+                .totalPaginas(paginaUsuarios.getTotalPages())
+                .totalElementos(paginaUsuarios.getTotalElements())
+                .tamanhoPagina(paginaUsuarios.getSize())
+                .primeira(paginaUsuarios.isFirst())
+                .ultima(paginaUsuarios.isLast())
+                .build();
+    }
+}
+
+--------------------------------------------------------------------------------
+3.2 - UsuarioEstatisticasResponse.java
+Localização: src/main/java/com/trovian/dto/UsuarioEstatisticasResponse.java
+--------------------------------------------------------------------------------
+
+package com.trovian.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class UsuarioEstatisticasResponse {
+    private long totalUsuarios;
+    private long usuariosAtivos;
+    private long usuariosInativos;
+}
+
+================================================================================
+4. CONTROLLER (UsuarioController)
+================================================================================
+
+4.1 - UsuarioController.java
+Localização: src/main/java/com/trovian/controller/UsuarioController.java
+--------------------------------------------------------------------------------
+
+package com.trovian.controller;
+
+import com.trovian.dto.*;
+import com.trovian.service.UsuarioService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/usuarios")
+@RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:4200")
+public class UsuarioController {
+
+    private final UsuarioService usuarioService;
+
+    /**
+     * Listar todos os usuários com paginação
+     * GET /api/usuarios?pagina=0&tamanho=10&ordenarPor=nome&direcao=asc
+     */
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<UsuarioPageResponse> listarTodos(
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "10") int tamanho,
+            @RequestParam(defaultValue = "nome") String ordenarPor,
+            @RequestParam(defaultValue = "asc") String direcao) {
+
+        UsuarioPageResponse response = usuarioService.listarTodos(pagina, tamanho, ordenarPor, direcao);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Listar usuários com filtros
+     * POST /api/usuarios/filtrar?pagina=0&tamanho=10&ordenarPor=nome&direcao=asc
+     */
+    @PostMapping("/filtrar")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<UsuarioPageResponse> listarComFiltros(
+            @RequestBody UsuarioFiltroRequest filtro,
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "10") int tamanho,
+            @RequestParam(defaultValue = "nome") String ordenarPor,
+            @RequestParam(defaultValue = "asc") String direcao) {
+
+        UsuarioPageResponse response = usuarioService.listarComFiltros(filtro, pagina, tamanho, ordenarPor, direcao);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Buscar usuário por ID
+     * GET /api/usuarios/{id}
+     */
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<UsuarioResponse> buscarPorId(@PathVariable Long id) {
+        UsuarioResponse response = usuarioService.buscarPorId(id);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Criar novo usuário
+     * POST /api/usuarios
+     */
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UsuarioResponse> criar(@Valid @RequestBody UsuarioCriarRequest request) {
+        UsuarioResponse response = usuarioService.criar(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    /**
+     * Atualizar usuário
+     * PUT /api/usuarios/{id}
+     */
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UsuarioResponse> atualizar(
+            @PathVariable Long id,
+            @Valid @RequestBody UsuarioAtualizarRequest request) {
+
+        UsuarioResponse response = usuarioService.atualizar(id, request);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Deletar usuário (soft delete)
+     * DELETE /api/usuarios/{id}
+     */
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<MessageResponse> deletar(@PathVariable Long id) {
+        MessageResponse response = usuarioService.deletar(id);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Deletar usuário permanentemente
+     * DELETE /api/usuarios/{id}/permanente
+     */
+    @DeleteMapping("/{id}/permanente")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<MessageResponse> deletarPermanente(@PathVariable Long id) {
+        MessageResponse response = usuarioService.deletarPermanente(id);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Ativar usuário
+     * PATCH /api/usuarios/{id}/ativar
+     */
+    @PatchMapping("/{id}/ativar")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<MessageResponse> ativar(@PathVariable Long id) {
+        MessageResponse response = usuarioService.ativar(id);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Desativar usuário
+     * PATCH /api/usuarios/{id}/desativar
+     */
+    @PatchMapping("/{id}/desativar")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<MessageResponse> desativar(@PathVariable Long id) {
+        MessageResponse response = usuarioService.desativar(id);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Atualizar roles do usuário
+     * PATCH /api/usuarios/{id}/roles
+     */
+    @PatchMapping("/{id}/roles")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UsuarioResponse> atualizarRoles(
+            @PathVariable Long id,
+            @Valid @RequestBody UsuarioRolesRequest request) {
+
+        UsuarioResponse response = usuarioService.atualizarRoles(id, request);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Trocar senha (pelo próprio usuário)
+     * PATCH /api/usuarios/{id}/senha
+     */
+    @PatchMapping("/{id}/senha")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
+    public ResponseEntity<MessageResponse> trocarSenha(
+            @PathVariable Long id,
+            @Valid @RequestBody UsuarioTrocarSenhaRequest request) {
+
+        MessageResponse response = usuarioService.trocarSenha(id, request);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Trocar senha (por admin - não requer senha atual)
+     * PATCH /api/usuarios/{id}/senha-admin
+     */
+    @PatchMapping("/{id}/senha-admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<MessageResponse> trocarSenhaAdmin(
+            @PathVariable Long id,
+            @Valid @RequestBody UsuarioTrocarSenhaAdminRequest request) {
+
+        MessageResponse response = usuarioService.trocarSenhaAdmin(id, request);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Buscar usuários por termo (autocomplete)
+     * GET /api/usuarios/buscar?termo=joao
+     */
+    @GetMapping("/buscar")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<List<UsuarioResponse>> buscarPorTermo(@RequestParam String termo) {
+        List<UsuarioResponse> response = usuarioService.buscarPorTermo(termo);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Obter estatísticas de usuários
+     * GET /api/usuarios/estatisticas
+     */
+    @GetMapping("/estatisticas")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<UsuarioEstatisticasResponse> obterEstatisticas() {
+        UsuarioEstatisticasResponse response = usuarioService.obterEstatisticas();
+        return ResponseEntity.ok(response);
+    }
+}
+
+================================================================================
+5. VALIDAÇÕES E CONFIGURAÇÕES ADICIONAIS
+================================================================================
+
+5.1 - Atualizar AuthService.java (para usar UsuarioResponse)
+Localização: src/main/java/com/trovian/service/AuthService.java
+--------------------------------------------------------------------------------
+
+// Na classe AuthService, substitua o método getUsuarioLogado:
+
+public UsuarioResponse getUsuarioLogado(String email) {
+    Usuario usuario = usuarioRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+    return UsuarioResponse.builder()
+            .id(usuario.getId())
+            .email(usuario.getEmail())
+            .nome(usuario.getNome())
+            .telefone(usuario.getTelefone())
+            .ativo(usuario.getAtivo())
+            .roles(usuario.getRoles())
+            .ultimoLogin(usuario.getUltimoLogin())
+            .criadoEm(usuario.getCriadoEm())
+            .atualizadoEm(usuario.getAtualizadoEm())
+            .build();
+}
+
+--------------------------------------------------------------------------------
+5.2 - Atualizar AuthController.java (para retornar UsuarioResponse)
+Localização: src/main/java/com/trovian/controller/AuthController.java
+--------------------------------------------------------------------------------
+
+// No AuthController, atualize o import e o método:
+
+import com.trovian.dto.UsuarioResponse;
+
+@GetMapping("/me")
+public ResponseEntity<UsuarioResponse> getUsuarioLogado(Authentication authentication) {
+    return ResponseEntity.ok(authService.getUsuarioLogado(authentication.getName()));
+}
+
+================================================================================
+6. TESTES COM cURL ou Postman
+================================================================================
+
+6.1 - Exemplos de Requisições
+--------------------------------------------------------------------------------
+
+# 1. Listar todos os usuários (paginado)
+GET http://localhost:8080/api/usuarios?pagina=0&tamanho=10&ordenarPor=nome&direcao=asc
+Authorization: Bearer {seu_token_jwt}
+
+# 2. Buscar usuário por ID
+GET http://localhost:8080/api/usuarios/1
+Authorization: Bearer {seu_token_jwt}
+
+# 3. Criar novo usuário
+POST http://localhost:8080/api/usuarios
+Authorization: Bearer {seu_token_jwt}
+Content-Type: application/json
+
+{
+  "nome": "João Silva",
+  "email": "joao@email.com",
+  "senha": "senha123",
+  "telefone": "11999999999",
+  "roles": ["USER"],
+  "ativo": true
+}
+
+# 4. Atualizar usuário
+PUT http://localhost:8080/api/usuarios/1
+Authorization: Bearer {seu_token_jwt}
+Content-Type: application/json
+
+{
+  "nome": "João Silva Atualizado",
+  "telefone": "11988888888",
+  "ativo": true
+}
+
+# 5. Filtrar usuários
+POST http://localhost:8080/api/usuarios/filtrar?pagina=0&tamanho=10
+Authorization: Bearer {seu_token_jwt}
+Content-Type: application/json
+
+{
+  "nome": "João",
+  "ativo": true,
+  "role": "USER"
+}
+
+# 6. Atualizar roles
+PATCH http://localhost:8080/api/usuarios/1/roles
+Authorization: Bearer {seu_token_jwt}
+Content-Type: application/json
+
+{
+  "roles": ["ADMIN", "USER"]
+}
+
+# 7. Desativar usuário
+PATCH http://localhost:8080/api/usuarios/1/desativar
+Authorization: Bearer {seu_token_jwt}
+
+# 8. Ativar usuário
+PATCH http://localhost:8080/api/usuarios/1/ativar
+Authorization: Bearer {seu_token_jwt}
+
+# 9. Trocar senha (próprio usuário)
+PATCH http://localhost:8080/api/usuarios/1/senha
+Authorization: Bearer {seu_token_jwt}
+Content-Type: application/json
+
+{
+  "senhaAtual": "senha123",
+  "novaSenha": "novaSenha123"
+}
+
+# 10. Trocar senha (admin)
+PATCH http://localhost:8080/api/usuarios/1/senha-admin
+Authorization: Bearer {seu_token_jwt}
+Content-Type: application/json
+
+{
+  "novaSenha": "senhaDefinidaPeloAdmin123"
+}
+
+# 11. Buscar por termo (autocomplete)
+GET http://localhost:8080/api/usuarios/buscar?termo=joão
+Authorization: Bearer {seu_token_jwt}
+
+# 12. Obter estatísticas
+GET http://localhost:8080/api/usuarios/estatisticas
+Authorization: Bearer {seu_token_jwt}
+
+# 13. Deletar usuário (soft delete)
+DELETE http://localhost:8080/api/usuarios/1
+Authorization: Bearer {seu_token_jwt}
+
+# 14. Deletar permanentemente
+DELETE http://localhost:8080/api/usuarios/1/permanente
+Authorization: Bearer {seu_token_jwt}
+
+================================================================================
+7. INSTRUÇÕES DE EXECUÇÃO
+================================================================================
+
+PASSO 1: Criar todos os DTOs
+- Crie todos os arquivos da seção 1 nos locais indicados
+
+PASSO 2: Atualizar UsuarioRepository
+- Substitua o conteúdo do UsuarioRepository.java existente pelo da seção 2.1
+
+PASSO 3: Criar UsuarioService
+- Crie o arquivo UsuarioService.java conforme seção 3.1
+- Crie o UsuarioEstatisticasResponse.java conforme seção 3.2
+
+PASSO 4: Criar UsuarioController
+- Crie o arquivo UsuarioController.java conforme seção 4.1
+
+PASSO 5: Atualizar AuthService e AuthController
+- Atualize os métodos conforme seções 5.1 e 5.2
+
+PASSO 6: Compilar e executar
+mvn clean install
+mvn spring-boot:run
+
+PASSO 7: Testar os endpoints
+- Use Postman, Insomnia ou cURL
+- Não esqueça de incluir o token JWT no header Authorization
+
+================================================================================
+8. ENDPOINTS DISPONÍVEIS
+================================================================================
+
+LISTAR E BUSCAR:
+- GET    /api/usuarios                      - Listar todos (paginado)
+- POST   /api/usuarios/filtrar              - Listar com filtros
+- GET    /api/usuarios/{id}                 - Buscar por ID
+- GET    /api/usuarios/buscar?termo=x       - Buscar por termo
+- GET    /api/usuarios/estatisticas         - Estatísticas
+
+CRIAR E ATUALIZAR:
+- POST   /api/usuarios                      - Criar novo
+- PUT    /api/usuarios/{id}                 - Atualizar
+
+ATIVAR/DESATIVAR:
+- PATCH  /api/usuarios/{id}/ativar          - Ativar
+- PATCH  /api/usuarios/{id}/desativar       - Desativar
+
+ROLES:
+- PATCH  /api/usuarios/{id}/roles           - Atualizar roles
+
+SENHA:
+- PATCH  /api/usuarios/{id}/senha           - Trocar (próprio usuário)
+- PATCH  /api/usuarios/{id}/senha-admin     - Trocar (admin)
+
+DELETAR:
+- DELETE /api/usuarios/{id}                 - Soft delete
+- DELETE /api/usuarios/{id}/permanente      - Hard delete
+
+================================================================================
+9. PERMISSÕES DE ACESSO
+================================================================================
+
+ADMIN (pode tudo):
+- Criar, editar, deletar usuários
+- Ativar/desativar usuários
+- Alterar roles
+- Trocar senha de qualquer usuário
+- Ver todos os usuários
+
+MANAGER (pode visualizar):
+- Listar usuários
+- Buscar usuários
+- Ver estatísticas
+
+USER (pode apenas sua própria senha):
+- Trocar própria senha
+
+================================================================================
+10. OBSERVAÇÕES IMPORTANTES
+================================================================================
+
+1. SOFT DELETE:
+   - O endpoint DELETE /api/usuarios/{id} apenas desativa o usuário
+   - Use /api/usuarios/{id}/permanente para deletar definitivamente
+
+2. SEGURANÇA:
+   - Todas as rotas requerem autenticação
+   - Apenas ADMIN pode criar/editar/deletar
+   - MANAGER pode apenas visualizar
+
+3. SESSÕES:
+   - Ao desativar usuário, todas as sessões são invalidadas
+   - Ao trocar senha, forçar novo login
+   - Ao mudar roles, invalidar sessões
+
+4. PAGINAÇÃO:
+   - Padrão: 10 itens por página
+   - Ordenação padrão: por nome ascendente
+   - Personalizável via query params
+
+5. FILTROS:
+   - Nome (busca parcial, case insensitive)
+   - Email (busca parcial, case insensitive)
+   - Ativo (true/false)
+   - Role (exata)
+
+6. VALIDAÇÕES:
+   - Email único no sistema
+   - Senha mínima de 6 caracteres
+   - Pelo menos uma role obrigatória
+   - Nome entre 3 e 100 caracteres
+
+================================================================================
+FIM DO SCRIPT - CRUD DE USUÁRIOS (BACKEND)
+================================================================================

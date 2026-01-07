@@ -162,20 +162,20 @@ public class AuthService {
         return new MessageResponse("Senha redefinida com sucesso");
     }
 
-    public UsuarioDTO getUsuarioLogado(String email) {
+    public UsuarioResponse getUsuarioLogado(String email) {
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-        UsuarioDTO dto = new UsuarioDTO();
-        dto.setId(usuario.getId());
-        dto.setEmail(usuario.getEmail());
-        dto.setNome(usuario.getNome());
-        dto.setTelefone(usuario.getTelefone());
-        dto.setAtivo(usuario.getAtivo());
-        dto.setRoles(usuario.getRoles().stream().map(Enum::name).collect(Collectors.toSet()));
-        dto.setUltimoLogin(usuario.getUltimoLogin());
-        dto.setCriadoEm(usuario.getCriadoEm());
-
-        return dto;
+        return UsuarioResponse.builder()
+                .id(usuario.getId())
+                .email(usuario.getEmail())
+                .nome(usuario.getNome())
+                .telefone(usuario.getTelefone())
+                .ativo(usuario.getAtivo())
+                .roles(usuario.getRoles())
+                .ultimoLogin(usuario.getUltimoLogin())
+                .criadoEm(usuario.getCriadoEm())
+                .atualizadoEm(usuario.getAtualizadoEm())
+                .build();
     }
 }

@@ -47,7 +47,7 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<UsuarioDTO> getUsuarioLogado(Authentication authentication) {
+    public ResponseEntity<UsuarioResponse> getUsuarioLogado(Authentication authentication) {
         return ResponseEntity.ok(authService.getUsuarioLogado(authentication.getName()));
     }
 }
