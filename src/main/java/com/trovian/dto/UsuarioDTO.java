@@ -13,6 +13,7 @@ public class UsuarioDTO {
     private String telefone;
     private Boolean ativo;
     private Set<String> roles;
+    private Set<String> funcionalidades;
     private LocalDateTime ultimoLogin;
     private LocalDateTime criadoEm;
 }

@@ -87,6 +87,42 @@ Credenciais:
 - Username: `admin`
 - Password: `admin`
 
+### 4. Executar Script de Inicialização do Banco de Dados
+
+**⚠️ IMPORTANTE:** Antes de executar a aplicação pela primeira vez, é necessário executar o script SQL de inicialização para criar o usuário administrador padrão e configurar as permissões.
+
+#### Arquivo: `SCRIPT_SQL_USUARIO.sql`
+
+Este script contém:
+- Criação do usuário administrador padrão
+- Atribuição de role `ADMIN`
+- Associação de todas as funcionalidades ao usuário administrador
+
+#### Como executar:
+
+**Opção 1: Usando linha de comando (Windows)**
+```bash
+psql -h localhost -p 5432 -U trovian -d troviandb -f SCRIPT_SQL_USUARIO.sql
+```
+
+**Opção 2: Usando linha de comando (Linux/Mac)**
+```bash
+psql -h localhost -p 5432 -U trovian -d troviandb -f SCRIPT_SQL_USUARIO.sql
+```
+
+**Opção 3: Usando ferramenta gráfica (DBeaver, pgAdmin, etc.)**
+1. Conecte-se ao banco de dados `troviandb`
+2. Abra o arquivo `SCRIPT_SQL_USUARIO.sql`
+3. Execute o script completo
+
+#### Credenciais padrão criadas:
+- **Email:** `admin@trovian.com`
+- **Senha:** `admin123`
+- **Role:** `ADMIN`
+- **Permissões:** Todas as funcionalidades do sistema
+
+> **Nota de Segurança:** Após o primeiro acesso, é altamente recomendado alterar a senha padrão do usuário administrador.
+
 ## Como Executar a Aplicação
 
 ### Usando Maven

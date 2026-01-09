@@ -21,6 +21,7 @@ public class UsuarioResponse {
     private String telefone;
     private Boolean ativo;
     private Set<Role> roles;
+    private Set<String> funcionalidades;
     private LocalDateTime ultimoLogin;
     private LocalDateTime criadoEm;
     private LocalDateTime atualizadoEm;

@@ -166,6 +166,11 @@ public class AuthService {
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
+        Set<String> funcionalidades = usuario.getFuncionalidades()
+                .stream()
+                .map(f -> f.getCodigo())
+                .collect(Collectors.toSet());
+
         return UsuarioResponse.builder()
                 .id(usuario.getId())
                 .email(usuario.getEmail())
@@ -173,6 +178,7 @@ public class AuthService {
                 .telefone(usuario.getTelefone())
                 .ativo(usuario.getAtivo())
                 .roles(usuario.getRoles())
+                .funcionalidades(funcionalidades)
                 .ultimoLogin(usuario.getUltimoLogin())
                 .criadoEm(usuario.getCriadoEm())
                 .atualizadoEm(usuario.getAtualizadoEm())

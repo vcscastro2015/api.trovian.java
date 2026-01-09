@@ -62,4 +62,12 @@ public class Usuario {
     @UpdateTimestamp
     @Column(name = "atualizado_em")
     private LocalDateTime atualizadoEm;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "usuario_funcionalidade",
+        joinColumns = @JoinColumn(name = "usuario_id"),
+        inverseJoinColumns = @JoinColumn(name = "funcionalidade_id")
+    )
+    private Set<Funcionalidade> funcionalidades = new HashSet<>();
 }
