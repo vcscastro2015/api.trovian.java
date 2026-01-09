@@ -36,4 +36,8 @@ public interface ChecklistRealizadoRepository extends JpaRepository<ChecklistRea
         @Param("veiculoId") Long veiculoId,
         @Param("dataInicio") LocalDateTime dataInicio
     );
+
+    Page<ChecklistRealizado> findByStatus(StatusChecklist status, Pageable pageable);
+
+    Long countByStatus(StatusChecklist status);
 }

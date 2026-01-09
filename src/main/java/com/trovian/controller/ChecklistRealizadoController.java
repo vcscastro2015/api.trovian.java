@@ -1,6 +1,8 @@
 package com.trovian.controller;
 
 import com.trovian.dto.ChecklistRealizadoDTO;
+import com.trovian.dto.EstatisticasChecklistDTO;
+import com.trovian.enums.StatusChecklist;
 import com.trovian.service.ChecklistRealizadoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -118,6 +120,45 @@ public class ChecklistRealizadoController {
         Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
         Page<ChecklistRealizadoDTO> checklists = checklistRealizadoService.findByMotoristaId(motoristaId, pageable);
+        return ResponseEntity.ok(checklists);
+    }
+
+    @Operation(summary = "Busca estatísticas gerais de checklists",
+               description = "Retorna estatísticas consolidadas incluindo total, aprovados, reprovados, em andamento e conformidade geral")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Estatísticas retornadas com sucesso",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = EstatisticasChecklistDTO.class)))
+    })
+    @GetMapping(value = "/estatisticas", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<EstatisticasChecklistDTO> getEstatisticas() {
+        EstatisticasChecklistDTO estatisticas = checklistRealizadoService.getEstatisticas();
+        return ResponseEntity.ok(estatisticas);
+    }
+
+    @Operation(summary = "Busca checklists por status com paginação",
+               description = "Retorna uma página de checklists filtrados por status (EM_ANDAMENTO, APROVADO ou REPROVADO)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Página de checklists retornada com sucesso",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = Page.class)))
+    })
+    @GetMapping(value = "/status/{status}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Page<ChecklistRealizadoDTO>> getChecklistsByStatus(
+            @Parameter(description = "Status do checklist (EM_ANDAMENTO, APROVADO ou REPROVADO)", required = true)
+            @PathVariable StatusChecklist status,
+            @Parameter(description = "Número da página (inicia em 0)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Tamanho da página", example = "5")
+            @RequestParam(defaultValue = "5") int size,
+            @Parameter(description = "Campo para ordenação", example = "dataHoraInicio")
+            @RequestParam(defaultValue = "dataHoraInicio") String sortBy,
+            @Parameter(description = "Direção da ordenação (ASC ou DESC)", example = "DESC")
+            @RequestParam(defaultValue = "DESC") String direction) {
+
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+        Page<ChecklistRealizadoDTO> checklists = checklistRealizadoService.findByStatus(status, pageable);
         return ResponseEntity.ok(checklists);
     }
 

@@ -1,6 +1,7 @@
 package com.trovian.service;
 
 import com.trovian.dto.ChecklistRealizadoDTO;
+import com.trovian.dto.EstatisticasChecklistDTO;
 import com.trovian.dto.OrdemServicoDTO;
 import com.trovian.dto.RespostaItemChecklistDTO;
 import com.trovian.entity.*;
@@ -61,6 +62,45 @@ public class ChecklistRealizadoService {
         log.info("Buscando checklists do motorista com ID: {}", motoristaId);
         Page<ChecklistRealizado> checklists = checklistRealizadoRepository.findByMotoristaId(motoristaId, pageable);
         return checklists.map(this::toDTO);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ChecklistRealizadoDTO> findByStatus(StatusChecklist status, Pageable pageable) {
+        log.info("Buscando checklists com status: {}", status);
+        Page<ChecklistRealizado> checklists = checklistRealizadoRepository.findByStatus(status, pageable);
+        return checklists.map(this::toDTO);
+    }
+
+    @Transactional(readOnly = true)
+    public EstatisticasChecklistDTO getEstatisticas() {
+        log.info("Calculando estatísticas de checklists realizados");
+
+        Long totalRealizados = checklistRealizadoRepository.count();
+        Long aprovados = checklistRealizadoRepository.countByStatus(StatusChecklist.APROVADO);
+        Long reprovados = checklistRealizadoRepository.countByStatus(StatusChecklist.REPROVADO);
+        Long emAndamento = checklistRealizadoRepository.countByStatus(StatusChecklist.EM_ANDAMENTO);
+
+        // Calcula percentual de conformidade
+        // Conformidade = (aprovados / total de finalizados) * 100
+        Long totalFinalizados = aprovados + reprovados;
+        Double conformidadeGeral = 0.0;
+
+        if (totalFinalizados > 0) {
+            conformidadeGeral = (aprovados.doubleValue() / totalFinalizados.doubleValue()) * 100.0;
+            // Arredonda para 2 casas decimais
+            conformidadeGeral = Math.round(conformidadeGeral * 100.0) / 100.0;
+        }
+
+        EstatisticasChecklistDTO estatisticas = new EstatisticasChecklistDTO(
+            totalRealizados,
+            aprovados,
+            reprovados,
+            emAndamento,
+            conformidadeGeral
+        );
+
+        log.info("Estatísticas calculadas: {}", estatisticas);
+        return estatisticas;
     }
 
     @Transactional(readOnly = true)
