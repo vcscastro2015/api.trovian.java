@@ -59,6 +59,9 @@ public class FuncionalidadeSeed implements CommandLineRunner {
         criar("CHECKLIST_REALIZAR", "Realizar Checklist", "Checklist", 2);
         criar("CHECKLIST_HISTORICO", "Histórico", "Checklist", 3);
         criar("MODELO_CHECKLIST", "Modelos de Checklist", "Checklist", 4);
+
+        // RELATORIO
+        criar("RELATORIO", "Relatorios", "Relatorios", 9);
     }
 
     private void criar(String codigo, String nome, String categoria, Integer ordem) {
