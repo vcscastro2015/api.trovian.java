@@ -171,7 +171,7 @@ Serviço para comunicação com a API REST do backend.
 
 **Base URL**: `${environment.apiUrl}/rota`
 
-**Desenvolvimento**: `/api/rota` → proxy → `http://localhost:8080/api/rota`
+**Desenvolvimento**: `/api/rota` → proxy → `http://localhost:8081/api/rota`
 
 **Produção**: `https://api.librasistemas.com.br/rota`
 

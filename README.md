@@ -145,15 +145,15 @@ mvn clean package
 java -jar target/api.trovian.java-1.0.0-SNAPSHOT.jar
 ```
 
-A aplicação estará disponível em: **http://localhost:8080/api**
+A aplicação estará disponível em: **http://localhost:8081/api**
 
 ## Documentação da API (Swagger)
 
 Após iniciar a aplicação, a documentação interativa da API estará disponível através do Swagger UI:
 
-- **Swagger UI**: http://localhost:8080/api/swagger-ui/index.html
-- **OpenAPI JSON**: http://localhost:8080/api/v3/api-docs
-- **OpenAPI YAML**: http://localhost:8080/api/v3/api-docs.yaml
+- **Swagger UI**: http://localhost:8081/api/swagger-ui/index.html
+- **OpenAPI JSON**: http://localhost:8081/api/v3/api-docs
+- **OpenAPI YAML**: http://localhost:8081/api/v3/api-docs.yaml
 
 O Swagger UI permite:
 - Visualizar todos os endpoints disponíveis
@@ -179,7 +179,7 @@ O Swagger UI permite:
 #### Criar um produto (POST)
 
 ```bash
-curl -X POST http://localhost:8080/api/products \
+curl -X POST http://localhost:8081/api/products \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Notebook Dell",
@@ -192,19 +192,19 @@ curl -X POST http://localhost:8080/api/products \
 #### Listar todos os produtos (GET)
 
 ```bash
-curl http://localhost:8080/api/products
+curl http://localhost:8081/api/products
 ```
 
 #### Buscar produto por ID (GET)
 
 ```bash
-curl http://localhost:8080/api/products/1
+curl http://localhost:8081/api/products/1
 ```
 
 #### Atualizar produto (PUT)
 
 ```bash
-curl -X PUT http://localhost:8080/api/products/1 \
+curl -X PUT http://localhost:8081/api/products/1 \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Notebook Dell Atualizado",
@@ -217,13 +217,13 @@ curl -X PUT http://localhost:8080/api/products/1 \
 #### Deletar produto (DELETE)
 
 ```bash
-curl -X DELETE http://localhost:8080/api/products/1
+curl -X DELETE http://localhost:8081/api/products/1
 ```
 
 #### Buscar por nome (GET)
 
 ```bash
-curl "http://localhost:8080/api/products/search?name=Dell"
+curl "http://localhost:8081/api/products/search?name=Dell"
 ```
 
 ## ActiveMQ / JMS
@@ -253,10 +253,10 @@ O `MessageListener` escuta automaticamente as filas configuradas e processa as m
 
 A aplicação expõe endpoints de monitoramento:
 
-- http://localhost:8080/api/actuator/health
-- http://localhost:8080/api/actuator/info
-- http://localhost:8080/api/actuator/metrics
-- http://localhost:8080/api/actuator/env
+- http://localhost:8081/api/actuator/health
+- http://localhost:8081/api/actuator/info
+- http://localhost:8081/api/actuator/metrics
+- http://localhost:8081/api/actuator/env
 
 ## Variáveis de Ambiente
 
@@ -276,7 +276,7 @@ export ACTIVEMQ_USER=admin
 export ACTIVEMQ_PASSWORD=admin
 
 # Server
-export SERVER_PORT=8080
+export SERVER_PORT=8081
 ```
 
 ## Parando os Containers Docker
