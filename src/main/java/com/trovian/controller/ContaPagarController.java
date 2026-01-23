@@ -65,10 +65,10 @@ public class ContaPagarController {
         return ResponseEntity.ok(conta);
     }
 
-    @GetMapping("/fornecedor/{fornecedorId}")
-    @Operation(summary = "Buscar contas por fornecedor")
-    public ResponseEntity<Page<ContaPagarDTO>> findByFornecedor(
-        @PathVariable Long fornecedorId,
+    @GetMapping("/cliente/{clienteId}")
+    @Operation(summary = "Buscar contas por cliente")
+    public ResponseEntity<Page<ContaPagarDTO>> findByCliente(
+        @PathVariable Long clienteId,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "20") int size,
         @RequestParam(defaultValue = "dataVencimento") String sortBy,
@@ -77,6 +77,24 @@ public class ContaPagarController {
         Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC")
             ? Sort.Direction.DESC
             : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+
+        Page<ContaPagarDTO> contas = contaPagarService.findByCliente(clienteId, pageable);
+        return ResponseEntity.ok(contas);
+    }
+
+    @GetMapping("/fornecedor/{fornecedorId}")
+    @Operation(summary = "Buscar contas por fornecedor")
+    public ResponseEntity<Page<ContaPagarDTO>> findByFornecedor(
+            @PathVariable Long fornecedorId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "dataVencimento") String sortBy,
+            @RequestParam(defaultValue = "ASC") String direction
+    ) {
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC")
+                ? Sort.Direction.DESC
+                : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
 
         Page<ContaPagarDTO> contas = contaPagarService.findByFornecedor(fornecedorId, pageable);
@@ -190,17 +208,17 @@ public class ContaPagarController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/total/pendente")
+    @GetMapping("/total/pendente/{clienteId}")
     @Operation(summary = "Total de contas pendentes")
-    public ResponseEntity<BigDecimal> totalPendente() {
-        BigDecimal total = contaPagarService.getTotalPendente();
+    public ResponseEntity<BigDecimal> totalPendente(@PathVariable Long clienteId) {
+        BigDecimal total = contaPagarService.getTotalPendente(clienteId);
         return ResponseEntity.ok(total);
     }
 
-    @GetMapping("/saldo/a-pagar")
+    @GetMapping("/saldo/a-pagar/{clienteId}")
     @Operation(summary = "Saldo total a pagar")
-    public ResponseEntity<BigDecimal> saldoAPagar() {
-        BigDecimal saldo = contaPagarService.getSaldoAPagar();
+    public ResponseEntity<BigDecimal> saldoAPagar(@PathVariable Long clienteId) {
+        BigDecimal saldo = contaPagarService.getSaldoAPagar(clienteId);
         return ResponseEntity.ok(saldo);
     }
 }

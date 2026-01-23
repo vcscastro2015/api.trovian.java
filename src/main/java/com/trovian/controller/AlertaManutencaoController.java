@@ -4,11 +4,16 @@ import com.trovian.dto.AlertaManutencaoDTO;
 import com.trovian.service.AlertaManutencaoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -43,6 +48,25 @@ public class AlertaManutencaoController {
         return ResponseEntity.ok(alertas);
     }
 
+    @GetMapping("/cliente/{clienteId}")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
+    })
+    public ResponseEntity<Page<AlertaManutencaoDTO>> findByCliente(
+            @Parameter(description = "ID do cliente", example = "1")
+            @PathVariable Long clienteId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "dataHora") String sortBy,
+            @RequestParam(defaultValue = "DESC") String direction) {
+
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+
+        Page<AlertaManutencaoDTO> alertas = alertaManutencaoService.findByCliente(clienteId, pageable);
+        return ResponseEntity.ok(alertas);
+    }
+
     @GetMapping("/{id}")
     @Operation(summary = "Buscar alerta por ID")
     public ResponseEntity<AlertaManutencaoDTO> findById(@PathVariable Long id) {
@@ -50,10 +74,10 @@ public class AlertaManutencaoController {
         return ResponseEntity.ok(alerta);
     }
 
-    @GetMapping("/nao-lidos")
+    @GetMapping("/cliente/{clienteId}/nao-lidos")
     @Operation(summary = "Listar alertas não lidos e não resolvidos")
-    public ResponseEntity<List<AlertaManutencaoDTO>> findAlertasNaoLidos() {
-        List<AlertaManutencaoDTO> alertas = alertaManutencaoService.findAlertasNaoLidosNaoResolvidos();
+    public ResponseEntity<List<AlertaManutencaoDTO>> findAlertasNaoLidos(@PathVariable Long clienteId) {
+        List<AlertaManutencaoDTO> alertas = alertaManutencaoService.findAlertasNaoLidosNaoResolvidos(clienteId);
         return ResponseEntity.ok(alertas);
     }
 
@@ -67,10 +91,10 @@ public class AlertaManutencaoController {
         return ResponseEntity.ok(alertas);
     }
 
-    @GetMapping("/criticos")
+    @GetMapping("/cliente/{clienteId}/criticos")
     @Operation(summary = "Listar alertas críticos não resolvidos")
-    public ResponseEntity<List<AlertaManutencaoDTO>> findAlertasCriticos() {
-        List<AlertaManutencaoDTO> alertas = alertaManutencaoService.findAlertasCriticosNaoResolvidos();
+    public ResponseEntity<List<AlertaManutencaoDTO>> findAlertasCriticos(@PathVariable Long clienteId) {
+        List<AlertaManutencaoDTO> alertas = alertaManutencaoService.findAlertasCriticosNaoResolvidos(clienteId);
         return ResponseEntity.ok(alertas);
     }
 
@@ -104,10 +128,10 @@ public class AlertaManutencaoController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/verificar-estoque")
+    @PostMapping("/cliente/{clienteId}/verificar-estoque")
     @Operation(summary = "Verificar peças com estoque baixo")
-    public ResponseEntity<Void> verificarPecasEstoqueBaixo() {
-        alertaManutencaoService.verificarPecasEstoqueBaixo();
+    public ResponseEntity<Void> verificarPecasEstoqueBaixo(@PathVariable Long clienteId) {
+        alertaManutencaoService.verificarPecasEstoqueBaixo(clienteId);
         return ResponseEntity.ok().build();
     }
 

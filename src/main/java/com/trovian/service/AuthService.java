@@ -67,7 +67,9 @@ public class AuthService {
                 usuario.getId(),
                 usuario.getNome(),
                 usuario.getEmail(),
-                usuario.getRoles().stream().map(Enum::name).collect(Collectors.toSet())
+                usuario.getRoles().stream().map(Enum::name).collect(Collectors.toSet()),
+                usuario.getCliente().getId(),
+                usuario.getCliente().getNome()
         );
     }
 
@@ -109,7 +111,9 @@ public class AuthService {
                 usuario.getId(),
                 usuario.getNome(),
                 usuario.getEmail(),
-                usuario.getRoles().stream().map(Enum::name).collect(Collectors.toSet())
+                usuario.getRoles().stream().map(Enum::name).collect(Collectors.toSet()),
+                usuario.getCliente().getId(),
+                usuario.getCliente().getNome()
         );
     }
 
@@ -182,6 +186,8 @@ public class AuthService {
                 .ultimoLogin(usuario.getUltimoLogin())
                 .criadoEm(usuario.getCriadoEm())
                 .atualizadoEm(usuario.getAtualizadoEm())
+                .clienteId(usuario.getCliente().getId())
+                .clienteNome(usuario.getCliente().getNome())
                 .build();
     }
 }

@@ -2,8 +2,15 @@ package com.trovian.controller;
 
 import com.trovian.dto.*;
 import com.trovian.service.UsuarioService;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -35,20 +42,39 @@ public class UsuarioController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/cliente/{clienteId}")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
+    })
+    public ResponseEntity<UsuarioPageResponse> findByCliente(
+            @PathVariable Long clienteId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "nome") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction) {
+
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+
+        UsuarioPageResponse usuarios = usuarioService.findByCliente(clienteId, pageable);
+        return ResponseEntity.ok(usuarios);
+    }
+
     /**
      * Listar usuários com filtros
      * POST /api/usuarios/filtrar?pagina=0&tamanho=10&ordenarPor=nome&direcao=asc
      */
-    @PostMapping("/filtrar")
+    @PostMapping("/cliente/{clienteId}/filtrar")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<UsuarioPageResponse> listarComFiltros(
+            @PathVariable Long clienteId,
             @RequestBody UsuarioFiltroRequest filtro,
             @RequestParam(defaultValue = "0") int pagina,
             @RequestParam(defaultValue = "10") int tamanho,
             @RequestParam(defaultValue = "nome") String ordenarPor,
             @RequestParam(defaultValue = "asc") String direcao) {
 
-        UsuarioPageResponse response = usuarioService.listarComFiltros(filtro, pagina, tamanho, ordenarPor, direcao);
+        UsuarioPageResponse response = usuarioService.listarComFiltros(clienteId, filtro, pagina, tamanho, ordenarPor, direcao);
         return ResponseEntity.ok(response);
     }
 
@@ -189,10 +215,10 @@ public class UsuarioController {
      * Obter estatísticas de usuários
      * GET /api/usuarios/estatisticas
      */
-    @GetMapping("/estatisticas")
+    @GetMapping("cliente/{clienteId}/estatisticas")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<UsuarioEstatisticasResponse> obterEstatisticas() {
-        UsuarioEstatisticasResponse response = usuarioService.obterEstatisticas();
+    public ResponseEntity<UsuarioEstatisticasResponse> obterEstatisticas(@PathVariable Long clienteId) {
+        UsuarioEstatisticasResponse response = usuarioService.obterEstatisticas(clienteId);
         return ResponseEntity.ok(response);
     }
 }

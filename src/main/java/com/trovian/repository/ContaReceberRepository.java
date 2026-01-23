@@ -56,11 +56,11 @@ public interface ContaReceberRepository extends JpaRepository<ContaReceber, Long
         Pageable pageable
     );
 
-    @Query("SELECT SUM(c.valorTotal) FROM ContaReceber c WHERE c.status = :status")
-    BigDecimal sumTotalByStatus(@Param("status") StatusConta status);
+    @Query("SELECT SUM(c.valorTotal) FROM ContaReceber c WHERE c.status = :status AND c.cliente.id = :clienteId")
+    BigDecimal sumTotalByStatus(@Param("status") StatusConta status, @Param("clienteId") Long clientId);
 
-    @Query("SELECT SUM(c.valorTotal - c.valorRecebido) FROM ContaReceber c WHERE c.status IN ('PENDENTE', 'PARCIAL')")
-    BigDecimal sumSaldoAReceber();
+    @Query("SELECT SUM(c.valorTotal - c.valorRecebido) FROM ContaReceber c WHERE c.status IN ('PENDENTE', 'PARCIAL') AND c.cliente.id = :clienteId")
+    BigDecimal sumSaldoAReceber(@Param("clienteId") Long clientId);
 
     @Query("SELECT SUM(c.valorTotal) FROM ContaReceber c WHERE c.dataVencimento BETWEEN :dataInicio AND :dataFim")
     BigDecimal sumTotalPorPeriodo(

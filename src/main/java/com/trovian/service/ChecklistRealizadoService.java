@@ -1,9 +1,6 @@
 package com.trovian.service;
 
-import com.trovian.dto.ChecklistRealizadoDTO;
-import com.trovian.dto.EstatisticasChecklistDTO;
-import com.trovian.dto.OrdemServicoDTO;
-import com.trovian.dto.RespostaItemChecklistDTO;
+import com.trovian.dto.*;
 import com.trovian.entity.*;
 import com.trovian.enums.StatusChecklist;
 import com.trovian.enums.StatusOrdemServico;
@@ -34,12 +31,18 @@ public class ChecklistRealizadoService {
     private final ViagemRepository viagemRepository;
     private final ItemModeloChecklistRepository itemModeloChecklistRepository;
     private final OrdemServicoService ordemServicoService;
+    private final ClienteRepository clienteRepository;
 
     @Transactional(readOnly = true)
     public Page<ChecklistRealizadoDTO> findAll(Pageable pageable) {
         log.info("Buscando todos os checklists realizados com paginação");
         Page<ChecklistRealizado> checklists = checklistRealizadoRepository.findAll(pageable);
         return checklists.map(this::toDTO);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ChecklistRealizadoDTO> findByCliente(Long clienteId, Pageable pageable) {
+        return checklistRealizadoRepository.findByClienteId(clienteId, pageable).map(this::toDTO);
     }
 
     @Transactional(readOnly = true)
@@ -65,20 +68,20 @@ public class ChecklistRealizadoService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ChecklistRealizadoDTO> findByStatus(StatusChecklist status, Pageable pageable) {
+    public Page<ChecklistRealizadoDTO> findByStatus(Long clienteId, StatusChecklist status, Pageable pageable) {
         log.info("Buscando checklists com status: {}", status);
-        Page<ChecklistRealizado> checklists = checklistRealizadoRepository.findByStatus(status, pageable);
+        Page<ChecklistRealizado> checklists = checklistRealizadoRepository.findByClienteIdAndStatus(clienteId, status, pageable);
         return checklists.map(this::toDTO);
     }
 
     @Transactional(readOnly = true)
-    public EstatisticasChecklistDTO getEstatisticas() {
+    public EstatisticasChecklistDTO getEstatisticas(Long clienteId) {
         log.info("Calculando estatísticas de checklists realizados");
 
-        Long totalRealizados = checklistRealizadoRepository.count();
-        Long aprovados = checklistRealizadoRepository.countByStatus(StatusChecklist.APROVADO);
-        Long reprovados = checklistRealizadoRepository.countByStatus(StatusChecklist.REPROVADO);
-        Long emAndamento = checklistRealizadoRepository.countByStatus(StatusChecklist.EM_ANDAMENTO);
+        Long totalRealizados = checklistRealizadoRepository.countByClienteId(clienteId);
+        Long aprovados = checklistRealizadoRepository.countByClienteIdAndStatus(clienteId, StatusChecklist.APROVADO);
+        Long reprovados = checklistRealizadoRepository.countByClienteIdAndStatus(clienteId, StatusChecklist.REPROVADO);
+        Long emAndamento = checklistRealizadoRepository.countByClienteIdAndStatus(clienteId, StatusChecklist.EM_ANDAMENTO);
 
         // Calcula percentual de conformidade
         // Conformidade = (aprovados / total de finalizados) * 100
@@ -125,10 +128,14 @@ public class ChecklistRealizadoService {
         Motorista motorista = motoristaRepository.findById(dto.getMotoristaId())
                 .orElseThrow(() -> new RuntimeException("Motorista não encontrado com ID: " + dto.getMotoristaId()));
 
+        Cliente cliente = clienteRepository.findById(dto.getClienteId())
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado com ID: " + dto.getClienteId()));
+
         ChecklistRealizado checklist = toEntity(dto);
         checklist.setModeloChecklist(modelo);
         checklist.setVeiculo(veiculo);
         checklist.setMotorista(motorista);
+        checklist.setCliente(cliente);
 
         // Viagem é opcional
         if (dto.getViagemId() != null) {
@@ -259,6 +266,7 @@ public class ChecklistRealizadoService {
             OrdemServicoDTO ordemServicoDTO = new OrdemServicoDTO();
             ordemServicoDTO.setNumeroOs(gerarNumeroOS());
             ordemServicoDTO.setVeiculoId(checklist.getVeiculo().getId());
+            ordemServicoDTO.setClienteId(checklist.getCliente().getId());
             ordemServicoDTO.setMotoristaId(checklist.getMotorista().getId());
             ordemServicoDTO.setTipoManutencao(TipoManutencao.CORRETIVA);
             ordemServicoDTO.setKmVeiculo(checklist.getKmVeiculo());
@@ -360,7 +368,7 @@ public class ChecklistRealizadoService {
                     .collect(Collectors.toList());
             dto.setRespostas(respostasDTO);
         }
-
+        dto.setClienteId(checklist.getCliente().getId());
         return dto;
     }
 

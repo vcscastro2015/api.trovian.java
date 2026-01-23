@@ -20,4 +20,6 @@ public interface FornecedorRepository extends JpaRepository<Fornecedor, Long> {
     Optional<Fornecedor> findByCnpjCpf(String cnpjCpf);
 
     boolean existsByCnpjCpf(String cnpjCpf);
+
+    Page<Fornecedor> findByClienteId(Long clienteId, Pageable pageable);
 }

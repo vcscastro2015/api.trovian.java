@@ -22,8 +22,8 @@ public class ViagemRepositoryImpl implements ViagemRepositoryCustom {
         String sql = """
             SELECT 
                 COUNT(*) as total_viagens,
-                SUM(CASE WHEN v.status_viagem = 'ABERTA' THEN 1 ELSE 0 END) as viagens_abertas,
-                SUM(CASE WHEN v.status_viagem = 'FINALIZADA' THEN 1 ELSE 0 END) as viagens_finalizadas,
+                COALESCE(SUM(CASE WHEN v.status_viagem = 'ABERTA' THEN 1 ELSE 0 END), 0) as viagens_abertas,
+                COALESCE(SUM(CASE WHEN v.status_viagem = 'FINALIZADA' THEN 1 ELSE 0 END), 0) as viagens_finalizadas,
                 COALESCE(SUM(v.valor_total_bruto_viagem), 0) as receita_total,
                 COALESCE(SUM(v.valor_total_liquido), 0) as lucro_total,
                 COALESCE(AVG(v.margem_percentual), 0) as margem_media,

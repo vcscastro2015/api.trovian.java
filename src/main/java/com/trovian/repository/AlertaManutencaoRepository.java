@@ -25,15 +25,17 @@ public interface AlertaManutencaoRepository extends JpaRepository<AlertaManutenc
 
     Page<AlertaManutencao> findByPrioridade(PrioridadeAlerta prioridade, Pageable pageable);
 
-    @Query("SELECT a FROM AlertaManutencao a WHERE a.lido = false AND a.resolvido = false ORDER BY a.prioridade DESC, a.dataGeracao ASC")
-    List<AlertaManutencao> findAlertasNaoLidosNaoResolvidos();
+    @Query("SELECT a FROM AlertaManutencao a WHERE a.lido = false AND a.resolvido = false AND a.cliente.id = :cliente ORDER BY a.prioridade DESC, a.dataGeracao ASC")
+    List<AlertaManutencao> findAlertasNaoLidosNaoResolvidos(@Param("cliente") Long clienteId);
 
     @Query("SELECT a FROM AlertaManutencao a WHERE a.veiculo.id = :veiculoId AND a.resolvido = false")
     List<AlertaManutencao> findAlertasNaoResolvidosPorVeiculo(@Param("veiculoId") Long veiculoId);
 
-    @Query("SELECT a FROM AlertaManutencao a WHERE a.prioridade = 'CRITICA' AND a.resolvido = false")
-    List<AlertaManutencao> findAlertasCriticosNaoResolvidos();
+    @Query("SELECT a FROM AlertaManutencao a WHERE a.prioridade = 'CRITICA' AND a.resolvido = false AND a.cliente.id = :cliente")
+    List<AlertaManutencao> findAlertasCriticosNaoResolvidos(@Param("cliente") Long clienteId);
 
     @Query("SELECT COUNT(a) FROM AlertaManutencao a WHERE a.lido = false")
     Long countAlertasNaoLidos();
+
+    Page<AlertaManutencao> findByClienteId(Long clienteId, Pageable pageable);
 }

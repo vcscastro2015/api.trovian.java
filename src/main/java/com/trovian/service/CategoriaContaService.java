@@ -2,8 +2,10 @@ package com.trovian.service;
 
 import com.trovian.dto.CategoriaContaDTO;
 import com.trovian.entity.CategoriaConta;
+import com.trovian.entity.Cliente;
 import com.trovian.enums.TipoConta;
 import com.trovian.repository.CategoriaContaRepository;
+import com.trovian.repository.ClienteRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -19,11 +21,17 @@ import org.springframework.transaction.annotation.Transactional;
 public class CategoriaContaService {
 
     private final CategoriaContaRepository categoriaContaRepository;
+    private final ClienteRepository clienteRepository;
 
     @Transactional
     public CategoriaContaDTO create(CategoriaContaDTO dto) {
         log.info("Criando categoria de conta: {}", dto.getNome());
-        CategoriaConta categoria = toEntity(dto);
+
+        // Validar cliente
+        Cliente cliente = clienteRepository.findById(dto.getClienteId())
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado com ID: " + dto.getClienteId()));
+
+        CategoriaConta categoria = toEntity(dto, cliente);
         CategoriaConta saved = categoriaContaRepository.save(categoria);
         log.info("Categoria criada com sucesso. ID: {}", saved.getId());
         return toDTO(saved);
@@ -40,6 +48,12 @@ public class CategoriaContaService {
     }
 
     @Transactional(readOnly = true)
+    public Page<CategoriaContaDTO> findByCliente(Long clienteId, Pageable pageable) {
+        log.info("Buscando categorias por cliente ID: {}", clienteId);
+        return categoriaContaRepository.findByClienteId(clienteId, pageable).map(this::toDTO);
+    }
+
+    @Transactional(readOnly = true)
     public CategoriaContaDTO findById(Long id) {
         log.info("Buscando categoria por ID: {}", id);
         CategoriaConta categoria = categoriaContaRepository.findById(id)
@@ -52,7 +66,13 @@ public class CategoriaContaService {
         log.info("Atualizando categoria ID: {}", id);
         CategoriaConta categoria = categoriaContaRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Categoria não encontrada com ID: " + id));
+
+        // Validar cliente
+        Cliente cliente = clienteRepository.findById(dto.getClienteId())
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado com ID: " + dto.getClienteId()));
+
         updateEntityFromDTO(categoria, dto);
+        categoria.setCliente(cliente);
         CategoriaConta updated = categoriaContaRepository.save(categoria);
         log.info("Categoria atualizada com sucesso. ID: {}", id);
         return toDTO(updated);
@@ -85,10 +105,11 @@ public class CategoriaContaService {
             dto.setCategoriaPaiId(entity.getCategoriaPai().getId());
             dto.setCategoriaPaiNome(entity.getCategoriaPai().getNome());
         }
+        dto.setClienteId(entity.getCliente().getId());
         return dto;
     }
 
-    private CategoriaConta toEntity(CategoriaContaDTO dto) {
+    private CategoriaConta toEntity(CategoriaContaDTO dto, Cliente cliente) {
         CategoriaConta entity = new CategoriaConta();
         entity.setNome(dto.getNome());
         entity.setDescricao(dto.getDescricao());
@@ -100,6 +121,7 @@ public class CategoriaContaService {
                 .orElse(null);
             entity.setCategoriaPai(pai);
         }
+        entity.setCliente(cliente);
         return entity;
     }
 
