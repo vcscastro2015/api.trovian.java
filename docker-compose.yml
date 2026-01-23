@@ -14,4 +14,4 @@ services:
 
 networks:
   trovian-network:
-    external: true
+    driver: bridge
