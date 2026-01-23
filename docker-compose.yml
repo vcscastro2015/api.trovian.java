@@ -1,17 +1,11 @@
-version: '3.8'
+version: "3.8"
 
 services:
   api:
-    build: .
+    image: api.trovian.java:latest
     container_name: api-trovian
-    ports:
-      - "127.0.0.1:${SERVER_PORT:-8081}:8081"
+    restart: unless-stopped
     env_file:
       - docker.env
-    networks:
-      - trovian-network
-    restart: unless-stopped
-
-networks:
-  trovian-network:
-    driver: bridge
+    ports:
+      - "127.0.0.1:${SERVER_PORT:-8081}:8081"
