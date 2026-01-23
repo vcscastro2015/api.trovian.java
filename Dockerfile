@@ -3,7 +3,7 @@ FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /app
 
 # Copiar arquivos de dependência primeiro (cache de camadas)
-COPY pom.xml .
+COPY pom.xml . 
 RUN mvn dependency:go-offline -B
 
 # Copiar código fonte e compilar
@@ -13,6 +13,13 @@ RUN mvn clean package -DskipTests -B
 # Runtime stage
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
+
+# Instalar curl, netcat e tzdata para timezone
+USER root
+RUN apk add --no-cache curl netcat-openbsd tzdata \
+    && cp /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime \
+    && echo "America/Sao_Paulo" > /etc/timezone \
+    && apk del tzdata  # opcional: remove tzdata para reduzir imagem, mantém /etc/localtime
 
 # Criar usuário não-root para segurança
 RUN addgroup -S spring && adduser -S spring -G spring
@@ -29,9 +36,9 @@ USER spring:spring
 # Expor porta
 EXPOSE 8081
 
-# Health check
+# Health check real usando curl
 HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=5 \
-  CMD nc -z localhost 8081 || exit 1
+  CMD curl -f http://localhost:8081/api/actuator/health || exit 1
 
 # Executar aplicação
 ENTRYPOINT ["java", "-jar", "app.jar"]

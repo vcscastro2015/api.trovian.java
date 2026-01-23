@@ -18,7 +18,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: validate
-    show-sql: ${SHOW_SQL:true}
+    show-sql: ${SHOW_SQL:false}
     properties:
       hibernate:
         format_sql: true
@@ -84,13 +84,24 @@ server:
 logging:
   level:
     root: INFO
-    com.trovian: DEBUG
-    org.springframework.jms: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    com.trovian: INFO
+    org.springframework.jms: WARN
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN
+  file:
+    name: /app/logs/api-trovian.log
+    pattern:
+      file: "%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n"
+    logback:
+      rollingpolicy:
+        fileNamePattern: "/app/logs/api-trovian-%d{yyyy-MM-dd}.log"
+        maxHistory: 30
 
 # Actuator
 management:
+  health:
+    mail:
+      enabled: false
   endpoints:
     web:
       exposure:
@@ -111,3 +122,5 @@ jwt:
 trovian:
   app:
     url: ${APP_URL:http://localhost:4200}
+
+
