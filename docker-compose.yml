@@ -1,68 +1,17 @@
+version: '3.8'
+
 services:
-  # PostgreSQL Database
-  postgres:
-    image: postgres:15-alpine
-    container_name: trovian-postgres
-    environment:
-      POSTGRES_DB: troviandb
-      POSTGRES_USER: trovian
-      POSTGRES_PASSWORD: trovian123
+  api:
+    build: .
+    container_name: api-trovian
     ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - "127.0.0.1:${SERVER_PORT:-8081}:8081"
+    env_file:
+      - docker.env
     networks:
       - trovian-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U trovian"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # ActiveMQ
-  activemq:
-    image: apache/activemq-classic:latest
-    container_name: trovian-activemq
-    ports:
-      - "61616:61616"  # JMS
-      - "8161:8161"    # Web Console
-    environment:
-      ACTIVEMQ_ADMIN_LOGIN: admin
-      ACTIVEMQ_ADMIN_PASSWORD: admin
-    networks:
-      - trovian-network
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8161 || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # MongoDB
-  mongodb:
-    image: mongo:7-jammy
-    container_name: trovian-mongodb
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: trovian
-      MONGO_INITDB_ROOT_PASSWORD: trovian123
-      MONGO_INITDB_DATABASE: troviandb
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongodb_data:/data/db
-    networks:
-      - trovian-network
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-volumes:
-  postgres_data:
-    driver: local
-  mongodb_data:
-    driver: local
+    restart: unless-stopped
 
 networks:
   trovian-network:
-    driver: bridge
+    external: true
