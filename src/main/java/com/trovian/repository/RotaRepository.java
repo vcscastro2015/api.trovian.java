@@ -35,8 +35,12 @@ public interface RotaRepository extends JpaRepository<Rota, Long> {
     /**
      * Busca rotas por cliente
      */
-    @Query("SELECT r FROM Rota r WHERE r.cliente.id = :clienteId")
-    Page<Rota> findByClienteId(@Param("clienteId") Long clienteId, Pageable pageable);
+    @Query("SELECT r FROM Rota r WHERE r.cliente.id = :clienteId " +
+            "AND (:nome IS NULL OR :nome = '' OR LOWER(r.nome) LIKE LOWER(CONCAT('%', :nome, '%'))) "
+    )
+    Page<Rota> findByClienteId(@Param("clienteId") Long clienteId,
+                               @Param("nome") String nome,
+                               Pageable pageable);
 
     /**
      * Busca rotas por veículo

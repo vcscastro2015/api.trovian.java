@@ -52,11 +52,11 @@ public interface ContaPagarRepository extends JpaRepository<ContaPagar, Long> {
 
     Page<ContaPagar> findByDescricaoContainingIgnoreCase(String descricao, Pageable pageable);
 
-    @Query("SELECT SUM(c.valorTotal) FROM ContaPagar c WHERE c.status = :status")
-    BigDecimal sumTotalByStatus(@Param("status") StatusConta status);
+    @Query("SELECT SUM(c.valorTotal) FROM ContaPagar c WHERE c.status = :status AND c.cliente.id = :clienteId")
+    BigDecimal sumTotalByStatus(@Param("status") StatusConta status, @Param("clienteId") Long clientId);
 
-    @Query("SELECT SUM(c.valorTotal - c.valorPago) FROM ContaPagar c WHERE c.status IN ('PENDENTE', 'PARCIAL')")
-    BigDecimal sumSaldoAPagar();
+    @Query("SELECT SUM(c.valorTotal - c.valorPago) FROM ContaPagar c WHERE c.status IN ('PENDENTE', 'PARCIAL') AND c.cliente.id = :clienteId")
+    BigDecimal sumSaldoAPagar(@Param("clienteId") Long clientId);
 
     @Query("SELECT SUM(c.valorTotal) FROM ContaPagar c WHERE c.dataVencimento BETWEEN :dataInicio AND :dataFim")
     BigDecimal sumTotalPorPeriodo(

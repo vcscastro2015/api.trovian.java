@@ -72,6 +72,11 @@ public class ChecklistRealizado {
     @OneToMany(mappedBy = "checklistRealizado", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RespostaItemChecklist> respostas = new ArrayList<>();
 
+    @NotNull(message = "Cliente é obrigatório")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cliente_id", nullable = false)
+    private Cliente cliente;
+
     @PrePersist
     protected void onCreate() {
         if (this.dataHoraInicio == null) {

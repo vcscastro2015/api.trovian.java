@@ -1,10 +1,12 @@
 package com.trovian.service;
 
 import com.trovian.dto.MovimentacaoEstoqueDTO;
+import com.trovian.entity.Cliente;
 import com.trovian.entity.MovimentacaoEstoque;
 import com.trovian.entity.OrdemServico;
 import com.trovian.entity.Peca;
 import com.trovian.enums.TipoMovimentacaoEstoque;
+import com.trovian.repository.ClienteRepository;
 import com.trovian.repository.MovimentacaoEstoqueRepository;
 import com.trovian.repository.OrdemServicoRepository;
 import com.trovian.repository.PecaRepository;
@@ -29,6 +31,7 @@ public class MovimentacaoEstoqueService {
     private final MovimentacaoEstoqueRepository movimentacaoEstoqueRepository;
     private final PecaRepository pecaRepository;
     private final OrdemServicoRepository ordemServicoRepository;
+    private final ClienteRepository clienteRepository;
 
     @Transactional
     public MovimentacaoEstoqueDTO create(MovimentacaoEstoqueDTO dto) {
@@ -37,7 +40,11 @@ public class MovimentacaoEstoqueService {
         Peca peca = pecaRepository.findById(dto.getPecaId())
             .orElseThrow(() -> new RuntimeException("Peça não encontrada com ID: " + dto.getPecaId()));
 
-        MovimentacaoEstoque movimentacao = toEntity(dto);
+        // Validar cliente
+        Cliente cliente = clienteRepository.findById(dto.getClienteId())
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado com ID: " + dto.getClienteId()));
+
+        MovimentacaoEstoque movimentacao = toEntity(dto, cliente);
         movimentacao.setPeca(peca);
 
         processarMovimentacao(peca, dto.getTipoMovimentacao(), dto.getQuantidade(), dto.getValorUnitario());
@@ -57,6 +64,11 @@ public class MovimentacaoEstoqueService {
             : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
         return movimentacaoEstoqueRepository.findAll(pageable).map(this::toDTO);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<MovimentacaoEstoqueDTO> findByCliente(Long clienteId, Pageable pageable) {
+        return movimentacaoEstoqueRepository.findByClienteId(clienteId, pageable).map(this::toDTO);
     }
 
     @Transactional(readOnly = true)
@@ -155,7 +167,7 @@ public class MovimentacaoEstoqueService {
         dto.setValorUnitario(entity.getValorUnitario());
         dto.setObservacao(entity.getObservacao());
         dto.setUsuario(entity.getUsuario());
-
+        dto.setClienteId(entity.getCliente().getId());
         if (entity.getOrdemServico() != null) {
             dto.setOrdemServicoId(entity.getOrdemServico().getId());
             dto.setOrdemServicoNumero(entity.getOrdemServico().getNumeroOs());
@@ -164,7 +176,7 @@ public class MovimentacaoEstoqueService {
         return dto;
     }
 
-    private MovimentacaoEstoque toEntity(MovimentacaoEstoqueDTO dto) {
+    private MovimentacaoEstoque toEntity(MovimentacaoEstoqueDTO dto, Cliente cliente) {
         MovimentacaoEstoque entity = new MovimentacaoEstoque();
         entity.setTipoMovimentacao(dto.getTipoMovimentacao());
         entity.setQuantidade(dto.getQuantidade());
@@ -172,6 +184,7 @@ public class MovimentacaoEstoqueService {
         entity.setValorUnitario(dto.getValorUnitario());
         entity.setObservacao(dto.getObservacao());
         entity.setUsuario(dto.getUsuario());
+        entity.setCliente(cliente);
 
         if (dto.getOrdemServicoId() != null) {
             OrdemServico os = ordemServicoRepository.findById(dto.getOrdemServicoId())

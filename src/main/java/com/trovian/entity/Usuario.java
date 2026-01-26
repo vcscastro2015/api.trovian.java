@@ -1,6 +1,7 @@
 package com.trovian.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -70,4 +71,9 @@ public class Usuario {
         inverseJoinColumns = @JoinColumn(name = "funcionalidade_id")
     )
     private Set<Funcionalidade> funcionalidades = new HashSet<>();
+
+    @NotNull(message = "Cliente é obrigatório")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cliente_id", nullable = false)
+    private Cliente cliente;
 }

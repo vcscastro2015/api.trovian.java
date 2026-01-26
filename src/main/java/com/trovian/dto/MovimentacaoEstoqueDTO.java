@@ -59,4 +59,8 @@ public class MovimentacaoEstoqueDTO {
     @Size(max = 100, message = "Usuário deve ter no máximo 100 caracteres")
     @Schema(description = "Usuário que realizou a movimentação", example = "admin")
     private String usuario;
+
+    @NotNull(message = "ID do cliente é obrigatório")
+    @Schema(description = "ID do cliente proprietário", example = "1", required = true)
+    private Long clienteId;
 }

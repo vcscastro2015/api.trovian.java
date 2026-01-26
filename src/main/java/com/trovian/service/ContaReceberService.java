@@ -125,14 +125,14 @@ public class ContaReceberService {
     }
 
     @Transactional(readOnly = true)
-    public BigDecimal getTotalPendente() {
-        BigDecimal total = contaReceberRepository.sumTotalByStatus(StatusConta.PENDENTE);
+    public BigDecimal getTotalPendente(Long clienteId) {
+        BigDecimal total = contaReceberRepository.sumTotalByStatus(StatusConta.PENDENTE, clienteId);
         return total != null ? total : BigDecimal.ZERO;
     }
 
     @Transactional(readOnly = true)
-    public BigDecimal getSaldoAReceber() {
-        BigDecimal saldo = contaReceberRepository.sumSaldoAReceber();
+    public BigDecimal getSaldoAReceber(Long clienteId) {
+        BigDecimal saldo = contaReceberRepository.sumSaldoAReceber(clienteId);
         return saldo != null ? saldo : BigDecimal.ZERO;
     }
 

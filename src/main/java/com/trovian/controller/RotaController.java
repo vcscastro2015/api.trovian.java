@@ -151,11 +151,16 @@ public class RotaController {
             @Parameter(description = "Número da página") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Tamanho da página") @RequestParam(defaultValue = "10") int size,
             @Parameter(description = "Campo para ordenação") @RequestParam(defaultValue = "id") String sortBy,
-            @Parameter(description = "Direção da ordenação") @RequestParam(defaultValue = "ASC") String direction
+            @Parameter(description = "Direção da ordenação") @RequestParam(defaultValue = "ASC") String direction,
+            @Parameter(description = "Filtro por nome") @RequestParam(required = false) String nome
     ) {
         Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
-        return ResponseEntity.ok(rotaService.findByCliente(clienteId, pageable));
+
+        RotaFiltrosDTO filtros = new RotaFiltrosDTO();
+        filtros.setNome(nome);
+
+        return ResponseEntity.ok(rotaService.findByCliente(clienteId, filtros, pageable));
     }
 
     /**

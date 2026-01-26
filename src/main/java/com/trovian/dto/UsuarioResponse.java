@@ -25,4 +25,6 @@ public class UsuarioResponse {
     private LocalDateTime ultimoLogin;
     private LocalDateTime criadoEm;
     private LocalDateTime atualizadoEm;
+    private Long clienteId;
+    private String clienteNome;
 }

@@ -52,6 +52,32 @@ public class EquipamentoController {
         return ResponseEntity.ok(equipamentos);
     }
 
+    @Operation(summary = "Busca equipamentos por cliente",
+            description = "Retorna uma página de equipamentos de um cliente específico")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Página de equipamentos retornada com sucesso",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = Page.class)))
+    })
+    @GetMapping(value = "/cliente/{clienteId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Page<EquipamentoDTO>> findByCliente(
+            @Parameter(description = "ID do cliente", example = "1")
+            @PathVariable Long clienteId,
+            @Parameter(description = "Número da página (inicia em 0)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Tamanho da página", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Campo para ordenação", example = "id")
+            @RequestParam(defaultValue = "id") String sortBy,
+            @Parameter(description = "Direção da ordenação (ASC ou DESC)", example = "ASC")
+            @RequestParam(defaultValue = "ASC") String direction) {
+
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+        Page<EquipamentoDTO> equipamentos = equipamentoService.findByCliente(clienteId, pageable);
+        return ResponseEntity.ok(equipamentos);
+    }
+
     @Operation(summary = "Busca equipamento por ID", description = "Retorna um equipamento específico pelo seu ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Equipamento encontrado",

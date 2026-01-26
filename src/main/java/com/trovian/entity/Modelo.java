@@ -36,6 +36,11 @@ public class Modelo {
     @Column(nullable = false)
     private Boolean status;
 
+    @NotNull(message = "Cliente é obrigatório")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cliente_id", nullable = false)
+    private Cliente cliente;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 

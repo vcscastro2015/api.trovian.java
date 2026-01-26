@@ -1,7 +1,9 @@
 package com.trovian.service;
 
 import com.trovian.dto.PecaDTO;
+import com.trovian.entity.Cliente;
 import com.trovian.entity.Peca;
+import com.trovian.repository.ClienteRepository;
 import com.trovian.repository.PecaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +23,7 @@ import java.util.stream.Collectors;
 public class PecaService {
 
     private final PecaRepository pecaRepository;
+    private final ClienteRepository clienteRepository;
 
     @Transactional
     public PecaDTO create(PecaDTO dto) {
@@ -30,7 +33,11 @@ public class PecaService {
             throw new RuntimeException("Já existe uma peça com o código: " + dto.getCodigo());
         }
 
-        Peca peca = toEntity(dto);
+        // Validar cliente
+        Cliente cliente = clienteRepository.findById(dto.getClienteId())
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado com ID: " + dto.getClienteId()));
+
+        Peca peca = toEntity(dto, cliente);
         Peca saved = pecaRepository.save(peca);
         log.info("Peça criada com sucesso. ID: {}", saved.getId());
         return toDTO(saved);
@@ -44,6 +51,11 @@ public class PecaService {
             : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
         return pecaRepository.findAll(pageable).map(this::toDTO);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<PecaDTO> findByCliente(Long clienteId, Pageable pageable) {
+        return pecaRepository.findByClienteId(clienteId, pageable).map(this::toDTO);
     }
 
     @Transactional(readOnly = true)
@@ -68,23 +80,23 @@ public class PecaService {
     }
 
     @Transactional(readOnly = true)
-    public List<PecaDTO> findPecasEstoqueBaixo() {
+    public List<PecaDTO> findPecasEstoqueBaixo(Long clienteId) {
         log.info("Buscando peças com estoque baixo");
-        return pecaRepository.findPecasEstoqueBaixo()
+        return pecaRepository.findPecasEstoqueBaixo(clienteId)
             .stream()
             .map(this::toDTO)
             .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public List<String> findAllCategorias() {
+    public List<String> findAllCategorias(Long clienteId) {
         log.info("Buscando todas as categorias");
-        return pecaRepository.findAllCategorias();
+        return pecaRepository.findAllCategorias(clienteId);
     }
 
     @Transactional(readOnly = true)
-    public Page<PecaDTO> findByDescricaoContaining(String descricao, Pageable pageable) {
-        return pecaRepository.findByDescricaoContaining(descricao, pageable).map(this::toDTO);
+    public Page<PecaDTO> findByDescricaoContaining(Long clienteId, String descricao, Pageable pageable) {
+        return pecaRepository.findByDescricaoContaining(clienteId, descricao, pageable).map(this::toDTO);
     }
 
     @Transactional
@@ -93,7 +105,12 @@ public class PecaService {
         Peca peca = pecaRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Peça não encontrada com ID: " + id));
 
+        // Validar cliente
+        Cliente cliente = clienteRepository.findById(dto.getClienteId())
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado com ID: " + dto.getClienteId()));
+
         updateEntityFromDTO(peca, dto);
+        peca.setCliente(cliente);
         Peca updated = pecaRepository.save(peca);
         log.info("Peça atualizada com sucesso. ID: {}", id);
         return toDTO(updated);
@@ -122,10 +139,11 @@ public class PecaService {
         dto.setStatus(entity.getStatus());
         dto.setObservacoes(entity.getObservacoes());
         dto.setEstoqueBaixo(entity.verificarEstoqueBaixo());
+        dto.setClienteId(entity.getCliente().getId());
         return dto;
     }
 
-    private Peca toEntity(PecaDTO dto) {
+    private Peca toEntity(PecaDTO dto, Cliente cliente) {
         Peca entity = new Peca();
         entity.setCodigo(dto.getCodigo());
         entity.setDescricao(dto.getDescricao());
@@ -136,6 +154,7 @@ public class PecaService {
         entity.setAplicacaoVeiculos(dto.getAplicacaoVeiculos());
         entity.setStatus(dto.getStatus() != null ? dto.getStatus() : true);
         entity.setObservacoes(dto.getObservacoes());
+        entity.setCliente(cliente);
         return entity;
     }
 

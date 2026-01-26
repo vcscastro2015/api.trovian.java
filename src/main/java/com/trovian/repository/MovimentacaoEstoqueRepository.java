@@ -33,4 +33,6 @@ public interface MovimentacaoEstoqueRepository extends JpaRepository<Movimentaca
 
     @Query("SELECT m FROM MovimentacaoEstoque m WHERE m.usuario = :usuario")
     Page<MovimentacaoEstoque> findByUsuario(@Param("usuario") String usuario, Pageable pageable);
+
+    Page<MovimentacaoEstoque> findByClienteId(Long clienteId, Pageable pageable);
 }

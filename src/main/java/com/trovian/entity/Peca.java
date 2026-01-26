@@ -58,6 +58,11 @@ public class Peca {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @NotNull(message = "Cliente é obrigatório")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cliente_id", nullable = false)
+    private Cliente cliente;
+
     @PrePersist
     protected void onCreate() {
         this.dataCadastro = LocalDateTime.now();

@@ -50,6 +50,11 @@ public class CentroCustoService {
         return toDTO(centroCusto);
     }
 
+    @Transactional(readOnly = true)
+    public Page<CentroCustoDTO> findByCliente(Long clienteId, Pageable pageable) {
+        return centroCustoRepository.findByClienteId(clienteId, pageable).map(this::toDTO);
+    }
+
     @Transactional
     public CentroCustoDTO update(Long id, CentroCustoDTO dto) {
         CentroCusto centroCusto = centroCustoRepository.findById(id)

@@ -39,5 +39,11 @@ public interface ChecklistRealizadoRepository extends JpaRepository<ChecklistRea
 
     Page<ChecklistRealizado> findByStatus(StatusChecklist status, Pageable pageable);
 
-    Long countByStatus(StatusChecklist status);
+    Page<ChecklistRealizado> findByClienteIdAndStatus(Long clienteId, StatusChecklist status, Pageable pageable);
+
+    Long countByClienteIdAndStatus(Long clienteId, StatusChecklist status);
+
+    Long countByClienteId(Long clienteId);
+
+    Page<ChecklistRealizado> findByClienteId(Long clienteId, Pageable pageable);
 }

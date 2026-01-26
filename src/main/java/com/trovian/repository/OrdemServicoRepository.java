@@ -33,6 +33,10 @@ public interface OrdemServicoRepository extends JpaRepository<OrdemServico, Long
     @Query("SELECT os FROM OrdemServico os WHERE os.dataAbertura BETWEEN :inicio AND :fim")
     Page<OrdemServico> findByDataAberturaBetween(@Param("inicio") LocalDate inicio, @Param("fim") LocalDate fim, Pageable pageable);
 
-    @Query("SELECT os FROM OrdemServico os WHERE os.dataPrevista <= :data AND os.status NOT IN ('CONCLUIDA', 'CANCELADA')")
-    List<OrdemServico> findOrdensAtrasadas(@Param("data") LocalDate data);
+    @Query("SELECT os FROM OrdemServico os WHERE os.dataPrevista <= :data AND os.status NOT IN ('CONCLUIDA', 'CANCELADA') AND os.cliente.id = :cliente")
+    List<OrdemServico> findOrdensAtrasadas(@Param("cliente") Long clienteId, @Param("data") LocalDate data);
+
+    Page<OrdemServico> findByClienteId(Long clienteId, Pageable pageable);
+
+    Page<OrdemServico> findByClienteIdAndStatus(Long clienteId, StatusOrdemServico status, Pageable pageable);
 }

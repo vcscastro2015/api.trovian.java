@@ -41,4 +41,8 @@ public class CategoriaContaDTO {
 
     @Schema(description = "Status ativo/inativo", example = "true")
     private Boolean status;
+
+    @NotNull(message = "ID do cliente é obrigatório")
+    @Schema(description = "ID do cliente proprietário", example = "1", required = true)
+    private Long clienteId;
 }

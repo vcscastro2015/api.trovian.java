@@ -204,17 +204,17 @@ public class ContaReceberController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/total/pendente")
+    @GetMapping("/total/pendente/{clienteId}")
     @Operation(summary = "Total de contas pendentes")
-    public ResponseEntity<BigDecimal> totalPendente() {
-        BigDecimal total = contaReceberService.getTotalPendente();
+    public ResponseEntity<BigDecimal> totalPendente(@PathVariable Long clienteId) {
+        BigDecimal total = contaReceberService.getTotalPendente(clienteId);
         return ResponseEntity.ok(total);
     }
 
-    @GetMapping("/saldo/a-receber")
+    @GetMapping("/saldo/a-receber/{clienteId}")
     @Operation(summary = "Saldo total a receber")
-    public ResponseEntity<BigDecimal> saldoAReceber() {
-        BigDecimal saldo = contaReceberService.getSaldoAReceber();
+    public ResponseEntity<BigDecimal> saldoAReceber(@PathVariable Long clienteId) {
+        BigDecimal saldo = contaReceberService.getSaldoAReceber(clienteId);
         return ResponseEntity.ok(saldo);
     }
 }

@@ -72,6 +72,11 @@ public class ContaPagarService {
     }
 
     @Transactional(readOnly = true)
+    public Page<ContaPagarDTO> findByCliente(Long clienteId, Pageable pageable) {
+        return contaPagarRepository.findByClienteId(clienteId, pageable).map(this::toDTO);
+    }
+
+    @Transactional(readOnly = true)
     public Page<ContaPagarDTO> findByFornecedor(Long fornecedorId, Pageable pageable) {
         return contaPagarRepository.findByFornecedorId(fornecedorId, pageable).map(this::toDTO);
     }
@@ -121,14 +126,14 @@ public class ContaPagarService {
     }
 
     @Transactional(readOnly = true)
-    public BigDecimal getTotalPendente() {
-        BigDecimal total = contaPagarRepository.sumTotalByStatus(StatusConta.PENDENTE);
+    public BigDecimal getTotalPendente(Long clienteId) {
+        BigDecimal total = contaPagarRepository.sumTotalByStatus(StatusConta.PENDENTE, clienteId);
         return total != null ? total : BigDecimal.ZERO;
     }
 
     @Transactional(readOnly = true)
-    public BigDecimal getSaldoAPagar() {
-        BigDecimal saldo = contaPagarRepository.sumSaldoAPagar();
+    public BigDecimal getSaldoAPagar(Long clienteId) {
+        BigDecimal saldo = contaPagarRepository.sumSaldoAPagar(clienteId);
         return saldo != null ? saldo : BigDecimal.ZERO;
     }
 

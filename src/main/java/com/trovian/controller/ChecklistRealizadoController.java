@@ -56,6 +56,25 @@ public class ChecklistRealizadoController {
         return ResponseEntity.ok(checklists);
     }
 
+    @GetMapping("/cliente/{clienteId}")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
+    })
+    public ResponseEntity<Page<ChecklistRealizadoDTO>> findByCliente(
+            @Parameter(description = "ID do cliente", example = "1")
+            @PathVariable Long clienteId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "dataHoraInicio") String sortBy,
+            @RequestParam(defaultValue = "DESC") String direction) {
+
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+
+        Page<ChecklistRealizadoDTO> lista = checklistRealizadoService.findByCliente(clienteId, pageable);
+        return ResponseEntity.ok(lista);
+    }
+
     @Operation(summary = "Busca checklist realizado por ID", description = "Retorna um checklist realizado específico pelo seu ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Checklist encontrado",
@@ -130,9 +149,9 @@ public class ChecklistRealizadoController {
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = EstatisticasChecklistDTO.class)))
     })
-    @GetMapping(value = "/estatisticas", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<EstatisticasChecklistDTO> getEstatisticas() {
-        EstatisticasChecklistDTO estatisticas = checklistRealizadoService.getEstatisticas();
+    @GetMapping(value = "/cliente/{clienteId}/estatisticas", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<EstatisticasChecklistDTO> getEstatisticas(@PathVariable Long clienteId) {
+        EstatisticasChecklistDTO estatisticas = checklistRealizadoService.getEstatisticas(clienteId);
         return ResponseEntity.ok(estatisticas);
     }
 
@@ -143,8 +162,9 @@ public class ChecklistRealizadoController {
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = Page.class)))
     })
-    @GetMapping(value = "/status/{status}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/cliente/{clienteId}/status/{status}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Page<ChecklistRealizadoDTO>> getChecklistsByStatus(
+            @PathVariable Long clienteId,
             @Parameter(description = "Status do checklist (EM_ANDAMENTO, APROVADO ou REPROVADO)", required = true)
             @PathVariable StatusChecklist status,
             @Parameter(description = "Número da página (inicia em 0)", example = "0")
@@ -158,7 +178,7 @@ public class ChecklistRealizadoController {
 
         Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
-        Page<ChecklistRealizadoDTO> checklists = checklistRealizadoService.findByStatus(status, pageable);
+        Page<ChecklistRealizadoDTO> checklists = checklistRealizadoService.findByStatus(clienteId, status, pageable);
         return ResponseEntity.ok(checklists);
     }
 

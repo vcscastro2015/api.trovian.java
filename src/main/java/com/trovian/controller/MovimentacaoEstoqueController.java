@@ -5,6 +5,8 @@ import com.trovian.enums.TipoMovimentacaoEstoque;
 import com.trovian.service.MovimentacaoEstoqueService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +48,25 @@ public class MovimentacaoEstoqueController {
         @RequestParam(defaultValue = "DESC") String direction
     ) {
         Page<MovimentacaoEstoqueDTO> movimentacoes = movimentacaoEstoqueService.findAll(page, size, sortBy, direction);
+        return ResponseEntity.ok(movimentacoes);
+    }
+
+    @GetMapping("/cliente/{clienteId}")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
+    })
+    public ResponseEntity<Page<MovimentacaoEstoqueDTO>> findByCliente(
+            @Parameter(description = "ID do cliente", example = "1")
+            @PathVariable Long clienteId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "dataMovimentacao") String sortBy,
+            @RequestParam(defaultValue = "DESC") String direction) {
+
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+
+        Page<MovimentacaoEstoqueDTO> movimentacoes = movimentacaoEstoqueService.findByCliente(clienteId, pageable);
         return ResponseEntity.ok(movimentacoes);
     }
 

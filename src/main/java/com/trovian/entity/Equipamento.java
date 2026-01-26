@@ -56,6 +56,11 @@ public class Equipamento {
     @JoinColumn(name = "modelo_id", nullable = false)
     private Modelo modelo;
 
+    @NotNull(message = "Cliente é obrigatório")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cliente_id", nullable = false)
+    private Cliente cliente;
+
     @Column(name = "equipamento_alocado")
     private Boolean equipamentoAlocado;
 

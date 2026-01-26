@@ -5,6 +5,8 @@ import com.trovian.enums.StatusOrdemServico;
 import com.trovian.service.OrdemServicoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -46,6 +49,25 @@ public class OrdemServicoController {
         return ResponseEntity.ok(ordens);
     }
 
+    @GetMapping("/cliente/{clienteId}")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
+    })
+    public ResponseEntity<Page<OrdemServicoDTO>> findByCliente(
+            @Parameter(description = "ID do cliente", example = "1")
+            @PathVariable Long clienteId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "DESC") String direction) {
+
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+
+        Page<OrdemServicoDTO> fornecedores = ordemServicoService.findByCliente(clienteId, pageable);
+        return ResponseEntity.ok(fornecedores);
+    }
+
     @GetMapping("/{id}")
     @Operation(summary = "Buscar ordem de serviço por ID")
     public ResponseEntity<OrdemServicoDTO> findById(@PathVariable Long id) {
@@ -63,17 +85,16 @@ public class OrdemServicoController {
         return ResponseEntity.ok(ordem);
     }
 
-    @GetMapping("/status/{status}")
+    @GetMapping("/cliente/{clienteId}/status/{status}")
     @Operation(summary = "Buscar ordens de serviço por status")
-    public ResponseEntity<Page<OrdemServicoDTO>> findByStatus(
-        @Parameter(description = "Status da OS", required = true)
+    public ResponseEntity<Page<OrdemServicoDTO>> findByStatus(@PathVariable Long clienteId,
         @PathVariable String status,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "20") int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
         StatusOrdemServico statusEnum = StatusOrdemServico.valueOf(status.toUpperCase());
-        Page<OrdemServicoDTO> ordens = ordemServicoService.findByStatus(statusEnum, pageable);
+        Page<OrdemServicoDTO> ordens = ordemServicoService.findByStatus(clienteId, statusEnum, pageable);
         return ResponseEntity.ok(ordens);
     }
 
@@ -90,10 +111,10 @@ public class OrdemServicoController {
         return ResponseEntity.ok(ordens);
     }
 
-    @GetMapping("/atrasadas")
+    @GetMapping("/cliente/{clienteId}/atrasadas")
     @Operation(summary = "Listar ordens de serviço atrasadas")
-    public ResponseEntity<List<OrdemServicoDTO>> findOrdensAtrasadas() {
-        List<OrdemServicoDTO> ordens = ordemServicoService.findOrdensAtrasadas();
+    public ResponseEntity<List<OrdemServicoDTO>> findOrdensAtrasadas(@PathVariable Long clienteId) {
+        List<OrdemServicoDTO> ordens = ordemServicoService.findOrdensAtrasadas(clienteId);
         return ResponseEntity.ok(ordens);
     }
 

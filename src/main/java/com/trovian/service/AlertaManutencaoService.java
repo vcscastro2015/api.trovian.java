@@ -28,6 +28,7 @@ public class AlertaManutencaoService {
     private final OrdemServicoRepository ordemServicoRepository;
     private final VeiculoRepository veiculoRepository;
     private final PecaRepository pecaRepository;
+    private final ClienteRepository clienteRepository;
 
     private static final int KM_REVISAO_PREVENTIVA = 10000;
     private static final int KM_TROCA_PNEUS = 80000;
@@ -35,7 +36,12 @@ public class AlertaManutencaoService {
     @Transactional
     public AlertaManutencaoDTO create(AlertaManutencaoDTO dto) {
         log.info("Criando alerta de manutenção: {}", dto.getTitulo());
-        AlertaManutencao alerta = toEntity(dto);
+
+        // Validar cliente
+        Cliente cliente = clienteRepository.findById(dto.getClienteId())
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado com ID: " + dto.getClienteId()));
+
+        AlertaManutencao alerta = toEntity(dto, cliente);
         AlertaManutencao saved = alertaManutencaoRepository.save(alerta);
         log.info("Alerta criado com sucesso. ID: {}", saved.getId());
         return toDTO(saved);
@@ -52,6 +58,11 @@ public class AlertaManutencaoService {
     }
 
     @Transactional(readOnly = true)
+    public Page<AlertaManutencaoDTO> findByCliente(Long clienteId, Pageable pageable) {
+        return alertaManutencaoRepository.findByClienteId(clienteId, pageable).map(this::toDTO);
+    }
+
+    @Transactional(readOnly = true)
     public AlertaManutencaoDTO findById(Long id) {
         log.info("Buscando alerta por ID: {}", id);
         AlertaManutencao alerta = alertaManutencaoRepository.findById(id)
@@ -60,8 +71,8 @@ public class AlertaManutencaoService {
     }
 
     @Transactional(readOnly = true)
-    public List<AlertaManutencaoDTO> findAlertasNaoLidosNaoResolvidos() {
-        return alertaManutencaoRepository.findAlertasNaoLidosNaoResolvidos()
+    public List<AlertaManutencaoDTO> findAlertasNaoLidosNaoResolvidos(Long clienteId) {
+        return alertaManutencaoRepository.findAlertasNaoLidosNaoResolvidos(clienteId)
             .stream()
             .map(this::toDTO)
             .collect(Collectors.toList());
@@ -76,8 +87,8 @@ public class AlertaManutencaoService {
     }
 
     @Transactional(readOnly = true)
-    public List<AlertaManutencaoDTO> findAlertasCriticosNaoResolvidos() {
-        return alertaManutencaoRepository.findAlertasCriticosNaoResolvidos()
+    public List<AlertaManutencaoDTO> findAlertasCriticosNaoResolvidos(Long clienteId) {
+        return alertaManutencaoRepository.findAlertasCriticosNaoResolvidos(clienteId)
             .stream()
             .map(this::toDTO)
             .collect(Collectors.toList());
@@ -160,10 +171,10 @@ public class AlertaManutencaoService {
     }
 
     @Transactional
-    public void verificarPecasEstoqueBaixo() {
+    public void verificarPecasEstoqueBaixo(Long clienteId) {
         log.info("Verificando peças com estoque baixo");
 
-        List<Peca> pecasEstoqueBaixo = pecaRepository.findPecasEstoqueBaixo();
+        List<Peca> pecasEstoqueBaixo = pecaRepository.findPecasEstoqueBaixo(clienteId);
 
         for (Peca peca : pecasEstoqueBaixo) {
             gerarAlertaEstoqueBaixo(peca);
@@ -304,6 +315,7 @@ public class AlertaManutencaoService {
         dto.setResolvido(entity.getResolvido());
         dto.setDataResolucao(entity.getDataResolucao());
         dto.setObservacaoResolucao(entity.getObservacaoResolucao());
+        dto.setClienteId(entity.getCliente().getId());
 
         if (entity.getVeiculo() != null) {
             dto.setVeiculoId(entity.getVeiculo().getId());
@@ -323,13 +335,14 @@ public class AlertaManutencaoService {
         return dto;
     }
 
-    private AlertaManutencao toEntity(AlertaManutencaoDTO dto) {
+    private AlertaManutencao toEntity(AlertaManutencaoDTO dto, Cliente cliente) {
         AlertaManutencao entity = new AlertaManutencao();
         entity.setTipoAlerta(dto.getTipoAlerta());
         entity.setPrioridade(dto.getPrioridade());
         entity.setTitulo(dto.getTitulo());
         entity.setMensagem(dto.getMensagem());
         entity.setKmVeiculo(dto.getKmVeiculo());
+        entity.setCliente(cliente);
 
         if (dto.getVeiculoId() != null) {
             Veiculo veiculo = veiculoRepository.findById(dto.getVeiculoId())

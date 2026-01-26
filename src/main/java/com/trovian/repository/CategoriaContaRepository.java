@@ -21,4 +21,6 @@ public interface CategoriaContaRepository extends JpaRepository<CategoriaConta, 
     Page<CategoriaConta> findByCategoriaPaiId(Long categoriaPaiId, Pageable pageable);
 
     Page<CategoriaConta> findByNomeContainingIgnoreCase(String nome, Pageable pageable);
+
+    Page<CategoriaConta> findByClienteId(Long clienteId, Pageable pageable);
 }
