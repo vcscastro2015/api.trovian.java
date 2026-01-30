@@ -94,7 +94,7 @@ public class UsuarioController {
      * POST /api/usuarios
      */
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<UsuarioResponse> criar(@Valid @RequestBody UsuarioCriarRequest request) {
         UsuarioResponse response = usuarioService.criar(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -105,7 +105,7 @@ public class UsuarioController {
      * PUT /api/usuarios/{id}
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<UsuarioResponse> atualizar(
             @PathVariable Long id,
             @Valid @RequestBody UsuarioAtualizarRequest request) {
@@ -119,7 +119,7 @@ public class UsuarioController {
      * DELETE /api/usuarios/{id}
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<MessageResponse> deletar(@PathVariable Long id) {
         MessageResponse response = usuarioService.deletar(id);
         return ResponseEntity.ok(response);
@@ -130,7 +130,7 @@ public class UsuarioController {
      * DELETE /api/usuarios/{id}/permanente
      */
     @DeleteMapping("/{id}/permanente")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<MessageResponse> deletarPermanente(@PathVariable Long id) {
         MessageResponse response = usuarioService.deletarPermanente(id);
         return ResponseEntity.ok(response);
@@ -141,7 +141,7 @@ public class UsuarioController {
      * PATCH /api/usuarios/{id}/ativar
      */
     @PatchMapping("/{id}/ativar")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<MessageResponse> ativar(@PathVariable Long id) {
         MessageResponse response = usuarioService.ativar(id);
         return ResponseEntity.ok(response);
@@ -152,7 +152,7 @@ public class UsuarioController {
      * PATCH /api/usuarios/{id}/desativar
      */
     @PatchMapping("/{id}/desativar")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<MessageResponse> desativar(@PathVariable Long id) {
         MessageResponse response = usuarioService.desativar(id);
         return ResponseEntity.ok(response);
@@ -163,7 +163,7 @@ public class UsuarioController {
      * PATCH /api/usuarios/{id}/roles
      */
     @PatchMapping("/{id}/roles")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<UsuarioResponse> atualizarRoles(
             @PathVariable Long id,
             @Valid @RequestBody UsuarioRolesRequest request) {
@@ -215,6 +215,13 @@ public class UsuarioController {
      * Obter estatísticas de usuários
      * GET /api/usuarios/estatisticas
      */
+    @GetMapping("estatisticas")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<UsuarioEstatisticasResponse> obterEstatisticasAdm() {
+        UsuarioEstatisticasResponse response = usuarioService.obterEstatisticasAdm();
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("cliente/{clienteId}/estatisticas")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<UsuarioEstatisticasResponse> obterEstatisticas(@PathVariable Long clienteId) {

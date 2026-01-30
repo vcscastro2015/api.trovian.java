@@ -59,11 +59,17 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
             Pageable pageable
     );
 
+    @Query("SELECT COUNT(u) FROM Usuario u WHERE u.ativo = true")
+    long countUsuariosAtivos();
+
+    @Query("SELECT COUNT(u) FROM Usuario u WHERE u.ativo = false")
+    long countUsuariosInativos();
+
     @Query("SELECT COUNT(u) FROM Usuario u WHERE u.ativo = true AND u.cliente.id = :cliente")
-    long countUsuariosAtivos(@Param("cliente") Long clienteId);
+    long countUsuariosAtivosByClienteId(@Param("cliente") Long clienteId);
 
     @Query("SELECT COUNT(u) FROM Usuario u WHERE u.ativo = false AND u.cliente.id = :cliente")
-    long countUsuariosInativos(@Param("cliente") Long clienteId);
+    long countUsuariosInativosByClienteId(@Param("cliente") Long clienteId);
 
     @Query("SELECT u FROM Usuario u WHERE LOWER(u.nome) LIKE LOWER(CONCAT('%', :termo, '%')) " +
            "OR LOWER(u.email) LIKE LOWER(CONCAT('%', :termo, '%'))")
