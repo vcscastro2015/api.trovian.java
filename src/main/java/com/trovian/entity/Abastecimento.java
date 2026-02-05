@@ -30,7 +30,7 @@ public class Abastecimento {
 
     @NotNull(message = "Motorista é obrigatório")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "motorista_id", nullable = false)
+    @JoinColumn(name = "motorista_id")
     private Motorista motorista;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -91,6 +91,8 @@ public class Abastecimento {
 
     @Column(name = "status")
     private Boolean status;
+
+    private Boolean temImagem = false;
 
     @PrePersist
     protected void onCreate() {

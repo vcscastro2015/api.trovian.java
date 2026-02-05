@@ -40,6 +40,9 @@ public class CategoriaConta {
     @Column(nullable = false)
     private Boolean status = true;
 
+    @Column(nullable = false)
+    private Boolean podeEditar = true;
+
     @Temporal(TemporalType.DATE)
     @Column(nullable = false, updatable = false)
     private Date dataCadastro = new Date();

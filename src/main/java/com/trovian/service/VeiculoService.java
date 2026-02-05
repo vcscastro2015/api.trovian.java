@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -287,7 +288,9 @@ public class VeiculoService {
         veiculo.setChassi(dto.getChassi());
         veiculo.setCor(dto.getCor());
         veiculo.setObservacao(dto.getObservacao());
-        veiculo.setPlaca(dto.getPlaca());
+        if(Objects.nonNull(dto.getPlaca())) {
+            veiculo.setPlaca(dto.getPlaca().toUpperCase());
+        }
         veiculo.setVelocidadeMaxima(dto.getVelocidadeMaxima());
         veiculo.setVelocidadeMaximaChuva(dto.getVelocidadeMaximaChuva());
         veiculo.setVelocidadeMaximaDesaceleracao(dto.getVelocidadeMaximaDesaceleracao());

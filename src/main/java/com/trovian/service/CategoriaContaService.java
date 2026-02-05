@@ -116,6 +116,7 @@ public class CategoriaContaService {
         entity.setTipo(dto.getTipo());
         entity.setCodigo(dto.getCodigo());
         entity.setStatus(dto.getStatus() != null ? dto.getStatus() : true);
+        entity.setPodeEditar(dto.getPodeEditar() != null ? dto.getPodeEditar(): true);
         if (dto.getCategoriaPaiId() != null) {
             CategoriaConta pai = categoriaContaRepository.findById(dto.getCategoriaPaiId())
                 .orElse(null);
@@ -131,6 +132,7 @@ public class CategoriaContaService {
         entity.setTipo(dto.getTipo());
         entity.setCodigo(dto.getCodigo());
         entity.setStatus(dto.getStatus());
+        entity.setPodeEditar(dto.getPodeEditar());
         if (dto.getCategoriaPaiId() != null) {
             CategoriaConta pai = categoriaContaRepository.findById(dto.getCategoriaPaiId())
                 .orElse(null);

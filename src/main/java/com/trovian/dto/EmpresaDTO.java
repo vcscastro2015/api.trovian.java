@@ -1,5 +1,7 @@
 package com.trovian.dto;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.trovian.serialization.EnderecoDeserializer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,18 +22,6 @@ public class EmpresaDTO {
     @Schema(description = "Inscrição estadual", example = "7010073042")
     private String ie;
 
-    @Schema(description = "Endereço completo")
-    private String endereco;
-
-    @Schema(description = "Município")
-    private String municipio;
-
-    @Schema(description = "UF", example = "MG")
-    private String uf;
-
-    @Schema(description = "CEP", example = "37262000")
-    private String cep;
-
-    @Schema(description = "País", example = "BRASIL")
-    private String pais;
+    @JsonDeserialize(using = EnderecoDeserializer.class)
+    private EnderecoDTO endereco;
 }
