@@ -1,6 +1,7 @@
 package com.trovian.repository;
 
 import com.trovian.entity.CategoriaConta;
+import com.trovian.entity.Cliente;
 import com.trovian.enums.TipoConta;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -8,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CategoriaContaRepository extends JpaRepository<CategoriaConta, Long> {
@@ -23,4 +25,6 @@ public interface CategoriaContaRepository extends JpaRepository<CategoriaConta, 
     Page<CategoriaConta> findByNomeContainingIgnoreCase(String nome, Pageable pageable);
 
     Page<CategoriaConta> findByClienteId(Long clienteId, Pageable pageable);
+
+    Optional<CategoriaConta> findByClienteAndCodigo(Cliente cliente, String codigo);
 }

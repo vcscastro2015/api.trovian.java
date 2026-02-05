@@ -9,5 +9,7 @@ public enum TipoFornecedor {
     SEGURO,
     DOCUMENTACAO,
     PEDAGIO,
+    EMBARCADOR,
+    TOMADOR,
     OUTROS
 }

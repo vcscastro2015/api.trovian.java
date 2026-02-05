@@ -1,11 +1,10 @@
 package com.trovian.service;
 
-import com.trovian.dto.ContaReceberDTO;
-import com.trovian.dto.DocumentoCteDTO;
-import com.trovian.dto.EmpresaDTO;
-import com.trovian.dto.ValoresPrestacaoDTO;
+import com.trovian.dto.*;
 import com.trovian.entity.*;
 import com.trovian.enums.StatusConta;
+import com.trovian.enums.TipoConta;
+import com.trovian.enums.TipoFornecedor;
 import com.trovian.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Base64;
+import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -26,12 +27,14 @@ import java.util.Optional;
 public class ContaReceberService {
 
     private final ContaReceberRepository contaReceberRepository;
+    private final FornecedorRepository fornecedorRepository;
     private final ClienteRepository clienteRepository;
     private final CategoriaContaRepository categoriaContaRepository;
     private final CentroCustoRepository centroCustoRepository;
     private final FormaPagamentoRepository formaPagamentoRepository;
     private final VeiculoRepository veiculoRepository;
     private final MotoristaRepository motoristaRepository;
+    private final ImagemArquivoRepository arquivoRepository;
 
     @Transactional
     public ContaReceberDTO create(ContaReceberDTO dto) {
@@ -137,35 +140,34 @@ public class ContaReceberService {
     }
 
     @Transactional
-    public ContaReceberDTO processarDocumentoCte(DocumentoCteDTO cteDTO) {
-        log.info("Processando CT-e {} - Tomador: {}",
-                cteDTO.getNumero(),
-                cteDTO.getTomador() != null ? cteDTO.getTomador().getRazaoSocial() : "N/A");
-
+    public ContaReceberDTO processarDocumentoCte(DadosFilaDTO dadosFilaDTO) {
         try {
-            // 1. Buscar ou validar Cliente (tomador é quem paga pelo serviço)
-            Cliente cliente = buscarOuValidarCliente(cteDTO.getTomador());
-
-            // 2. Buscar categoria padrão para frete/transporte
-            CategoriaConta categoria = buscarCategoriaFrete();
-
-            // 3. Tentar localizar Viagem relacionada (opcional)
-            Viagem viagem = tentarLocalizarViagem(cteDTO);
-
-            // 4. Construir entidade ContaReceber a partir do CT-e
-            ContaReceber contaReceber = construirContaReceberDeCte(cteDTO, cliente, categoria, viagem);
-
-            // 5. Salvar e retornar
-            ContaReceber saved = contaReceberRepository.save(contaReceber);
-            log.info("Conta a receber criada com sucesso. ID: {} - CT-e: {}",
-                    saved.getId(),
-                    cteDTO.getNumero());
-
-            return toDTO(saved);
-
+            // 1. Buscar o Cliente pela placa informada e faz o processo somente se haver um carro cadastrado
+            Optional<Veiculo> optionalVeiculo = veiculoRepository.findByPlacaIgnoreCase(dadosFilaDTO.getPlaca());
+            if(optionalVeiculo.isPresent()) {
+                Veiculo veiculo = optionalVeiculo.get();
+                Cliente cliente = veiculo.getCliente();
+                DocumentoCteDTO documentoCteDTO = dadosFilaDTO.getDocumentoCte();
+                Fornecedor fornecedorTomador = buscarOuValidarFornecedor(documentoCteDTO.getTomador(), cliente);
+                CategoriaConta categoria = buscarCategoriaFrete(cliente);
+                //TODO implementar quando tiver mais dados na base
+                Viagem viagem = tentarLocalizarViagem(documentoCteDTO);
+                ContaReceber contaReceber = construirContaReceberDeCte(documentoCteDTO, cliente, categoria, fornecedorTomador, veiculo);
+                if(Objects.nonNull(dadosFilaDTO.getBase64())){
+                    contaReceber.setTemImagem(Boolean.TRUE);
+                }
+                ContaReceber saved = contaReceberRepository.save(contaReceber);
+                log.info("Conta a receber criada com sucesso. ID: {} - CT-e: {}",
+                        saved.getId(),
+                        documentoCteDTO.getNumero());
+                if(Objects.nonNull(saved.getTemImagem()) && saved.getTemImagem()){
+                    salvarImagem(cliente, saved, dadosFilaDTO);
+                }
+                return toDTO(saved);
+            }
+            return null;
         } catch (Exception e) {
-            log.error("Erro ao processar CT-e {}: {}", cteDTO.getNumero(), e.getMessage(), e);
-            throw new RuntimeException("Falha ao processar CT-e " + cteDTO.getNumero(), e);
+            throw new RuntimeException("Falha ao processar CT-e " /*+ cteDTO.getNumero()*/, e);
         }
     }
 
@@ -173,73 +175,55 @@ public class ContaReceberService {
         if (cnpj == null) {
             return null;
         }
-        // Remove todos os caracteres não numéricos
         return cnpj.replaceAll("[^0-9]", "");
     }
 
-    private Cliente buscarOuValidarCliente(EmpresaDTO tomadorDTO) {
-        // Limpa CNPJ (remove formatação)
+    private Fornecedor buscarOuValidarFornecedor(EmpresaDTO tomadorDTO, Cliente cliente) {
         String cnpj = limparCnpj(tomadorDTO.getCnpj());
-
-        // Tenta encontrar cliente existente por CNPJ
-        Optional<Cliente> clienteOpt = clienteRepository.findByCnpjCpf(cnpj);
-
-        if (clienteOpt.isPresent()) {
-            log.info("Cliente encontrado: {}", clienteOpt.get().getNome());
-            return clienteOpt.get();
+        Optional<Fornecedor> fornecedorOpt = fornecedorRepository.findByCnpjCpfAndCliente(cnpj, cliente);
+        if (fornecedorOpt.isPresent()) {
+            return fornecedorOpt.get();
         }
-
-        // Cliente não encontrado - criar automaticamente a partir dos dados do tomador
-        log.info("Cliente não encontrado - Criando automaticamente - CNPJ: {} - Razão Social: {}",
-                cnpj,
-                tomadorDTO.getRazaoSocial());
-
-        Cliente novoCliente = criarClienteDeTomador(tomadorDTO, cnpj);
-        Cliente savedCliente = clienteRepository.save(novoCliente);
-
-        log.info("Cliente criado automaticamente com ID: {} - {}",
-                savedCliente.getId(),
-                savedCliente.getNome());
-
-        return savedCliente;
+        Fornecedor novoFornecedor = criarFornecedorDeTomador(tomadorDTO, cnpj);
+        novoFornecedor.setCliente(cliente);
+        return fornecedorRepository.save(novoFornecedor);
     }
 
-    private Cliente criarClienteDeTomador(EmpresaDTO tomadorDTO, String cnpjLimpo) {
-        Cliente cliente = new Cliente();
-
-        // Dados básicos
-        cliente.setNome(tomadorDTO.getRazaoSocial());
-        cliente.setCnpjCpf(cnpjLimpo);
-        cliente.setIe(tomadorDTO.getIe());
-
-        // Endereço
-        cliente.setEndereco(tomadorDTO.getEndereco());
-        cliente.setCidade(tomadorDTO.getMunicipio());
-        cliente.setUf(tomadorDTO.getUf());
-        cliente.setCep(tomadorDTO.getCep());
-
-        // Status
-        cliente.setStatus(true);
-        cliente.setCooperado(false);
-
-        return cliente;
-    }
-
-    private CategoriaConta buscarCategoriaFrete() {
-        // Usa ID 1 como categoria padrão temporário
-        // TODO: Configurar via application.properties (cte.categoria.padrao.id)
-        Optional<CategoriaConta> categoriaOpt = categoriaContaRepository.findById(1L);
-
-        if (categoriaOpt.isEmpty()) {
-            throw new RuntimeException(
-                    "Categoria padrão para CT-e não encontrada. " +
-                    "Configure a categoria 'FRETE' ou 'TRANSPORTE' no sistema com ID 1."
-            );
+    private Fornecedor criarFornecedorDeTomador(EmpresaDTO tomadorDTO, String cnpjLimpo) {
+        Fornecedor fornecedor = new Fornecedor();
+        fornecedor.setRazaoSocial(tomadorDTO.getRazaoSocial());
+        fornecedor.setCnpjCpf(cnpjLimpo);
+        fornecedor.setInscricaoEstadual(tomadorDTO.getIe());
+        if(Objects.nonNull(tomadorDTO.getEndereco())){
+            fornecedor.setLogradouro(tomadorDTO.getEndereco().getLogradouro());
+            fornecedor.setCidade(tomadorDTO.getEndereco().getMunicipio());
+            fornecedor.setUf(tomadorDTO.getEndereco().getUf());
+            fornecedor.setCep(tomadorDTO.getEndereco().getCep());
         }
-
-        return categoriaOpt.get();
+        fornecedor.setStatus(true);
+        fornecedor.setTipo(TipoFornecedor.TOMADOR);
+        return fornecedor;
     }
 
+    private CategoriaConta buscarCategoriaFrete(Cliente cliente) {
+        String codigo = "001-TRANSPORTE";
+        Optional<CategoriaConta> categoriaOpt = categoriaContaRepository.findByClienteAndCodigo(cliente, codigo);
+        if (categoriaOpt.isPresent()) {
+            return categoriaOpt.get();
+        }
+        //Criar uma categoria
+        CategoriaConta categoriaConta = new CategoriaConta();
+        categoriaConta.setPodeEditar(Boolean.FALSE);
+        categoriaConta.setNome(codigo);
+        categoriaConta.setCodigo(codigo);
+        categoriaConta.setCliente(cliente);
+        categoriaConta.setTipo(TipoConta.RECEBER);
+        categoriaConta.setStatus(Boolean.TRUE);
+        categoriaConta.setDataCadastro(new Date());
+        return categoriaContaRepository.save(categoriaConta);
+    }
+
+    //TODO
     private Viagem tentarLocalizarViagem(DocumentoCteDTO cteDTO) {
         // Para MVP: Retorna null (sem vinculação automática)
         // Vinculação manual pode ser feita posteriormente através da UI
@@ -254,11 +238,9 @@ public class ContaReceberService {
     }
 
     private String construirDescricao(DocumentoCteDTO cteDTO) {
-        return String.format("CT-e %s/%s - Frete %s -> %s",
+        return String.format("CT-e %s/%s",
                 cteDTO.getSerie(),
-                cteDTO.getNumero(),
-                cteDTO.getRemetente().getMunicipio(),
-                cteDTO.getDestinatario().getMunicipio()
+                cteDTO.getNumero()
         );
     }
 
@@ -269,48 +251,46 @@ public class ContaReceberService {
     }
 
     private String construirObservacao(DocumentoCteDTO cteDTO) {
-        StringBuilder obs = new StringBuilder();
-        obs.append("=== CT-e Importado Automaticamente ===\n");
-        obs.append("Chave de Acesso: ").append(cteDTO.getChaveAcesso()).append("\n");
-        obs.append("Emitente: ").append(cteDTO.getEmitente().getRazaoSocial()).append("\n");
-        obs.append("Remetente: ").append(cteDTO.getRemetente().getRazaoSocial())
-           .append(" - ").append(cteDTO.getRemetente().getMunicipio())
-           .append("/").append(cteDTO.getRemetente().getUf()).append("\n");
-        obs.append("Destinatário: ").append(cteDTO.getDestinatario().getRazaoSocial())
-           .append(" - ").append(cteDTO.getDestinatario().getMunicipio())
-           .append("/").append(cteDTO.getDestinatario().getUf()).append("\n");
-        obs.append("Tomador: ").append(cteDTO.getTomador().getRazaoSocial())
-           .append(" - ").append(cteDTO.getTomador().getMunicipio())
-           .append("/").append(cteDTO.getTomador().getUf()).append("\n");
-
-        if (cteDTO.getDadosCarga() != null) {
-            obs.append("Produto: ").append(cteDTO.getDadosCarga().getProdutoPredominante()).append("\n");
-            obs.append("Peso: ").append(cteDTO.getDadosCarga().getPesoBruto()).append(" kg\n");
-        }
-
-        if (cteDTO.getValoresPrestacao() != null) {
-            ValoresPrestacaoDTO valores = cteDTO.getValoresPrestacao();
-            obs.append("Valor Frete: ").append(valores.getValorTotalPrestacao()).append("\n");
-            if (valores.getPedagio() != null && valores.getPedagio().compareTo(BigDecimal.ZERO) > 0) {
-                obs.append("Pedágio: ").append(valores.getPedagio()).append("\n");
+        try {
+            StringBuilder obs = new StringBuilder();
+            obs.append("=== CT-e Importado Automaticamente ===\n");
+            obs.append("Chave de Acesso: ").append(cteDTO.getChaveAcesso()).append("\n");
+            obs.append("Emitente: ").append(cteDTO.getEmitente().getRazaoSocial()).append("\n");
+            obs.append("Remetente: ").append(cteDTO.getRemetente().getRazaoSocial());
+            obs.append("Destinatário: ").append(cteDTO.getDestinatario().getRazaoSocial());
+            obs.append("Tomador: ").append(cteDTO.getTomador().getRazaoSocial());
+            if (cteDTO.getDadosCarga() != null) {
+                obs.append("Produto: ").append(cteDTO.getDadosCarga().getProdutoPredominante()).append("\n");
+                obs.append("Peso: ").append(cteDTO.getDadosCarga().getPesoBruto()).append(" kg\n");
             }
-            if (valores.getDespachoArifa() != null && valores.getDespachoArifa().compareTo(BigDecimal.ZERO) > 0) {
-                obs.append("Despacho/Tarifa: ").append(valores.getDespachoArifa()).append("\n");
+
+            if (cteDTO.getValoresPrestacao() != null) {
+                ValoresPrestacaoDTO valores = cteDTO.getValoresPrestacao();
+                obs.append("Valor Frete: ").append(valores.getValorTotalPrestacao()).append("\n");
+                if (valores.getPedagio() != null && valores.getPedagio().compareTo(BigDecimal.ZERO) > 0) {
+                    obs.append("Pedágio: ").append(valores.getPedagio()).append("\n");
+                }
+                if (valores.getDespachoArifa() != null && valores.getDespachoArifa().compareTo(BigDecimal.ZERO) > 0) {
+                    obs.append("Despacho/Tarifa: ").append(valores.getDespachoArifa()).append("\n");
+                }
             }
-        }
 
-        if (cteDTO.getObservacoes() != null && !cteDTO.getObservacoes().isEmpty()) {
-            obs.append("Obs CT-e: ").append(cteDTO.getObservacoes()).append("\n");
-        }
+            if (cteDTO.getObservacoes() != null && !cteDTO.getObservacoes().isEmpty()) {
+                obs.append("Obs CT-e: ").append(cteDTO.getObservacoes()).append("\n");
+            }
 
-        return obs.toString();
+            return obs.toString();
+        } catch (Exception e) {
+            return "Sem Observação";
+        }
     }
 
     private ContaReceber construirContaReceberDeCte(
             DocumentoCteDTO cteDTO,
             Cliente cliente,
             CategoriaConta categoria,
-            Viagem viagem) {
+            Fornecedor fornecedor,
+            Veiculo veiculo) {
 
         ContaReceber conta = new ContaReceber();
 
@@ -324,15 +304,17 @@ public class ContaReceberService {
         // Relacionamentos
         conta.setCliente(cliente);
         conta.setCategoria(categoria);
-
+        conta.setFornecedor(fornecedor);
         // Relacionamentos opcionais (se viagem encontrada)
-        if (viagem != null) {
-            conta.setVeiculo(viagem.getVeiculo());
-            conta.setMotorista(viagem.getMotorista());
+        if (Objects.nonNull(veiculo)) {
+            conta.setVeiculo(veiculo);
         }
 
         // Valores financeiros
         BigDecimal valorTotal = cteDTO.getValoresPrestacao().getValorTotalPrestacao();
+        if(Objects.isNull(valorTotal)){
+            valorTotal = BigDecimal.ZERO;
+        }
         conta.setValorOriginal(valorTotal);
         conta.setValorDesconto(BigDecimal.ZERO);
         conta.setValorJuros(BigDecimal.ZERO);
@@ -347,11 +329,13 @@ public class ContaReceberService {
         conta.setDataCompetencia(dataEmissao);
 
         // Informações de frete
-        if (cteDTO.getRemetente() != null && cteDTO.getRemetente().getMunicipio() != null) {
-            conta.setOrigemFrete(cteDTO.getRemetente().getMunicipio() + "/" + cteDTO.getRemetente().getUf());
+        if (Objects.nonNull(cteDTO.getRemetente())
+                && Objects.nonNull(cteDTO.getRemetente().getEndereco())) {
+            conta.setOrigemFrete(cteDTO.getRemetente().getEndereco().getMunicipio() + "/" + cteDTO.getRemetente().getEndereco().getUf());
         }
-        if (cteDTO.getDestinatario() != null && cteDTO.getDestinatario().getMunicipio() != null) {
-            conta.setDestinoFrete(cteDTO.getDestinatario().getMunicipio() + "/" + cteDTO.getDestinatario().getUf());
+        if (Objects.nonNull(cteDTO.getDestinatario())
+                && Objects.nonNull(cteDTO.getDestinatario().getEndereco())) {
+            conta.setDestinoFrete(cteDTO.getDestinatario().getEndereco().getMunicipio() + "/" + cteDTO.getDestinatario().getEndereco().getUf());
         }
         if (Objects.nonNull(cteDTO.getDadosCarga())) {
             if(Objects.nonNull(cteDTO.getDadosCarga().getPesoBruto())){
@@ -381,10 +365,16 @@ public class ContaReceberService {
         dto.setNumeroNotaFiscal(entity.getNumeroNotaFiscal());
         dto.setNumeroControle(entity.getNumeroControle());
         dto.setNumeroCte(entity.getNumeroCte());
+        dto.setTemImagem(entity.getTemImagem());
+
 
         if (entity.getCliente() != null) {
             dto.setClienteId(entity.getCliente().getId());
             dto.setClienteNome(entity.getCliente().getNome());
+        }
+        if (entity.getFornecedor() != null) {
+            dto.setFornecedorId(entity.getFornecedor().getId());
+            dto.setFornecedorNome(entity.getFornecedor().getNomeFantasia());
         }
         if (entity.getCategoria() != null) {
             dto.setCategoriaId(entity.getCategoria().getId());
@@ -443,6 +433,7 @@ public class ContaReceberService {
         entity.setNumeroNotaFiscal(dto.getNumeroNotaFiscal());
         entity.setNumeroControle(dto.getNumeroControle());
         entity.setNumeroCte(dto.getNumeroCte());
+        entity.setTemImagem(dto.getTemImagem());
 
         entity.setCliente(clienteRepository.findById(dto.getClienteId())
             .orElseThrow(() -> new RuntimeException("Cliente não encontrado")));
@@ -460,6 +451,9 @@ public class ContaReceberService {
         }
         if (dto.getMotoristaId() != null) {
             entity.setMotorista(motoristaRepository.findById(dto.getMotoristaId()).orElse(null));
+        }
+        if(dto.getFornecedorId() != null){
+            entity.setFornecedor(fornecedorRepository.findById(dto.getFornecedorId()).orElse(null));
         }
 
         entity.setValorOriginal(dto.getValorOriginal());
@@ -509,5 +503,23 @@ public class ContaReceberService {
         entity.setTipoMercadoria(dto.getTipoMercadoria());
         entity.setDistanciaKm(dto.getDistanciaKm());
         entity.setObservacao(dto.getObservacao());
+    }
+
+    private void salvarImagem(Cliente cliente, ContaReceber contaReceber, DadosFilaDTO dadosFilaDTO){
+        try {
+            String base64Input = dadosFilaDTO.getBase64();
+            String cleanBase64 = base64Input.contains(",") ?
+                    base64Input.split(",")[1] : base64Input;
+            byte[] bytes = Base64.getDecoder().decode(cleanBase64);
+
+            ImagemArquivo imagemArquivo = new ImagemArquivo();
+            imagemArquivo.setContaReceber(contaReceber);
+            imagemArquivo.setCliente(cliente);
+            imagemArquivo.setConteudoBinario(bytes);
+            arquivoRepository.save(imagemArquivo);
+
+        }catch (Exception e){
+            log.error("salvarImagem", e);
+        }
     }
 }

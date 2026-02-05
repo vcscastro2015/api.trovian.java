@@ -52,7 +52,7 @@ public class ContaReceberController {
     })
     public ResponseEntity<ContaReceberDTO> processarCte(@Valid @RequestBody DocumentoCteDTO cteDTO) {
         log.info("Request para processar CT-e: {}", cteDTO.getNumero());
-        ContaReceberDTO created = contaReceberService.processarDocumentoCte(cteDTO);
+        ContaReceberDTO created = contaReceberService.processarDocumentoCte(null/*cteDTO*/);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 

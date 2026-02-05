@@ -5,12 +5,15 @@ import com.trovian.entity.Cliente;
 import com.trovian.entity.Motorista;
 import com.trovian.repository.ClienteRepository;
 import com.trovian.repository.MotoristaRepository;
+import com.trovian.util.TelefoneUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Objects;
 
 /**
  * Service para lógica de negócio de Motorista
@@ -114,7 +117,7 @@ public class MotoristaService {
         motorista.setValidadeCnh(dto.getValidadeCnh());
         motorista.setDataAdmissao(dto.getDataAdmissao());
         motorista.setCategoriaCnh(dto.getCategoriaCnh());
-        motorista.setTelefone(dto.getTelefone());
+        motorista.setTelefone(TelefoneUtils.salvarSemMascara(dto.getTelefone()));
         motorista.setStatus(dto.getStatus());
         motorista.setComissao(dto.getComissao());
         motorista.setLogradouro(dto.getLogradouro());
@@ -169,7 +172,7 @@ public class MotoristaService {
         dto.setValidadeCnh(motorista.getValidadeCnh());
         dto.setDataAdmissao(motorista.getDataAdmissao());
         dto.setCategoriaCnh(motorista.getCategoriaCnh());
-        dto.setTelefone(motorista.getTelefone());
+        dto.setTelefone(TelefoneUtils.aplicarMascara(motorista.getTelefone()));
         dto.setStatus(motorista.getStatus());
         dto.setComissao(motorista.getComissao());
         dto.setLogradouro(motorista.getLogradouro());
@@ -205,7 +208,7 @@ public class MotoristaService {
         motorista.setValidadeCnh(dto.getValidadeCnh());
         motorista.setDataAdmissao(dto.getDataAdmissao());
         motorista.setCategoriaCnh(dto.getCategoriaCnh());
-        motorista.setTelefone(dto.getTelefone());
+        motorista.setTelefone(TelefoneUtils.salvarSemMascara(dto.getTelefone()));
         motorista.setStatus(dto.getStatus());
         motorista.setComissao(dto.getComissao());
         motorista.setLogradouro(dto.getLogradouro());

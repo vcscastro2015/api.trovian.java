@@ -3,35 +3,28 @@ package com.trovian.jms;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.trovian.config.JmsConfig;
 import com.trovian.dto.DadosFilaDTO;
-import com.trovian.repository.DocumentoCteErroRepository;
-import com.trovian.service.ContaReceberService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.jms.annotation.JmsListener;
-import org.springframework.stereotype.Component;
+import com.trovian.service.AbastecimentoService;
+import jakarta.jms.BytesMessage;
 import jakarta.jms.Message;
 import jakarta.jms.TextMessage;
-import jakarta.jms.BytesMessage;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.jms.annotation.JmsListener;
+import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class DocumentoCteListener {
+public class AbastecimentoListener {
 
-    @Autowired
-    private ResourceLoader resourceLoader;
-
-    private final ContaReceberService contaReceberService;
     private final ObjectMapper objectMapper;
-    private final DocumentoCteErroRepository documentoCteErroRepository;
+    private final AbastecimentoService abastecimentoService;
 
-    @JmsListener(destination = JmsConfig.DOCUMENTOS_CTE)
-    public void receiveDocumentoCte(Message message) {
-        try {
+    @JmsListener(destination = JmsConfig.ABASTECIMENTO)
+    public void receiveAbastecimento(Message message) {
+        try{
             String mensagemJson;
             if (message instanceof TextMessage) {
                 mensagemJson = ((TextMessage) message).getText();
@@ -48,11 +41,10 @@ public class DocumentoCteListener {
                 );
             }
             DadosFilaDTO dadosFilaDTO = objectMapper.readValue(mensagemJson, DadosFilaDTO.class);
-            contaReceberService.processarDocumentoCte(dadosFilaDTO);
+            abastecimentoService.processarAbastecimentoWhatsApp(dadosFilaDTO);
         } catch (Exception e) {
             // Re-lançar exceção para acionar mecanismo de retry do JMS
-            throw new RuntimeException("Erro ao processar CT-e", e);
+            throw new RuntimeException("Erro ao processar Abastecimento", e);
         }
     }
-
 }

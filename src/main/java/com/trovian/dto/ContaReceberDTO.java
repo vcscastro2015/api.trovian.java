@@ -1,5 +1,6 @@
 package com.trovian.dto;
 
+import com.trovian.entity.Fornecedor;
 import com.trovian.enums.StatusConta;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
@@ -72,6 +73,15 @@ public class ContaReceberDTO {
 
     @Schema(description = "Nome do motorista")
     private String motoristaNome;
+
+    @Schema(description = "ID do fornecedor relacionado")
+    private Long fornecedorId;
+
+    @Schema(description = "Nome do fornecedor")
+    private String fornecedorNome;
+
+    @Schema(description = "Se existe alguma imagem anexado")
+    private Boolean temImagem;
 
     @NotNull(message = "Valor original é obrigatório")
     @DecimalMin(value = "0.01", message = "Valor original deve ser maior que zero")

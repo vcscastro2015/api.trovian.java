@@ -60,6 +60,10 @@ public class ContaReceber {
     @JoinColumn(name = "motorista_id")
     private Motorista motorista;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "fornecedor_id", nullable = false)
+    private Fornecedor fornecedor;
+
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal valorOriginal;
 
@@ -139,6 +143,8 @@ public class ContaReceber {
 
     @Column(length = 100)
     private String usuarioRecebimento;
+
+    private Boolean temImagem = false;
 
     @PreUpdate
     protected void onUpdate() {

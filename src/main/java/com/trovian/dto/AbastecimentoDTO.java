@@ -97,4 +97,7 @@ public class AbastecimentoDTO {
 
     @Schema(description = "Status do registro (ativo/inativo)", example = "true")
     private Boolean status;
+
+    @Schema(description = "Se abastecimento possui imagem da bomba de combustivel (ativo/inativo)", example = "true")
+    private Boolean temImagem = false;
 }

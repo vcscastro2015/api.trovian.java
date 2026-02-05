@@ -42,6 +42,9 @@ public class CategoriaContaDTO {
     @Schema(description = "Status ativo/inativo", example = "true")
     private Boolean status;
 
+    @Schema(description = "Se o registro original pode ser editado. Geralmente registro criado pelo sistema", example = "true")
+    private Boolean podeEditar = true;
+
     @NotNull(message = "ID do cliente é obrigatório")
     @Schema(description = "ID do cliente proprietário", example = "1", required = true)
     private Long clienteId;

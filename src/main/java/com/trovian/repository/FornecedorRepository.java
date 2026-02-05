@@ -1,5 +1,6 @@
 package com.trovian.repository;
 
+import com.trovian.entity.Cliente;
 import com.trovian.entity.Fornecedor;
 import com.trovian.enums.TipoFornecedor;
 import org.springframework.data.domain.Page;
@@ -19,7 +20,11 @@ public interface FornecedorRepository extends JpaRepository<Fornecedor, Long> {
 
     Optional<Fornecedor> findByCnpjCpf(String cnpjCpf);
 
+    Optional<Fornecedor> findByCnpjCpfAndCliente(String cnpjCpf, Cliente cliente);
+
     boolean existsByCnpjCpf(String cnpjCpf);
 
     Page<Fornecedor> findByClienteId(Long clienteId, Pageable pageable);
+
+
 }

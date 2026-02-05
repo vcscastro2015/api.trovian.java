@@ -19,6 +19,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Objects;
+
 @RestController
 @RequestMapping("/categoria-conta")
 @RequiredArgsConstructor
@@ -73,6 +75,9 @@ public class CategoriaContaController {
         @PathVariable Long id,
         @Valid @RequestBody CategoriaContaDTO dto
     ) {
+        if(Objects.nonNull(dto.getPodeEditar()) && !dto.getPodeEditar()){
+            return ResponseEntity.unprocessableEntity().build();
+        }
         CategoriaContaDTO updated = categoriaContaService.update(id, dto);
         return ResponseEntity.ok(updated);
     }
