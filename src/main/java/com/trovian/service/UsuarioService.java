@@ -306,10 +306,23 @@ public class UsuarioService {
 
     // Estatísticas
     @Transactional(readOnly = true)
+    public UsuarioEstatisticasResponse obterEstatisticasAdm() {
+        long totalUsuarios = usuarioRepository.count();
+        long usuariosAtivos = usuarioRepository.countUsuariosAtivos();
+        long usuariosInativos = usuarioRepository.countUsuariosInativos();
+
+        return UsuarioEstatisticasResponse.builder()
+                .totalUsuarios(totalUsuarios)
+                .usuariosAtivos(usuariosAtivos)
+                .usuariosInativos(usuariosInativos)
+                .build();
+    }
+
+    @Transactional(readOnly = true)
     public UsuarioEstatisticasResponse obterEstatisticas(Long clienteId) {
         long totalUsuarios = usuarioRepository.countByClienteId(clienteId);
-        long usuariosAtivos = usuarioRepository.countUsuariosAtivos(clienteId);
-        long usuariosInativos = usuarioRepository.countUsuariosInativos(clienteId);
+        long usuariosAtivos = usuarioRepository.countUsuariosAtivosByClienteId(clienteId);
+        long usuariosInativos = usuarioRepository.countUsuariosInativosByClienteId(clienteId);
 
         return UsuarioEstatisticasResponse.builder()
                 .totalUsuarios(totalUsuarios)
@@ -336,6 +349,7 @@ public class UsuarioService {
                 .criadoEm(usuario.getCriadoEm())
                 .atualizadoEm(usuario.getAtualizadoEm())
                 .clienteId(usuario.getCliente().getId())
+                .clienteNome(usuario.getCliente().getNome())
                 .build();
     }
 
