@@ -9,6 +9,7 @@ import com.trovian.repository.*;
 import com.trovian.util.TelefoneUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,9 @@ public class AbastecimentoService {
     private final LocalRepository localRepository;
     private final RotaRepository rotaRepository;
     private final ImagemArquivoRepository arquivoRepository;
+
+    @Autowired
+    private ContaPagarService contaPagarService;
 
     /**
      * Lista todos os abastecimentos com paginação
@@ -287,6 +291,7 @@ public class AbastecimentoService {
                 if(savedAbastecimento.getTemImagem()){
                     salvarImagem(veiculo.getCliente(), savedAbastecimento, dadosFilaDTO);
                 }
+                contaPagarService.salvarContaPagarAbastecimentoWpp(savedAbastecimento, veiculo);
             }
         } catch (Exception e) {
             log.error("processarAbastecimentoWhatsApp", e);
