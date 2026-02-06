@@ -67,4 +67,7 @@ public interface ContaReceberRepository extends JpaRepository<ContaReceber, Long
         @Param("dataInicio") LocalDate dataInicio,
         @Param("dataFim") LocalDate dataFim
     );
+
+    @Query(value = "SELECT nextval('seq_contas_receber_diaria')", nativeQuery = true)
+    Long nextNumeroControle();
 }

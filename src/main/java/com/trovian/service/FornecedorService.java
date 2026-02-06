@@ -217,4 +217,6 @@ public class FornecedorService {
     public Page<FornecedorDTO> findByCliente(Long clienteId, Pageable pageable) {
         return fornecedorRepository.findByClienteId(clienteId, pageable).map(this::toDTO);
     }
+
+
 }

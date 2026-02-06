@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Objects;
@@ -39,6 +40,7 @@ public class ContaReceberService {
     @Transactional
     public ContaReceberDTO create(ContaReceberDTO dto) {
         log.info("Criando conta a receber: {}", dto.getDescricao());
+        dto.setNumeroControle(gerarNumeroControle());
         ContaReceber conta = toEntity(dto);
         ContaReceber saved = contaReceberRepository.save(conta);
         log.info("Conta a receber criada com sucesso. ID: {}", saved.getId());
@@ -298,7 +300,7 @@ public class ContaReceberService {
         conta.setDescricao(construirDescricao(cteDTO));
         conta.setNumeroDocumento(cteDTO.getNumero());
         conta.setNumeroNotaFiscal(cteDTO.getSerie() + "/" + cteDTO.getNumero());
-        conta.setNumeroControle(cteDTO.getChaveAcesso());
+        conta.setNumeroControle(gerarNumeroControle());
         conta.setNumeroCte(cteDTO.getNumero());
 
         // Relacionamentos
@@ -486,7 +488,6 @@ public class ContaReceberService {
         entity.setDescricao(dto.getDescricao());
         entity.setNumeroDocumento(dto.getNumeroDocumento());
         entity.setNumeroNotaFiscal(dto.getNumeroNotaFiscal());
-        entity.setNumeroControle(dto.getNumeroControle());
         entity.setNumeroCte(dto.getNumeroCte());
         entity.setValorOriginal(dto.getValorOriginal());
         entity.setValorDesconto(dto.getValorDesconto());
@@ -521,5 +522,12 @@ public class ContaReceberService {
         }catch (Exception e){
             log.error("salvarImagem", e);
         }
+    }
+
+    private  String gerarNumeroControle() {
+        String data = LocalDate.now()
+                .format(DateTimeFormatter.BASIC_ISO_DATE);
+        long seq = contaReceberRepository.nextNumeroControle();
+        return String.format("CR-%s-%06d", data, seq);
     }
 }

@@ -63,4 +63,7 @@ public interface ContaPagarRepository extends JpaRepository<ContaPagar, Long> {
         @Param("dataInicio") LocalDate dataInicio,
         @Param("dataFim") LocalDate dataFim
     );
+
+    @Query(value = "SELECT nextval('seq_contas_pagar_diaria')", nativeQuery = true)
+    Long nextNumeroControle();
 }
