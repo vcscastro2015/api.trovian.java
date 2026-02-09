@@ -28,6 +28,9 @@ public class DashboardService {
     private final VeiculoRepository veiculoRepository;
     private final MotoristaRepository motoristaRepository;
     private final ManutencaoRepository manutencaoRepository;
+    private final ContaPagarRepository contaPagarRepository;
+    private final ContaReceberRepository contaReceberRepository;
+    private final ComissaoMotoristaRepository comissaoMotoristaRepository;
 
     // Limiar para alertas de baixa margem
     private static final double MARGEM_CRITICA = 5.0;
@@ -63,7 +66,13 @@ public class DashboardService {
      */
     public DashboardResumoDTO getResumo(Long clienteId, LocalDate dataInicio) {
         List<Object[]> resultado = viagemRepository.getResumoGeral(clienteId, dataInicio);
-        
+        LocalDate dataFim = LocalDate.now();
+
+        // Calcular totais financeiros
+        BigDecimal totalContasAPagar = calcularTotalContasAPagar(clienteId, dataInicio, dataFim);
+        BigDecimal totalContasAReceber = calcularTotalContasAReceber(clienteId, dataInicio, dataFim);
+        BigDecimal totalComissoesMotoristas = calcularTotalComissoesMotoristas(clienteId, dataInicio, dataFim);
+
         if (resultado.isEmpty()) {
             return DashboardResumoDTO.builder()
                     .totalViagens(0)
@@ -78,11 +87,14 @@ public class DashboardService {
                     .totalVeiculosAtivos(0)
                     .totalMotoristas(0)
                     .periodoAnalise(calcularPeriodoAnalise(dataInicio))
+                    .totalContasAPagar(totalContasAPagar)
+                    .totalContasAReceber(totalContasAReceber)
+                    .totalComissoesMotoristas(totalComissoesMotoristas)
                     .build();
         }
-        
+
         Object[] row = resultado.get(0);
-        
+
         return DashboardResumoDTO.builder()
                 .totalViagens(((Number) row[0]).intValue())
                 .viagensAbertas(((Number) row[1]).intValue())
@@ -96,6 +108,9 @@ public class DashboardService {
                 .totalVeiculosAtivos(veiculoRepository.countByClienteIdAndStatusTrue(clienteId))
                 .totalMotoristas(motoristaRepository.countByClienteIdAndStatusTrue(clienteId))
                 .periodoAnalise(calcularPeriodoAnalise(dataInicio))
+                .totalContasAPagar(totalContasAPagar)
+                .totalContasAReceber(totalContasAReceber)
+                .totalComissoesMotoristas(totalComissoesMotoristas)
                 .build();
     }
 
@@ -537,5 +552,22 @@ public class DashboardService {
         if (percentual >= 100) return "SUPERADO";
         if (percentual >= 85) return "NO_CAMINHO";
         return "ATRASADO";
+    }
+
+    private BigDecimal calcularTotalContasAPagar(Long clienteId, LocalDate dataInicio, LocalDate dataFim) {
+        BigDecimal total = contaPagarRepository.sumTotalAPagarPorClienteEPeriodo(clienteId, dataInicio, dataFim);
+        return total != null ? total : BigDecimal.ZERO;
+    }
+
+    private BigDecimal calcularTotalContasAReceber(Long clienteId, LocalDate dataInicio, LocalDate dataFim) {
+        BigDecimal total = contaReceberRepository.sumTotalAReceberPorClienteEPeriodo(clienteId, dataInicio, dataFim);
+        return total != null ? total : BigDecimal.ZERO;
+    }
+
+    private BigDecimal calcularTotalComissoesMotoristas(Long clienteId, LocalDate dataInicio, LocalDate dataFim) {
+        LocalDateTime dataInicioDateTime = dataInicio.atStartOfDay();
+        LocalDateTime dataFimDateTime = dataFim.atTime(23, 59, 59);
+        BigDecimal total = comissaoMotoristaRepository.sumTotalComissoesPorClienteEPeriodo(clienteId, dataInicioDateTime, dataFimDateTime);
+        return total != null ? total : BigDecimal.ZERO;
     }
 }

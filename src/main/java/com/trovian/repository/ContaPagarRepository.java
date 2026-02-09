@@ -64,6 +64,13 @@ public interface ContaPagarRepository extends JpaRepository<ContaPagar, Long> {
         @Param("dataFim") LocalDate dataFim
     );
 
+    @Query("SELECT COALESCE(SUM(c.valorTotal - c.valorPago), 0) FROM ContaPagar c WHERE c.status IN ('PENDENTE', 'PARCIAL') AND c.cliente.id = :clienteId AND c.dataEmissao BETWEEN :dataInicio AND :dataFim")
+    BigDecimal sumTotalAPagarPorClienteEPeriodo(
+        @Param("clienteId") Long clienteId,
+        @Param("dataInicio") LocalDate dataInicio,
+        @Param("dataFim") LocalDate dataFim
+    );
+
     @Query(value = "SELECT nextval('seq_contas_pagar_diaria')", nativeQuery = true)
     Long nextNumeroControle();
 }
