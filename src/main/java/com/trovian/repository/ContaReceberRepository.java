@@ -68,6 +68,13 @@ public interface ContaReceberRepository extends JpaRepository<ContaReceber, Long
         @Param("dataFim") LocalDate dataFim
     );
 
+    @Query("SELECT COALESCE(SUM(c.valorTotal - c.valorRecebido), 0) FROM ContaReceber c WHERE c.status IN ('PENDENTE', 'PARCIAL') AND c.cliente.id = :clienteId AND c.dataEmissao BETWEEN :dataInicio AND :dataFim")
+    BigDecimal sumTotalAReceberPorClienteEPeriodo(
+        @Param("clienteId") Long clienteId,
+        @Param("dataInicio") LocalDate dataInicio,
+        @Param("dataFim") LocalDate dataFim
+    );
+
     @Query(value = "SELECT nextval('seq_contas_receber_diaria')", nativeQuery = true)
     Long nextNumeroControle();
 }

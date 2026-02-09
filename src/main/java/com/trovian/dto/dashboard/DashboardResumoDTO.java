@@ -23,4 +23,7 @@ public class DashboardResumoDTO {
     private Integer totalVeiculosAtivos;
     private Integer totalMotoristas;
     private String periodoAnalise;
+    private BigDecimal totalContasAPagar;
+    private BigDecimal totalContasAReceber;
+    private BigDecimal totalComissoesMotoristas;
 }
