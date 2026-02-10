@@ -10,9 +10,12 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Repository
 public interface ContaReceberRepository extends JpaRepository<ContaReceber, Long> {
+
+    Optional<ContaReceber> findByViagemId(Long viagemId);
 
     Page<ContaReceber> findByStatus(StatusConta status, Pageable pageable);
 

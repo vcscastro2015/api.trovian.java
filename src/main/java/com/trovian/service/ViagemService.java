@@ -33,6 +33,7 @@ public class ViagemService {
     private final ConsumoDetalhadoRepository consumoDetalhadoRepository;
     private final ComissaoMotoristaService comissaoMotoristaService;
     private final ChecklistRealizadoService checklistRealizadoService;
+    private final ContaReceberService contaReceberService;
 
     /**
      * Busca todas as viagens com paginação
@@ -227,6 +228,16 @@ public class ViagemService {
         Viagem updated = viagemRepository.save(viagem);
         log.info("Viagem atualizada com sucesso. ID: {}", updated.getId());
         editarComissaoMotorista(updated, dto.getComissaoMotorista());
+
+        // Se a viagem foi fechada, criar conta a receber automaticamente
+        if ((dto.converterEmContasAReceber) && (updated.getStatusViagem() == com.trovian.enums.StatusViagem.FECHADA)) {
+            try {
+                contaReceberService.criarContaReceberDeViagem(updated);
+            } catch (Exception e) {
+                log.error("Erro ao criar conta a receber para viagem ID: {}", updated.getId(), e);
+            }
+        }
+
         return toDTO(updated);
     }
 
