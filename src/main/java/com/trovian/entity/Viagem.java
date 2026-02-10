@@ -96,12 +96,10 @@ public class Viagem {
     @Column(name = "imposto_base_ida", nullable = false, precision = 10, scale = 2)
     private BigDecimal impostoBaseIda;
 
-    @NotNull(message = "Quantidade de pedágios da ida é obrigatória")
-    @Column(name = "quantidade_pedagios_ida", nullable = false)
+    @Column(name = "quantidade_pedagios_ida")
     private Integer quantidadePedagiosIda;
 
-    @NotNull(message = "Valor pedágio por eixo da ida é obrigatório")
-    @Column(name = "valor_pedagio_por_eixo_ida", nullable = false, precision = 10, scale = 2)
+    @Column(name = "valor_pedagio_por_eixo_ida", precision = 10, scale = 2)
     private BigDecimal valorPedagioPorEixoIda;
 
     @Column(name = "valor_total_bruto_ida", precision = 10, scale = 2)

@@ -289,4 +289,11 @@ public class ComissaoMotoristaService {
         comissao.setNumeroNotaFiscal(dto.getNumeroNotaFiscal());
         return comissao;
     }
+
+    @Transactional(readOnly = true)
+    public ComissaoMotoristaDTO findByIdViagem(Long idViagem) {
+        ComissaoMotorista comissao = comissaoMotoristaRepository.findByViagemId(idViagem)
+                .orElseThrow(() -> new ComissaoNotFoundException(idViagem));
+        return toDTO(comissao);
+    }
 }

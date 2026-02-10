@@ -105,11 +105,9 @@ public class ViagemDTO {
     private BigDecimal impostoBaseIda;
 
     @Schema(description = "Quantidade de pedágios na ida", example = "5", required = true)
-    @NotNull(message = "Quantidade de pedágios da ida é obrigatória")
     private Integer quantidadePedagiosIda;
 
     @Schema(description = "Valor do pedágio por eixo na ida", example = "12.50", required = true)
-    @NotNull(message = "Valor pedágio por eixo da ida é obrigatório")
     @Positive(message = "Valor pedágio deve ser positivo")
     private BigDecimal valorPedagioPorEixoIda;
 

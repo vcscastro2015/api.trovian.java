@@ -17,7 +17,7 @@ public class JmsConfig {
     public static final String PRODUCT_QUEUE = "product.queue";
     public static final String NOTIFICATION_QUEUE = "notification.queue";
     public static final String DOCUMENTOS_CTE = "DOCUMENTOS_CTE";
-    public static final String ABASTECIMENTO = "documentos.cte";
+    public static final String ABASTECIMENTO = "ABASTECIMENTO";
 
     @Bean
     public JmsListenerContainerFactory<?> jmsListenerContainerFactory(

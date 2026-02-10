@@ -226,7 +226,7 @@ public class ViagemService {
         updateEntity(viagem, calculado);
         Viagem updated = viagemRepository.save(viagem);
         log.info("Viagem atualizada com sucesso. ID: {}", updated.getId());
-
+        editarComissaoMotorista(updated, dto.getComissaoMotorista());
         return toDTO(updated);
     }
 
@@ -376,10 +376,13 @@ public class ViagemService {
         }
 
         // Ida
-        BigDecimal pedagiosIda = BigDecimal.valueOf(dto.getQuantidadePedagiosIda())
-                .multiply(dto.getValorPedagioPorEixoIda())
-                .multiply(BigDecimal.valueOf(veiculo.getNumeroEixos()))
-                .setScale(2, RoundingMode.HALF_UP);
+        BigDecimal pedagiosIda = BigDecimal.ZERO;
+        if(Objects.nonNull(dto.getQuantidadePedagiosIda()) && Objects.nonNull(dto.getValorPedagioPorEixoIda())) {
+            pedagiosIda = BigDecimal.valueOf(dto.getQuantidadePedagiosIda())
+                    .multiply(dto.getValorPedagioPorEixoIda())
+                    .multiply(BigDecimal.valueOf(veiculo.getNumeroEixos()))
+                    .setScale(2, RoundingMode.HALF_UP);
+        }
 
         // Volta
         BigDecimal pedagiosVolta = BigDecimal.ZERO;
@@ -986,6 +989,21 @@ public class ViagemService {
             comissaoMotoristaService.create(comissaoDTO);
         }catch (Exception e){
             log.error("criarComissaoMotorista",e);
+        }
+
+    }
+
+    private void editarComissaoMotorista(Viagem viagem, BigDecimal comissaoMotorista){
+        try {
+            ComissaoMotoristaDTO comissaoDTO= comissaoMotoristaService.findByIdViagem(viagem.getId());
+            comissaoDTO.setValorComissao(comissaoMotorista);
+            comissaoDTO.setOrigem(viagem.getRotaIda().getNome());
+            if (Objects.nonNull(viagem.getRotaVolta())) {
+                comissaoDTO.setDestino(viagem.getRotaVolta().getNome());
+            }
+            comissaoMotoristaService.update(comissaoDTO.getId(), comissaoDTO);
+        }catch (Exception e){
+            log.error("editarComissaoMotorista",e);
         }
 
     }

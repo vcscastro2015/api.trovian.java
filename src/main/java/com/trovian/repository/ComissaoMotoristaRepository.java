@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ComissaoMotoristaRepository extends JpaRepository<ComissaoMotorista, Long> {
@@ -19,6 +20,8 @@ public interface ComissaoMotoristaRepository extends JpaRepository<ComissaoMotor
     Page<ComissaoMotorista> findAll(Pageable pageable);
 
     List<ComissaoMotorista> findByClienteId(Long clienteId);
+
+    Optional<ComissaoMotorista> findByViagemId(Long viagemId);
 
     Page<ComissaoMotorista> findByClienteId(Long clienteId, Pageable pageable);
 
