@@ -35,6 +35,7 @@ public class ContaReceberService {
     private final FormaPagamentoRepository formaPagamentoRepository;
     private final VeiculoRepository veiculoRepository;
     private final MotoristaRepository motoristaRepository;
+    private final ViagemRepository viagemRepository;
     private final ImagemArquivoRepository arquivoRepository;
 
     @Transactional
@@ -171,6 +172,79 @@ public class ContaReceberService {
         } catch (Exception e) {
             throw new RuntimeException("Falha ao processar CT-e " /*+ cteDTO.getNumero()*/, e);
         }
+    }
+
+    @Transactional
+    public ContaReceber criarContaReceberDeViagem(Viagem viagem) {
+        // Evitar duplicatas: se já existe conta para esta viagem, não criar outra
+        Optional<ContaReceber> existente = contaReceberRepository.findByViagemId(viagem.getId());
+        if (existente.isPresent()) {
+            log.info("Conta a receber já existe para viagem ID: {}. Ignorando criação.", viagem.getId());
+            return existente.get();
+        }
+
+        log.info("Criando conta a receber para viagem ID: {}", viagem.getId());
+
+        Cliente cliente = viagem.getCliente();
+        CategoriaConta categoria = buscarCategoriaFrete(cliente);
+        Fornecedor fornecedor = buscarOuCriarFornecedorDeCliente(cliente);
+
+        ContaReceber conta = new ContaReceber();
+
+        // Descrição: rotaIda.nome + " " + dataViagem (dd/MM/yyyy)
+        String descricao = viagem.getRotaIda().getNome() + " "
+                + new java.text.SimpleDateFormat("dd/MM/yyyy").format(viagem.getDataViagem());
+        conta.setDescricao(descricao);
+
+        conta.setNumeroControle(gerarNumeroControle());
+        conta.setCliente(cliente);
+        conta.setCategoria(categoria);
+        conta.setFornecedor(fornecedor);
+        conta.setVeiculo(viagem.getVeiculo());
+        conta.setMotorista(viagem.getMotorista());
+        conta.setViagem(viagem);
+        conta.setStatus(StatusConta.PENDENTE);
+
+        // Valores
+        BigDecimal valor = viagem.getValorTotalLiquido() != null ? viagem.getValorTotalLiquido() : BigDecimal.ZERO;
+        conta.setValorOriginal(valor);
+        conta.setValorTotal(valor);
+        conta.setValorDesconto(BigDecimal.ZERO);
+        conta.setValorJuros(BigDecimal.ZERO);
+        conta.setValorMulta(BigDecimal.ZERO);
+        conta.setValorRecebido(BigDecimal.ZERO);
+
+        // Datas - converter java.util.Date para LocalDate
+        LocalDate dataEmissao = new java.sql.Date(viagem.getDataViagem().getTime()).toLocalDate();
+        conta.setDataEmissao(dataEmissao);
+        conta.setDataVencimento(dataEmissao.plusDays(30));
+        conta.setDataCompetencia(dataEmissao);
+
+        conta.setRecorrente(false);
+        conta.setUsuarioCadastro("SISTEMA_VIAGEM_AUTOMATICO");
+
+        ContaReceber saved = contaReceberRepository.save(conta);
+        log.info("Conta a receber criada com sucesso para viagem ID: {}. Conta ID: {}", viagem.getId(), saved.getId());
+        return saved;
+    }
+
+    private Fornecedor buscarOuCriarFornecedorDeCliente(Cliente cliente) {
+        String cnpj = limparCnpj(cliente.getCnpjCpf());
+        Optional<Fornecedor> fornecedorOpt = fornecedorRepository.findByCnpjCpfAndCliente(cnpj, cliente);
+        if (fornecedorOpt.isPresent()) {
+            return fornecedorOpt.get();
+        }
+        Fornecedor novoFornecedor = new Fornecedor();
+        novoFornecedor.setRazaoSocial(cliente.getNome());
+        novoFornecedor.setCnpjCpf(cnpj);
+        novoFornecedor.setLogradouro(cliente.getEndereco());
+        novoFornecedor.setCidade(cliente.getCidade());
+        novoFornecedor.setUf(cliente.getUf());
+        novoFornecedor.setCep(cliente.getCep());
+        novoFornecedor.setTipo(TipoFornecedor.EMBARCADOR);
+        novoFornecedor.setStatus(true);
+        novoFornecedor.setCliente(cliente);
+        return fornecedorRepository.save(novoFornecedor);
     }
 
     private String limparCnpj(String cnpj) {
@@ -376,7 +450,11 @@ public class ContaReceberService {
         }
         if (entity.getFornecedor() != null) {
             dto.setFornecedorId(entity.getFornecedor().getId());
-            dto.setFornecedorNome(entity.getFornecedor().getNomeFantasia());
+            String nome = entity.getFornecedor().getNomeFantasia();
+            if(Objects.isNull(nome) || nome.isEmpty()){
+                nome = entity.getFornecedor().getRazaoSocial();
+            }
+            dto.setFornecedorNome(nome);
         }
         if (entity.getCategoria() != null) {
             dto.setCategoriaId(entity.getCategoria().getId());
@@ -397,6 +475,9 @@ public class ContaReceberService {
         if (entity.getMotorista() != null) {
             dto.setMotoristaId(entity.getMotorista().getId());
             dto.setMotoristaNome(entity.getMotorista().getNome());
+        }
+        if (entity.getViagem() != null) {
+            dto.setViagemId(entity.getViagem().getId());
         }
 
         dto.setValorOriginal(entity.getValorOriginal());
@@ -457,6 +538,9 @@ public class ContaReceberService {
         if(dto.getFornecedorId() != null){
             entity.setFornecedor(fornecedorRepository.findById(dto.getFornecedorId()).orElse(null));
         }
+        if (dto.getViagemId() != null) {
+            entity.setViagem(viagemRepository.findById(dto.getViagemId()).orElse(null));
+        }
 
         entity.setValorOriginal(dto.getValorOriginal());
         entity.setValorDesconto(dto.getValorDesconto() != null ? dto.getValorDesconto() : BigDecimal.ZERO);
@@ -491,12 +575,18 @@ public class ContaReceberService {
         entity.setNumeroCte(dto.getNumeroCte());
         entity.setValorOriginal(dto.getValorOriginal());
         entity.setValorDesconto(dto.getValorDesconto());
+        entity.setValorRecebido(dto.getValorRecebido());
         entity.setValorJuros(dto.getValorJuros());
         entity.setValorMulta(dto.getValorMulta());
         entity.setValorTotal(dto.getValorTotal());
+        entity.setNumeroParcela(dto.getNumeroParcela());
+        entity.setTotalParcelas(dto.getTotalParcelas());
+        entity.setRecorrente(dto.getRecorrente());
+        entity.setPeriodicidade(dto.getPeriodicidade());
         entity.setDataEmissao(dto.getDataEmissao());
         entity.setDataVencimento(dto.getDataVencimento());
         entity.setDataCompetencia(dto.getDataCompetencia());
+        entity.setDataRecebimento(dto.getDataRecebimento());
         entity.setStatus(dto.getStatus());
         entity.setOrigemFrete(dto.getOrigemFrete());
         entity.setDestinoFrete(dto.getDestinoFrete());
@@ -504,6 +594,33 @@ public class ContaReceberService {
         entity.setTipoMercadoria(dto.getTipoMercadoria());
         entity.setDistanciaKm(dto.getDistanciaKm());
         entity.setObservacao(dto.getObservacao());
+
+        if (dto.getFornecedorId() != null) {
+            entity.setFornecedor(fornecedorRepository.findById(dto.getFornecedorId()).orElse(null));
+        } else {
+            entity.setFornecedor(null);
+        }
+        if (dto.getCentroCustoId() != null) {
+            entity.setCentroCusto(centroCustoRepository.findById(dto.getCentroCustoId()).orElse(null));
+        }
+        if (dto.getFormaPagamentoId() != null) {
+            entity.setFormaPagamento(formaPagamentoRepository.findById(dto.getFormaPagamentoId()).orElse(null));
+        }
+        if (dto.getVeiculoId() != null) {
+            entity.setVeiculo(veiculoRepository.findById(dto.getVeiculoId()).orElse(null));
+        }
+        if (dto.getMotoristaId() != null) {
+            entity.setMotorista(motoristaRepository.findById(dto.getMotoristaId()).orElse(null));
+        }
+        if(dto.getFornecedorId() != null){
+            entity.setFornecedor(fornecedorRepository.findById(dto.getFornecedorId()).orElse(null));
+        }
+        if (dto.getViagemId() != null) {
+            entity.setViagem(viagemRepository.findById(dto.getViagemId()).orElse(null));
+        }
+        if (dto.getCategoriaId() != null) {
+            entity.setCategoria(categoriaContaRepository.findById(dto.getCategoriaId()).orElse(null));
+        }
     }
 
     private void salvarImagem(Cliente cliente, ContaReceber contaReceber, DadosFilaDTO dadosFilaDTO){

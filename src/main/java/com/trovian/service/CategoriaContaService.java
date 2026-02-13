@@ -93,6 +93,15 @@ public class CategoriaContaService {
         return categoriaContaRepository.findByTipo(TipoConta.valueOf(tipo), pageable).map(this::toDTO);
     }
 
+
+    @Transactional(readOnly = true)
+    public Page<CategoriaContaDTO> findByTipoAndClienteId(String tipo, Long clienteId, Pageable pageable) {
+        return categoriaContaRepository.findByTipoAndClienteId(TipoConta.valueOf(tipo), clienteId, pageable).map(this::toDTO);
+    }
+
+
+
+
     private CategoriaContaDTO toDTO(CategoriaConta entity) {
         CategoriaContaDTO dto = new CategoriaContaDTO();
         dto.setId(entity.getId());

@@ -61,8 +61,12 @@ public class ContaReceber {
     private Motorista motorista;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "fornecedor_id", nullable = false)
+    @JoinColumn(name = "fornecedor_id")
     private Fornecedor fornecedor;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "viagem_id")
+    private Viagem viagem;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal valorOriginal;
