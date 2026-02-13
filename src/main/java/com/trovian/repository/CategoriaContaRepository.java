@@ -20,6 +20,8 @@ public interface CategoriaContaRepository extends JpaRepository<CategoriaConta, 
 
     List<CategoriaConta> findByTipo(TipoConta tipo);
 
+    Page<CategoriaConta> findByTipoAndClienteId(TipoConta tipo, Long clienteId, Pageable pageable);
+
     Page<CategoriaConta> findByCategoriaPaiId(Long categoriaPaiId, Pageable pageable);
 
     Page<CategoriaConta> findByNomeContainingIgnoreCase(String nome, Pageable pageable);

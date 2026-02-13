@@ -201,5 +201,9 @@ public class ViagemDTO {
     @Schema(description = "Consumo detalhado Rota de Volta", accessMode = Schema.AccessMode.READ_ONLY)
     public ConsumoDetalhadoDTO consumoDetalhadoVolta;
 
+    //==========Se vai converter em Contas a Receber
+    @Schema(description = "Se vai converter a viagem em contas a receber")
+    public boolean converterEmContasAReceber;
+
 
 }

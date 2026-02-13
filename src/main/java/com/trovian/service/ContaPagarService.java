@@ -262,11 +262,28 @@ public class ContaPagarService {
         entity.setValorJuros(dto.getValorJuros());
         entity.setValorMulta(dto.getValorMulta());
         entity.setValorTotal(dto.getValorTotal());
+        entity.setValorPago(dto.getValorPago());
         entity.setDataEmissao(dto.getDataEmissao());
         entity.setDataVencimento(dto.getDataVencimento());
         entity.setDataCompetencia(dto.getDataCompetencia());
+        entity.setDataPagamento(dto.getDataPagamento());
         entity.setStatus(dto.getStatus());
         entity.setObservacao(dto.getObservacao());
+        if (dto.getCentroCustoId() != null) {
+            entity.setCentroCusto(centroCustoRepository.findById(dto.getCentroCustoId()).orElse(null));
+        }
+        if (dto.getFormaPagamentoId() != null) {
+            entity.setFormaPagamento(formaPagamentoRepository.findById(dto.getFormaPagamentoId()).orElse(null));
+        }
+        if (dto.getVeiculoId() != null) {
+            entity.setVeiculo(veiculoRepository.findById(dto.getVeiculoId()).orElse(null));
+        }
+        if (dto.getMotoristaId() != null) {
+            entity.setMotorista(motoristaRepository.findById(dto.getMotoristaId()).orElse(null));
+        }
+        if (dto.getCategoriaId() != null) {
+            entity.setCategoria(categoriaContaRepository.findById(dto.getCategoriaId()).orElse(null));
+        }
     }
 
  public void salvarContaPagarAbastecimentoWpp(Abastecimento abastecimento,

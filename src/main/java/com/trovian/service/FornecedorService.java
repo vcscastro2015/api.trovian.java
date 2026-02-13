@@ -27,7 +27,7 @@ public class FornecedorService {
     public FornecedorDTO create(FornecedorDTO dto) {
         log.info("Criando fornecedor: {}", dto.getRazaoSocial());
 
-        if (dto.getCnpjCpf() != null && fornecedorRepository.existsByCnpjCpf(dto.getCnpjCpf())) {
+        if (dto.getCnpjCpf() != null && fornecedorRepository.existsByCnpjCpfAndClienteId(dto.getCnpjCpf(), dto.getClienteId())) {
             throw new RuntimeException("CNPJ/CPF já cadastrado: " + dto.getCnpjCpf());
         }
 
