@@ -69,6 +69,20 @@ public class CategoriaContaController {
         return ResponseEntity.ok(categorias);
     }
 
+    @GetMapping("/tipo/{tipo}/{clienteId}")
+    @Operation(summary = "Buscar categorias por tipo (PAGAR ou RECEBER)")
+    public ResponseEntity<Page<CategoriaContaDTO>> findByTipoClienteId(
+            @Parameter(description = "Tipo da conta: PAGAR ou RECEBER", required = true)
+            @PathVariable String tipo,
+            @PathVariable Long clienteId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "100") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<CategoriaContaDTO> categorias = categoriaContaService.findByTipoAndClienteId(tipo.toUpperCase(), clienteId, pageable);
+        return ResponseEntity.ok(categorias);
+    }
+
     @PutMapping("/{id}")
     @Operation(summary = "Atualizar categoria")
     public ResponseEntity<CategoriaContaDTO> update(

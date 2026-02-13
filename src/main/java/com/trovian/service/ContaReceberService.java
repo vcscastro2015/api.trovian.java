@@ -450,7 +450,11 @@ public class ContaReceberService {
         }
         if (entity.getFornecedor() != null) {
             dto.setFornecedorId(entity.getFornecedor().getId());
-            dto.setFornecedorNome(entity.getFornecedor().getNomeFantasia());
+            String nome = entity.getFornecedor().getNomeFantasia();
+            if(Objects.isNull(nome) || nome.isEmpty()){
+                nome = entity.getFornecedor().getRazaoSocial();
+            }
+            dto.setFornecedorNome(nome);
         }
         if (entity.getCategoria() != null) {
             dto.setCategoriaId(entity.getCategoria().getId());
@@ -571,12 +575,18 @@ public class ContaReceberService {
         entity.setNumeroCte(dto.getNumeroCte());
         entity.setValorOriginal(dto.getValorOriginal());
         entity.setValorDesconto(dto.getValorDesconto());
+        entity.setValorRecebido(dto.getValorRecebido());
         entity.setValorJuros(dto.getValorJuros());
         entity.setValorMulta(dto.getValorMulta());
         entity.setValorTotal(dto.getValorTotal());
+        entity.setNumeroParcela(dto.getNumeroParcela());
+        entity.setTotalParcelas(dto.getTotalParcelas());
+        entity.setRecorrente(dto.getRecorrente());
+        entity.setPeriodicidade(dto.getPeriodicidade());
         entity.setDataEmissao(dto.getDataEmissao());
         entity.setDataVencimento(dto.getDataVencimento());
         entity.setDataCompetencia(dto.getDataCompetencia());
+        entity.setDataRecebimento(dto.getDataRecebimento());
         entity.setStatus(dto.getStatus());
         entity.setOrigemFrete(dto.getOrigemFrete());
         entity.setDestinoFrete(dto.getDestinoFrete());
@@ -584,10 +594,32 @@ public class ContaReceberService {
         entity.setTipoMercadoria(dto.getTipoMercadoria());
         entity.setDistanciaKm(dto.getDistanciaKm());
         entity.setObservacao(dto.getObservacao());
+
         if (dto.getFornecedorId() != null) {
             entity.setFornecedor(fornecedorRepository.findById(dto.getFornecedorId()).orElse(null));
         } else {
             entity.setFornecedor(null);
+        }
+        if (dto.getCentroCustoId() != null) {
+            entity.setCentroCusto(centroCustoRepository.findById(dto.getCentroCustoId()).orElse(null));
+        }
+        if (dto.getFormaPagamentoId() != null) {
+            entity.setFormaPagamento(formaPagamentoRepository.findById(dto.getFormaPagamentoId()).orElse(null));
+        }
+        if (dto.getVeiculoId() != null) {
+            entity.setVeiculo(veiculoRepository.findById(dto.getVeiculoId()).orElse(null));
+        }
+        if (dto.getMotoristaId() != null) {
+            entity.setMotorista(motoristaRepository.findById(dto.getMotoristaId()).orElse(null));
+        }
+        if(dto.getFornecedorId() != null){
+            entity.setFornecedor(fornecedorRepository.findById(dto.getFornecedorId()).orElse(null));
+        }
+        if (dto.getViagemId() != null) {
+            entity.setViagem(viagemRepository.findById(dto.getViagemId()).orElse(null));
+        }
+        if (dto.getCategoriaId() != null) {
+            entity.setCategoria(categoriaContaRepository.findById(dto.getCategoriaId()).orElse(null));
         }
     }
 

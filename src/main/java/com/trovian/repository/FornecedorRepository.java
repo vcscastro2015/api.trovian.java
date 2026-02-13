@@ -25,6 +25,8 @@ public interface FornecedorRepository extends JpaRepository<Fornecedor, Long> {
 
     boolean existsByCnpjCpf(String cnpjCpf);
 
+    boolean existsByCnpjCpfAndClienteId(String cnpjCpf, Long clienteId);
+
     Page<Fornecedor> findByClienteId(Long clienteId, Pageable pageable);
 
     @Query("SELECT f FROM Fornecedor f WHERE f.razaoSocial = 'FORNECEDOR PENDENTE (SISTEMA)'")
