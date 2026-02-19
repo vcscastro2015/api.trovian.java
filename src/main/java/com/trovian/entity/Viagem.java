@@ -163,6 +163,11 @@ public class Viagem {
     @Column(name = "margem_percentual")
     private Double margemPercentual;
 
+    // ==================== FLAGS ESPECIAIS ====================
+
+    @Column(name = "andar_vazio_volta", nullable = false)
+    private Boolean andarVazioVolta = false;
+
     // ==================== AUDITORIA ====================
 
     @Column(name = "data_cadastro", nullable = false, updatable = false)

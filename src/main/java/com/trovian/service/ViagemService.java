@@ -167,11 +167,14 @@ public class ViagemService {
         // 2. Executar cálculos
         calcularReceitaBruta(dto);
         calcularFatorCarga(dto, veiculo);
-        calcularCombustivel(dto, veiculo, rotaIda, rotaVolta, ultimoAbastecimento);
+        calcularCombustivel(dto, rotaIda, rotaVolta, ultimoAbastecimento);
         ConsumoDetalhadoDTO consumoDetalhado = calcularFatorTerreno(rotaIda, veiculo, dto.getQuantidadeToneladasIda(), dto);
         dto.setConsumoDetalhadoIda(consumoDetalhado);
         if (rotaVolta != null) {
-            consumoDetalhado = calcularFatorTerreno(rotaVolta, veiculo, dto.getQuantidadeToneladasIda(), dto);
+            // Quando andarVazioVolta=true, veículo volta apenas com a tara (sem carga)
+            double toneladasVolta = Boolean.TRUE.equals(dto.getAndarVazioVolta()) ? 0.0
+                    : (dto.getQuantidadeToneladasVolta() != null ? dto.getQuantidadeToneladasVolta() : dto.getQuantidadeToneladasIda());
+            consumoDetalhado = calcularFatorTerreno(rotaVolta, veiculo, toneladasVolta, dto);
             dto.setConsumoDetalhadoVolta(consumoDetalhado);
         }
         calcularPedagios(dto, veiculo);
@@ -304,7 +307,11 @@ public class ViagemService {
 
         // Volta (se existir)
         BigDecimal receitaVolta = BigDecimal.ZERO;
-        if (dto.getRotaVoltaId() != null && dto.getQuantidadeToneladasVolta() != null) {
+        if (Boolean.TRUE.equals(dto.getAndarVazioVolta())) {
+            // Veículo rodando vazio na volta: sem frete, sem receita
+            dto.setValorTotalBrutoVolta(BigDecimal.ZERO);
+            log.debug("Volta vazia: receita da volta definida como zero");
+        } else if (dto.getRotaVoltaId() != null && dto.getQuantidadeToneladasVolta() != null) {
             receitaVolta = BigDecimal.valueOf(dto.getQuantidadeToneladasVolta())
                     .multiply(dto.getValorToneladaBrutaVolta() != null ? dto.getValorToneladaBrutaVolta() : BigDecimal.ZERO)
                     .setScale(2, RoundingMode.HALF_UP);
@@ -348,13 +355,17 @@ public class ViagemService {
     /**
      * Calcula consumo e valor do combustível
      */
-    private void calcularCombustivel(ViagemDTO dto, Veiculo veiculo, Rota rotaIda, Rota rotaVolta, Abastecimento ultimoAbastecimento) {
+    private void calcularCombustivel(ViagemDTO dto, Rota rotaIda, Rota rotaVolta, Abastecimento ultimoAbastecimento) {
         log.debug("Calculando combustível");
 
         // Distância total (converter de metros para km)
         double distanciaTotal = rotaIda.getDistanciaTotal() / 1000.0;
         if (rotaVolta != null) {
             distanciaTotal += rotaVolta.getDistanciaTotal() / 1000.0;
+        }
+        //Representa o caminhao andando vazio
+        if(dto.getAndarVazioVolta()){
+            distanciaTotal = distanciaTotal * 2;
         }
 
         // Consumo estimado
@@ -402,6 +413,10 @@ public class ViagemService {
                     .multiply(dto.getValorPedagioPorEixoVolta() != null ? dto.getValorPedagioPorEixoVolta() : BigDecimal.ZERO)
                     .multiply(BigDecimal.valueOf(veiculo.getNumeroEixos()))
                     .setScale(2, RoundingMode.HALF_UP);
+        }
+
+        if(dto.getAndarVazioVolta()){
+            pedagiosIda = pedagiosIda.multiply(new BigDecimal(2));
         }
 
         dto.setValorTotalPedagios(pedagiosIda.add(pedagiosVolta));
@@ -578,6 +593,9 @@ public class ViagemService {
         dto.setConsumoDetalhadoIda(toConsumoDetalhadoDTO(viagem.getConsumoDetalhadoIda()));
         dto.setConsumoDetalhadoVolta(toConsumoDetalhadoDTO(viagem.getConsumoDetalhadoVolta()));
 
+        // Flags especiais
+        dto.setAndarVazioVolta(viagem.getAndarVazioVolta() != null ? viagem.getAndarVazioVolta() : false);
+
         return dto;
     }
 
@@ -653,6 +671,9 @@ public class ViagemService {
         // Consumo Detalhado
         viagem.setConsumoDetalhadoIda(toConsumoDetalhadoEntity(dto.getConsumoDetalhadoIda()));
         viagem.setConsumoDetalhadoVolta(toConsumoDetalhadoEntity(dto.getConsumoDetalhadoVolta()));
+
+        // Flags especiais
+        viagem.setAndarVazioVolta(dto.getAndarVazioVolta() != null ? dto.getAndarVazioVolta() : false);
 
         return viagem;
     }
@@ -737,6 +758,9 @@ public class ViagemService {
         viagem.setValorTotalCustos(dto.getValorTotalCustos());
         viagem.setValorTotalLiquido(dto.getValorTotalLiquido());
         viagem.setMargemPercentual(dto.getMargemPercentual());
+
+        // Flags especiais
+        viagem.setAndarVazioVolta(dto.getAndarVazioVolta() != null ? dto.getAndarVazioVolta() : false);
 
         // Consumo Detalhado - Atualizar ou criar novos
         if (dto.getConsumoDetalhadoIda() != null) {

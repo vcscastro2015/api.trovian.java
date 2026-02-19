@@ -205,5 +205,10 @@ public class ViagemDTO {
     @Schema(description = "Se vai converter a viagem em contas a receber")
     public boolean converterEmContasAReceber;
 
+    // ==================== FLAGS ESPECIAIS ====================
+
+    @Schema(description = "Indica se o veículo vai rodar vazio na volta (sem carga/frete). Quando true, a receita da volta é zero e o fator de terreno usa apenas a tara do veículo.")
+    private Boolean andarVazioVolta = false;
+
 
 }
