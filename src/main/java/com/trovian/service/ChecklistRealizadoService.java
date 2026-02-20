@@ -12,9 +12,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -32,6 +35,8 @@ public class ChecklistRealizadoService {
     private final ItemModeloChecklistRepository itemModeloChecklistRepository;
     private final OrdemServicoService ordemServicoService;
     private final ClienteRepository clienteRepository;
+    private final RespostaItemChecklistRepository respostaItemChecklistRepository;
+    private final ImagemRespostaRepository imagemRespostaRepository;
 
     @Transactional(readOnly = true)
     public Page<ChecklistRealizadoDTO> findAll(Pageable pageable) {
@@ -294,6 +299,38 @@ public class ChecklistRealizadoService {
     }
 
     @Transactional
+    public void salvarFotoItem(UUID checklistId, UUID itemId, MultipartFile foto) {
+        log.info("Salvando foto do item {} do checklist {}", itemId, checklistId);
+
+        RespostaItemChecklist resposta = respostaItemChecklistRepository.findById(itemId)
+                .orElseThrow(() -> new RuntimeException("Item do checklist não encontrado com ID: " + itemId));
+
+        if (!resposta.getChecklistRealizado().getId().equals(checklistId)) {
+            throw new RuntimeException("Item " + itemId + " não pertence ao checklist " + checklistId);
+        }
+
+        byte[] conteudo;
+        try {
+            conteudo = foto.getBytes();
+        } catch (IOException e) {
+            throw new RuntimeException("Erro ao ler o conteúdo da foto", e);
+        }
+
+        String contentType = foto.getContentType() != null ? foto.getContentType() : "image/png";
+
+        ImagemResposta imagem = imagemRespostaRepository
+                .findByRespostaItemChecklistId(itemId)
+                .orElse(new ImagemResposta());
+
+        imagem.setRespostaItemChecklist(resposta);
+        imagem.setConteudoBinario(conteudo);
+        imagem.setContentType(contentType);
+        imagemRespostaRepository.save(imagem);
+
+        log.info("Foto salva com sucesso para o item {}", itemId);
+    }
+
+    @Transactional
     public void delete(UUID id) {
         log.info("Deletando checklist realizado com ID: {}", id);
 
@@ -393,6 +430,13 @@ public class ChecklistRealizadoService {
         dto.setObservacao(resposta.getObservacao());
         dto.setFotoUrl(resposta.getFotoUrl());
         dto.setRequerAtencao(resposta.getRequerAtencao());
+
+        imagemRespostaRepository.findByRespostaItemChecklistId(resposta.getId())
+                .ifPresent(img -> {
+                    String base64 = Base64.getEncoder().encodeToString(img.getConteudoBinario());
+                    dto.setFotoDoItem("data:" + img.getContentType() + ";base64," + base64);
+                });
+
         return dto;
     }
 

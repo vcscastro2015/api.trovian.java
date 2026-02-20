@@ -40,4 +40,7 @@ public class RespostaItemChecklistDTO {
 
     @Schema(description = "Indica se a resposta requer atenção (gera alerta)", example = "false")
     private Boolean requerAtencao;
+
+    @Schema(description = "Foto do item em base64 (somente leitura)", accessMode = Schema.AccessMode.READ_ONLY)
+    private String fotoDoItem;
 }
