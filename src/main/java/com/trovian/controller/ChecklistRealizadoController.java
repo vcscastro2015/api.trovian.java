@@ -21,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
@@ -260,6 +261,23 @@ public class ChecklistRealizadoController {
             @PathVariable UUID id) {
         ChecklistRealizadoDTO finalized = checklistRealizadoService.finalizar(id);
         return ResponseEntity.ok(finalized);
+    }
+
+    @Operation(summary = "Salva a foto de um item do checklist",
+               description = "Recebe a imagem via multipart/form-data e associa ao item informado")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Foto salva com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Checklist ou item não encontrado")
+    })
+    @PostMapping(value = "/{checklistId}/item/{itemId}/foto", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> salvarFotoItem(
+            @Parameter(description = "ID do checklist realizado", required = true)
+            @PathVariable UUID checklistId,
+            @Parameter(description = "ID do item do checklist", required = true)
+            @PathVariable UUID itemId,
+            @RequestParam("foto") MultipartFile foto) {
+        checklistRealizadoService.salvarFotoItem(checklistId, itemId, foto);
+        return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "Deleta um checklist realizado", description = "Remove um checklist realizado do sistema")
