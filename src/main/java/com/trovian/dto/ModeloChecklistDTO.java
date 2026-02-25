@@ -54,6 +54,12 @@ public class ModeloChecklistDTO {
     @Schema(description = "Lista de itens do modelo de checklist")
     private List<ItemModeloChecklistDTO> itens = new ArrayList<>();
 
+    @Schema(description = "IDs dos veículos associados a este modelo de checklist")
+    private List<Long> veiculoIds = new ArrayList<>();
+
+    @Schema(description = "Placas dos veículos associados (somente leitura)", accessMode = Schema.AccessMode.READ_ONLY)
+    private List<String> veiculoPlacas = new ArrayList<>();
+
     @NotNull(message = "Cliente é obrigatório")
     @Schema(description = "ID do cliente", example = "1", required = true)
     private Long clienteId;
