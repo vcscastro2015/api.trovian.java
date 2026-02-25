@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -51,5 +52,8 @@ public class DadosFilaDTO {
 
     @JsonProperty("abastecimento")
     private AbastecimentoWhatAppDTO abastecimento;
+
+    @JsonProperty("listaRespostaItemChecklist")
+    private List<RespostaItemChecklistWhatAppDTO> listaRespostaItemChecklist;
 
 }

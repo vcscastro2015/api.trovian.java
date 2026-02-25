@@ -6,6 +6,8 @@ import com.trovian.enums.StatusChecklist;
 import com.trovian.enums.StatusOrdemServico;
 import com.trovian.enums.TipoManutencao;
 import com.trovian.repository.*;
+import com.trovian.util.TelefoneUtils;
+import com.trovian.util.TextoUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -17,9 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Base64;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -175,33 +175,18 @@ public class ChecklistRealizadoService {
     }
 
     @Transactional
-    public ChecklistRealizadoDTO update(UUID id, ChecklistRealizadoDTO dto) {
+    public ChecklistRealizadoDTO updateSomenteChecklistRealizado(UUID id, ChecklistRealizadoDTO dto) {
         log.info("Atualizando checklist realizado com ID: {}", id);
 
         ChecklistRealizado checklist = checklistRealizadoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Checklist realizado não encontrado com ID: " + id));
 
-        // Atualiza campos básicos
+        // Atualiza campos básicos mas nao atualiza as respostas.
         checklist.setKmVeiculo(dto.getKmVeiculo());
         checklist.setStatus(dto.getStatus());
         checklist.setObservacoesGerais(dto.getObservacoesGerais());
         checklist.setLocalizacao(dto.getLocalizacao());
-        checklist.setDataHoraConclusao(dto.getDataHoraConclusao());
-
-        // Atualiza respostas
-        if (dto.getRespostas() != null) {
-            checklist.getRespostas().clear();
-            for (RespostaItemChecklistDTO respostaDTO : dto.getRespostas()) {
-                RespostaItemChecklist resposta = toRespostaEntity(respostaDTO);
-                resposta.setChecklistRealizado(checklist);
-
-                ItemModeloChecklist itemModelo = itemModeloChecklistRepository.findById(respostaDTO.getItemModeloId())
-                        .orElseThrow(() -> new RuntimeException("Item do modelo não encontrado com ID: " + respostaDTO.getItemModeloId()));
-                resposta.setItemModelo(itemModelo);
-
-                checklist.getRespostas().add(resposta);
-            }
-        }
+        checklist.setDataHoraConclusao(LocalDateTime.now());
 
         ChecklistRealizado updatedChecklist = checklistRealizadoRepository.save(checklist);
         log.info("Checklist realizado atualizado com sucesso. ID: {}", id);
@@ -448,4 +433,73 @@ public class ChecklistRealizadoService {
         resposta.setRequerAtencao(dto.getRequerAtencao() != null ? dto.getRequerAtencao() : false);
         return resposta;
     }
+
+    public void processarCheckListDoWpp(DadosFilaDTO dadosFila){
+        try{
+            Optional<Veiculo> optionalVeiculo = veiculoRepository.findByPlacaIgnoreCase(dadosFila.getPlaca());
+            String telefoneConvertido =
+                    TelefoneUtils.converterNumeroWpp(dadosFila.getNumeroTelefone());
+            Motorista motorista = motoristaRepository.findByTelefone(TelefoneUtils.converterNumeroWpp(telefoneConvertido)).orElse(null);
+            if(optionalVeiculo.isPresent()) {
+                Veiculo veiculo = optionalVeiculo.get();
+                ChecklistRealizado checklistRealizado = null;
+                for(int i = 0; i < dadosFila.getListaRespostaItemChecklist().size(); i++){
+                    RespostaItemChecklistWhatAppDTO checklistWhatAppDTO = dadosFila.getListaRespostaItemChecklist().get(i);
+                    ItemModeloChecklist itemModeloChecklist = itemModeloChecklistRepository.findById(UUID.fromString(checklistWhatAppDTO.getItemId()))
+                            .orElseThrow(() -> new RuntimeException("Modelo de checklist não encontrado com ID: " + checklistWhatAppDTO.getItemId()));
+                    if(Objects.isNull(checklistRealizado)) {
+                        checklistRealizado = new ChecklistRealizado();
+                        checklistRealizado.setNumeroChecklist(gerarNumeroChecklist());
+                        checklistRealizado.setModeloChecklist(itemModeloChecklist.getModeloChecklist());
+                        checklistRealizado.setMotorista(motorista);
+                        checklistRealizado.setVeiculo(veiculo);
+                        checklistRealizado.setCliente(veiculo.getCliente());
+                        checklistRealizado.setDataHoraInicio(dadosFila.getDataEnvio());
+                        int hod = 0;
+                        if (Objects.nonNull(dadosFila.getHodometro()) && !dadosFila.getHodometro().isEmpty()) {
+                            hod = Integer.parseInt(dadosFila.getHodometro());
+                        }
+                        checklistRealizado.setKmVeiculo(hod);
+                        checklistRealizado.setStatus(StatusChecklist.EM_ANDAMENTO);
+                        checklistRealizado.setObservacoesGerais("Dados processados do WhatsApp");
+                        checklistRealizado = checklistRealizadoRepository.save(checklistRealizado);
+                    }
+                    RespostaItemChecklist respostaItemChecklist = getRespostaItemChecklist(checklistWhatAppDTO, checklistRealizado, itemModeloChecklist);
+                    RespostaItemChecklist respostaItemChecklistSaved = respostaItemChecklistRepository.save(respostaItemChecklist);
+                    if(Objects.nonNull(checklistWhatAppDTO.getFotoBase64())){
+                        gravarImagemDoWpp(respostaItemChecklistSaved, checklistWhatAppDTO.getFotoBase64());
+                    }
+                }
+            }
+        }catch (Exception e){
+            log.error("processarCheckListDoWpp", e);
+        }
+    }
+
+    private void gravarImagemDoWpp(RespostaItemChecklist respostaItemChecklist, String base64Input){
+        try {
+            ImagemResposta imagem = new ImagemResposta();
+            imagem.setRespostaItemChecklist(respostaItemChecklist);
+            String cleanBase64 = base64Input.contains(",") ?
+                    base64Input.split(",")[1] : base64Input;
+            byte[] bytes = Base64.getDecoder().decode(cleanBase64);
+            imagem.setConteudoBinario(bytes);
+            imagem.setContentType("image/png");
+            imagemRespostaRepository.save(imagem);
+        }catch (Exception e){
+            log.error("gravarImagemDoWpp", e);
+        }
+    }
+
+    private RespostaItemChecklist getRespostaItemChecklist(RespostaItemChecklistWhatAppDTO checklistWhatAppDTO, ChecklistRealizado checklistRealizado, ItemModeloChecklist itemModeloChecklist) {
+        RespostaItemChecklist respostaItemChecklist = new RespostaItemChecklist();
+        respostaItemChecklist.setObservacao(checklistWhatAppDTO.getObservacao());
+        respostaItemChecklist.setResposta(checklistWhatAppDTO.getResposta());
+        respostaItemChecklist.setRequerAtencao(TextoUtils.contemNao(checklistWhatAppDTO.getResposta()));
+        respostaItemChecklist.setChecklistRealizado(checklistRealizado);
+        respostaItemChecklist.setItemModelo(itemModeloChecklist);
+        return respostaItemChecklist;
+    }
+
+
 }

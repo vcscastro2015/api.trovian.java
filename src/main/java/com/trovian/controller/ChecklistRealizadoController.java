@@ -244,7 +244,7 @@ public class ChecklistRealizadoController {
             @PathVariable UUID id,
             @Parameter(description = "Novos dados do checklist", required = true)
             @Valid @RequestBody ChecklistRealizadoDTO checklistDTO) {
-        ChecklistRealizadoDTO updatedChecklist = checklistRealizadoService.update(id, checklistDTO);
+        ChecklistRealizadoDTO updatedChecklist = checklistRealizadoService.updateSomenteChecklistRealizado(id, checklistDTO);
         return ResponseEntity.ok(updatedChecklist);
     }
 
