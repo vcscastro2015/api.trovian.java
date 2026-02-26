@@ -25,6 +25,7 @@ public class MotoristaService {
 
     private final MotoristaRepository motoristaRepository;
     private final ClienteRepository clienteRepository;
+    private final NotificacaoService notificacaoService;
 
     /**
      * Busca todos os motoristas com paginação
@@ -86,6 +87,8 @@ public class MotoristaService {
 
         Motorista savedMotorista = motoristaRepository.save(motorista);
         log.info("Motorista criado com sucesso. ID: {}", savedMotorista.getId());
+
+        notificacaoService.criarNotificacaoBemVindoMotorista(savedMotorista);
 
         return toDTO(savedMotorista);
     }

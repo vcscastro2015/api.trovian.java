@@ -30,6 +30,7 @@ public class UsuarioService {
     private final RefreshTokenService refreshTokenService;
     private final ClienteRepository clienteRepository;
     private final FuncionalidadeRepository funcionalidadeRepository;
+    private final NotificacaoService notificacaoService;
 
     // Listar todos com paginação
     @Transactional(readOnly = true)
@@ -103,6 +104,8 @@ public class UsuarioService {
         usuario.setAtivo(request.getAtivo() != null ? request.getAtivo() : true);
         usuario.setRoles(request.getRoles());
         usuario.setCliente(cliente);
+        usuario.setReceberNotificacao(request.getReceberNotificacao() != null ? request.getReceberNotificacao() : false);
+        usuario.setConsultarVeiculosWhatsapp(request.getConsultarVeiculosWhatsapp() != null ? request.getConsultarVeiculosWhatsapp() : false);
 
         // Buscar funcionalidades pelos códigos
         if (request.getFuncionalidades() != null && request.getFuncionalidades().length > 0) {
@@ -116,6 +119,8 @@ public class UsuarioService {
         }
 
         usuario = usuarioRepository.save(usuario);
+
+        notificacaoService.criarNotificacaoBemVindo(usuario);
 
         return converterParaResponse(usuario);
     }
@@ -155,6 +160,14 @@ public class UsuarioService {
 
         if (request.getRoles() != null) {
             usuario.setRoles(request.getRoles());
+        }
+
+        if (request.getReceberNotificacao() != null) {
+            usuario.setReceberNotificacao(request.getReceberNotificacao());
+        }
+
+        if (request.getConsultarVeiculosWhatsapp() != null) {
+            usuario.setConsultarVeiculosWhatsapp(request.getConsultarVeiculosWhatsapp());
         }
 
         // Validar cliente
@@ -350,6 +363,8 @@ public class UsuarioService {
                 .atualizadoEm(usuario.getAtualizadoEm())
                 .clienteId(usuario.getCliente().getId())
                 .clienteNome(usuario.getCliente().getNome())
+                .receberNotificacao(usuario.getReceberNotificacao())
+                .consultarVeiculosWhatsapp(usuario.getConsultarVeiculosWhatsapp())
                 .build();
     }
 

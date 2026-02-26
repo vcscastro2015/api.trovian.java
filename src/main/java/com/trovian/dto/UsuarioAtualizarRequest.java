@@ -32,4 +32,8 @@ public class UsuarioAtualizarRequest {
     private Long clienteId;
 
     private String[] funcionalidades;
+
+    private Boolean receberNotificacao;
+
+    private Boolean consultarVeiculosWhatsapp;
 }

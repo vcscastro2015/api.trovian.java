@@ -76,4 +76,9 @@ public class Usuario {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cliente_id", nullable = false)
     private Cliente cliente;
+
+    @Column(nullable = false)
+    private Boolean receberNotificacao = false;
+    @Column(nullable = false)
+    private Boolean consultarVeiculosWhatsapp = false;
 }

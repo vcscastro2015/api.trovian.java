@@ -35,4 +35,8 @@ public class UsuarioCriarRequest {
     private Long clienteId;
 
     private String[] funcionalidades;
+
+    private Boolean receberNotificacao = false;
+
+    private Boolean consultarVeiculosWhatsapp = false;
 }

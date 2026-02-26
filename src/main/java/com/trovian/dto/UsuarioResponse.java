@@ -27,4 +27,6 @@ public class UsuarioResponse {
     private LocalDateTime atualizadoEm;
     private Long clienteId;
     private String clienteNome;
+    private Boolean receberNotificacao;
+    private Boolean consultarVeiculosWhatsapp;
 }

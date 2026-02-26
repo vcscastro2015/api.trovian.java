@@ -188,6 +188,8 @@ public class AuthService {
                 .atualizadoEm(usuario.getAtualizadoEm())
                 .clienteId(usuario.getCliente().getId())
                 .clienteNome(usuario.getCliente().getNome())
+                .receberNotificacao(usuario.getReceberNotificacao())
+                .consultarVeiculosWhatsapp(usuario.getConsultarVeiculosWhatsapp())
                 .build();
     }
 }
