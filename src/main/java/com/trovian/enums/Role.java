@@ -1,4 +1,4 @@
-package com.trovian.entity;
+package com.trovian.enums;
 
 public enum Role {
     ADMIN,

@@ -1,6 +1,6 @@
 package com.trovian.repository;
 
-import com.trovian.entity.Role;
+import com.trovian.enums.Role;
 import com.trovian.entity.Usuario;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

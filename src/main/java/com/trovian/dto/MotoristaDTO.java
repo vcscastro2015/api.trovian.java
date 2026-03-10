@@ -1,6 +1,7 @@
 package com.trovian.dto;
 
 import com.trovian.enums.Sexo;
+import com.trovian.enums.StatusWhatsapp;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
@@ -115,4 +116,7 @@ public class MotoristaDTO {
 
     @Schema(description = "Data de última atualização", example = "2024-01-10T15:30:00", accessMode = Schema.AccessMode.READ_ONLY)
     private String updatedAt;
+
+    @Schema(description = "Status do consentimento WhatsApp", accessMode = Schema.AccessMode.READ_ONLY)
+    private StatusWhatsapp statusWhatsapp;
 }
