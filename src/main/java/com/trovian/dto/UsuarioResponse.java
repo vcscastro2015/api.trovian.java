@@ -1,6 +1,7 @@
 package com.trovian.dto;
 
-import com.trovian.entity.Role;
+import com.trovian.enums.Role;
+import com.trovian.enums.StatusWhatsapp;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,4 +28,7 @@ public class UsuarioResponse {
     private LocalDateTime atualizadoEm;
     private Long clienteId;
     private String clienteNome;
+    private Boolean receberNotificacao;
+    private Boolean consultarVeiculosWhatsapp;
+    private StatusWhatsapp statusWhatsapp;
 }

@@ -114,6 +114,10 @@ public class Motorista {
     @NotNull(message = "Cliente é obrigatório")
     private Cliente cliente;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "consentimento_whatsapp_id")
+    private ConsentimentoWhatsapp consentimentoWhatsapp;
+
     @Column(name = "data_cadastro", nullable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date dataCadastro;

@@ -2,13 +2,11 @@ package com.trovian.service;
 
 import com.trovian.dto.*;
 import com.trovian.entity.RefreshToken;
-import com.trovian.entity.Role;
+import com.trovian.enums.Role;
 import com.trovian.entity.Usuario;
 import com.trovian.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -188,6 +186,8 @@ public class AuthService {
                 .atualizadoEm(usuario.getAtualizadoEm())
                 .clienteId(usuario.getCliente().getId())
                 .clienteNome(usuario.getCliente().getNome())
+                .receberNotificacao(usuario.getReceberNotificacao())
+                .consultarVeiculosWhatsapp(usuario.getConsultarVeiculosWhatsapp())
                 .build();
     }
 }

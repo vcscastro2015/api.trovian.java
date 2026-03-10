@@ -2,8 +2,11 @@ package com.trovian.service;
 
 import com.trovian.dto.MotoristaDTO;
 import com.trovian.entity.Cliente;
+import com.trovian.entity.ConsentimentoWhatsapp;
 import com.trovian.entity.Motorista;
+import com.trovian.enums.StatusWhatsapp;
 import com.trovian.repository.ClienteRepository;
+import com.trovian.repository.ConsentimentoWhatsappRepository;
 import com.trovian.repository.MotoristaRepository;
 import com.trovian.util.TelefoneUtils;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Objects;
+import java.time.LocalDateTime;
 
 /**
  * Service para lógica de negócio de Motorista
@@ -25,6 +28,8 @@ public class MotoristaService {
 
     private final MotoristaRepository motoristaRepository;
     private final ClienteRepository clienteRepository;
+    private final ConsentimentoWhatsappRepository consentimentoWhatsappRepository;
+    private final NotificacaoService notificacaoService;
 
     /**
      * Busca todos os motoristas com paginação
@@ -84,8 +89,18 @@ public class MotoristaService {
         Motorista motorista = toEntity(dto);
         motorista.setCliente(cliente);
 
+        ConsentimentoWhatsapp consentimento = new ConsentimentoWhatsapp();
+        consentimento.setStatusWhatsapp(StatusWhatsapp.AGUARDANDO_CONSENTIMENTO);
+        consentimento.setOrigem("whatsapp");
+        consentimento.setAutorizado(false);
+        consentimento.setDataCadastro(LocalDateTime.now());
+        ConsentimentoWhatsapp savedConsentimento = consentimentoWhatsappRepository.save(consentimento);
+        motorista.setConsentimentoWhatsapp(savedConsentimento);
+
         Motorista savedMotorista = motoristaRepository.save(motorista);
         log.info("Motorista criado com sucesso. ID: {}", savedMotorista.getId());
+
+        notificacaoService.criarNotificacaoBemVindoMotorista(savedMotorista);
 
         return toDTO(savedMotorista);
     }
@@ -189,6 +204,9 @@ public class MotoristaService {
         dto.setClienteNome(motorista.getCliente().getNome());
         dto.setDataCadastro(motorista.getDataCadastro());
         dto.setUpdatedAt(motorista.getUpdatedAt() != null ? motorista.getUpdatedAt().toString() : null);
+        if (motorista.getConsentimentoWhatsapp() != null) {
+            dto.setStatusWhatsapp(motorista.getConsentimentoWhatsapp().getStatusWhatsapp());
+        }
         return dto;
     }
 

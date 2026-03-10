@@ -1,6 +1,6 @@
 package com.trovian.dto;
 
-import com.trovian.entity.Role;
+import com.trovian.enums.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.Data;
@@ -35,4 +35,8 @@ public class UsuarioCriarRequest {
     private Long clienteId;
 
     private String[] funcionalidades;
+
+    private Boolean receberNotificacao = false;
+
+    private Boolean consultarVeiculosWhatsapp = false;
 }

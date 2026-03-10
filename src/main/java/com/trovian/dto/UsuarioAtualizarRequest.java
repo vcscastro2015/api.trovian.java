@@ -1,6 +1,6 @@
 package com.trovian.dto;
 
-import com.trovian.entity.Role;
+import com.trovian.enums.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
@@ -32,4 +32,8 @@ public class UsuarioAtualizarRequest {
     private Long clienteId;
 
     private String[] funcionalidades;
+
+    private Boolean receberNotificacao;
+
+    private Boolean consultarVeiculosWhatsapp;
 }
