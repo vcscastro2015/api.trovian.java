@@ -17,8 +17,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -37,6 +39,8 @@ public class ContaReceberService {
     private final MotoristaRepository motoristaRepository;
     private final ViagemRepository viagemRepository;
     private final ImagemArquivoRepository arquivoRepository;
+    private final ClientePlanoRepository clientePlanoRepository;
+    private final HistoricoPagamentoRepository historicoPagamentoRepository;
 
     @Transactional
     public ContaReceberDTO create(ContaReceberDTO dto) {
@@ -70,6 +74,16 @@ public class ContaReceberService {
             .orElseThrow(() -> new RuntimeException("Conta a receber não encontrada com ID: " + id));
         updateEntityFromDTO(conta, dto);
         ContaReceber updated = contaReceberRepository.save(conta);
+        if (updated.getStatus().equals(StatusConta.RECEBIDO) && updated.getClientePlano() != null) {
+            HistoricoPagamento historico = new HistoricoPagamento();
+            historico.setClientePlano(updated.getClientePlano());
+            historico.setValorPago(updated.getValorRecebido());
+            historico.setDataPagamento(updated.getDataRecebimento());
+            historico.setDataReferencia(updated.getDataCompetencia());
+            historico.setFormaPagamento(updated.getClientePlano().getFormaPagamento());
+            historicoPagamentoRepository.save(historico);
+            log.info("HistoricoPagamento criado automaticamente para ClientePlano ID: {}", updated.getClientePlano().getId());
+        }
         return toDTO(updated);
     }
 
@@ -127,7 +141,26 @@ public class ContaReceberService {
 
         ContaReceber updated = contaReceberRepository.save(conta);
         log.info("Recebimento registrado com sucesso");
+
+        if (updated.getClientePlano() != null) {
+            HistoricoPagamento historico = new HistoricoPagamento();
+            historico.setClientePlano(updated.getClientePlano());
+            historico.setValorPago(valorRecebido);
+            historico.setDataPagamento(dataRecebimento);
+            historico.setDataReferencia(updated.getDataCompetencia());
+            historico.setFormaPagamento(updated.getClientePlano().getFormaPagamento());
+            historicoPagamentoRepository.save(historico);
+            log.info("HistoricoPagamento criado automaticamente para ClientePlano ID: {}", updated.getClientePlano().getId());
+        }
+
         return toDTO(updated);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ContaReceberDTO> findByClientePlano(Long clientePlanoId) {
+        return contaReceberRepository
+                .findByClientePlanoIdOrderByDataVencimentoAsc(clientePlanoId)
+                .stream().map(this::toDTO).toList();
     }
 
     @Transactional(readOnly = true)
@@ -172,6 +205,124 @@ public class ContaReceberService {
         } catch (Exception e) {
             throw new RuntimeException("Falha ao processar CT-e " /*+ cteDTO.getNumero()*/, e);
         }
+    }
+
+    @Transactional
+    public List<ContaReceber> criarContaReceberDePlano(ClientePlano clientePlano) {
+        Cliente clienteMaster = clienteRepository.findById(1L)
+                .orElseThrow(() -> new RuntimeException("Cliente master (ID=1) não encontrado"));
+        CategoriaConta categoria = buscarOuCriarCategoriaAssinatura(clienteMaster);
+
+        LocalDate dataInicio = clientePlano.getDataInicio() != null ? clientePlano.getDataInicio() : LocalDate.now();
+        LocalDate dataFinal = clientePlano.getDataFinal();
+        Integer diaVencimento = clientePlano.getDiaVencimento();
+        BigDecimal valor = clientePlano.getValorFinal() != null ? clientePlano.getValorFinal() : BigDecimal.ZERO;
+        String periodicidade = clientePlano.getPlano().getPeriodicidade() != null
+                ? clientePlano.getPlano().getPeriodicidade().name() : null;
+
+        Fornecedor fornecedorTrovian = fornecedorRepository.buscarFornecedorTrovian().orElse(null);
+
+        // Somente MENSAL com dataFinal e diaVencimento gera N parcelas
+        boolean gerarParcelas = "MENSAL".equals(periodicidade) && dataFinal != null && diaVencimento != null;
+
+        if (!gerarParcelas) {
+            ContaReceber conta = construirParcelaDePlano(clientePlano, clienteMaster, categoria,
+                    fornecedorTrovian, valor, periodicidade,
+                    clientePlano.getDataVencimento() != null ? clientePlano.getDataVencimento() : dataInicio.plusMonths(1),
+                    dataInicio);
+            ContaReceber saved = contaReceberRepository.save(conta);
+            log.info("Conta a receber criada para plano ID: {}. Conta ID: {}", clientePlano.getId(), saved.getId());
+            return List.of(saved);
+        }
+
+        // Calcular primeiro vencimento: primeiro diaVencimento >= dataInicio
+        LocalDate primeiroVencimento;
+        if (diaVencimento >= dataInicio.getDayOfMonth()) {
+            primeiroVencimento = dataInicio.withDayOfMonth(diaVencimento);
+        } else {
+            primeiroVencimento = dataInicio.plusMonths(1).withDayOfMonth(diaVencimento);
+        }
+
+        List<ContaReceber> parcelas = new ArrayList<>();
+        LocalDate vencimentoAtual = primeiroVencimento;
+        int numeroParcela = 1;
+
+        // Contar total de parcelas primeiro
+        int totalParcelas = 0;
+        LocalDate temp = primeiroVencimento;
+        while (!temp.isAfter(dataFinal)) {
+            totalParcelas++;
+            temp = avancarPeriodicidade(temp, periodicidade);
+        }
+
+        while (!vencimentoAtual.isAfter(dataFinal)) {
+            LocalDate dataCompetencia = vencimentoAtual.withDayOfMonth(1);
+            ContaReceber conta = construirParcelaDePlano(clientePlano, clienteMaster, categoria,
+                    fornecedorTrovian, valor, periodicidade, vencimentoAtual, dataCompetencia);
+            conta.setNumeroParcela(numeroParcela);
+            conta.setTotalParcelas(totalParcelas);
+            ContaReceber saved = contaReceberRepository.save(conta);
+            parcelas.add(saved);
+            numeroParcela++;
+            vencimentoAtual = avancarPeriodicidade(vencimentoAtual, periodicidade);
+        }
+
+        log.info("Criadas {} parcelas de conta a receber para plano ID: {}", parcelas.size(), clientePlano.getId());
+        return parcelas;
+    }
+
+    private LocalDate avancarPeriodicidade(LocalDate data, String periodicidade) {
+        if (periodicidade == null) return data.plusMonths(1);
+        return switch (periodicidade) {
+            case "ANUAL" -> data.plusYears(1);
+            case "SEMANAL" -> data.plusWeeks(1);
+            default -> data.plusMonths(1);
+        };
+    }
+
+    private ContaReceber construirParcelaDePlano(ClientePlano clientePlano, Cliente clienteMaster,
+            CategoriaConta categoria, Fornecedor fornecedor,
+            BigDecimal valor, String periodicidade,
+            LocalDate dataVencimento, LocalDate dataCompetencia) {
+        ContaReceber conta = new ContaReceber();
+        conta.setDescricao("Assinatura " + clientePlano.getPlano().getNome()
+                + " - " + clientePlano.getCliente().getNome()
+                + " - " + clientePlano.getPlano().getPeriodicidade());
+        conta.setNumeroControle(gerarNumeroControle());
+        conta.setCliente(clienteMaster);
+        conta.setCategoria(categoria);
+        conta.setStatus(StatusConta.PENDENTE);
+        conta.setValorOriginal(valor);
+        conta.setValorTotal(valor);
+        conta.setValorDesconto(BigDecimal.ZERO);
+        conta.setValorJuros(BigDecimal.ZERO);
+        conta.setValorMulta(BigDecimal.ZERO);
+        conta.setValorRecebido(BigDecimal.ZERO);
+        conta.setDataEmissao(clientePlano.getDataInicio() != null ? clientePlano.getDataInicio() : LocalDate.now());
+        conta.setDataVencimento(dataVencimento);
+        conta.setDataCompetencia(dataCompetencia);
+        conta.setFornecedor(fornecedor);
+        conta.setRecorrente(true);
+        conta.setPeriodicidade(periodicidade);
+        conta.setUsuarioCadastro("SISTEMA_PLANO_AUTOMATICO");
+        conta.setClientePlano(clientePlano);
+        return conta;
+    }
+
+    private CategoriaConta buscarOuCriarCategoriaAssinatura(Cliente clienteMaster) {
+        Optional<CategoriaConta> categoriaOpt = categoriaContaRepository.findByClienteAndCodigo(clienteMaster, "002-ASSINATURA");
+        if (categoriaOpt.isPresent()) {
+            return categoriaOpt.get();
+        }
+        CategoriaConta categoria = new CategoriaConta();
+        categoria.setNome("002-ASSINATURA");
+        categoria.setDescricao("Assinatura de Plano SaaS");
+        categoria.setCodigo("002-ASSINATURA");
+        categoria.setCliente(clienteMaster);
+        categoria.setTipo(TipoConta.RECEBER);
+        categoria.setStatus(false);
+        categoria.setPodeEditar(false);
+        return categoriaContaRepository.save(categoria);
     }
 
     @Transactional
@@ -479,6 +630,9 @@ public class ContaReceberService {
         if (entity.getViagem() != null) {
             dto.setViagemId(entity.getViagem().getId());
         }
+        if (entity.getClientePlano() != null) {
+            dto.setClientePlanoId(entity.getClientePlano().getId());
+        }
 
         dto.setValorOriginal(entity.getValorOriginal());
         dto.setValorDesconto(entity.getValorDesconto());
@@ -540,6 +694,9 @@ public class ContaReceberService {
         }
         if (dto.getViagemId() != null) {
             entity.setViagem(viagemRepository.findById(dto.getViagemId()).orElse(null));
+        }
+        if (dto.getClientePlanoId() != null) {
+            entity.setClientePlano(clientePlanoRepository.findById(dto.getClientePlanoId()).orElse(null));
         }
 
         entity.setValorOriginal(dto.getValorOriginal());
@@ -620,6 +777,9 @@ public class ContaReceberService {
         }
         if (dto.getCategoriaId() != null) {
             entity.setCategoria(categoriaContaRepository.findById(dto.getCategoriaId()).orElse(null));
+        }
+        if (dto.getClientePlanoId() != null) {
+            entity.setClientePlano(clientePlanoRepository.findById(dto.getClientePlanoId()).orElse(null));
         }
     }
 

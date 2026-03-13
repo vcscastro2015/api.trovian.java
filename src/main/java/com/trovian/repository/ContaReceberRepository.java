@@ -18,6 +18,8 @@ public interface ContaReceberRepository extends JpaRepository<ContaReceber, Long
 
     Optional<ContaReceber> findByViagemId(Long viagemId);
 
+    List<ContaReceber> findByClientePlanoIdOrderByDataVencimentoAsc(Long clientePlanoId);
+
     Page<ContaReceber> findByStatus(StatusConta status, Pageable pageable);
 
     Page<ContaReceber> findByClienteId(Long clienteId, Pageable pageable);
