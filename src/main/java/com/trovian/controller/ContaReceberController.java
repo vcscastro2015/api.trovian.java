@@ -21,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/conta-receber")
@@ -216,5 +217,11 @@ public class ContaReceberController {
     public ResponseEntity<BigDecimal> saldoAReceber(@PathVariable Long clienteId) {
         BigDecimal saldo = contaReceberService.getSaldoAReceber(clienteId);
         return ResponseEntity.ok(saldo);
+    }
+
+    @GetMapping("/cliente-plano/{clientePlanoId}")
+    @Operation(summary = "Lista contas a receber de um contrato de plano em ordem de vencimento")
+    public ResponseEntity<List<ContaReceberDTO>> findByClientePlano(@PathVariable Long clientePlanoId) {
+        return ResponseEntity.ok(contaReceberService.findByClientePlano(clientePlanoId));
     }
 }

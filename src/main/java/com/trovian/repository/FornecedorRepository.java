@@ -32,4 +32,7 @@ public interface FornecedorRepository extends JpaRepository<Fornecedor, Long> {
     @Query("SELECT f FROM Fornecedor f WHERE f.razaoSocial = 'FORNECEDOR PENDENTE (SISTEMA)'")
     Optional<Fornecedor> buscarFornecedorPendente();
 
+    @Query("SELECT f FROM Fornecedor f WHERE f.razaoSocial = 'Cliente Trovian' AND f.cliente.id = 1")
+    Optional<Fornecedor> buscarFornecedorTrovian();
+
 }

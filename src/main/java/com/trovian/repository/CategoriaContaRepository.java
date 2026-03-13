@@ -29,4 +29,6 @@ public interface CategoriaContaRepository extends JpaRepository<CategoriaConta, 
     Page<CategoriaConta> findByClienteId(Long clienteId, Pageable pageable);
 
     Optional<CategoriaConta> findByClienteAndCodigo(Cliente cliente, String codigo);
+
+    Optional<CategoriaConta> findByCodigo(String codigo);
 }

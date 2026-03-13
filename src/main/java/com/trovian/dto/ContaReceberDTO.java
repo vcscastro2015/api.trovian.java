@@ -86,6 +86,9 @@ public class ContaReceberDTO {
     @Schema(description = "ID da viagem de origem")
     private Long viagemId;
 
+    @Schema(description = "ID do contrato de plano relacionado")
+    private Long clientePlanoId;
+
     @NotNull(message = "Valor original é obrigatório")
     @DecimalMin(value = "0.01", message = "Valor original deve ser maior que zero")
     @Schema(description = "Valor original", example = "5000.00")

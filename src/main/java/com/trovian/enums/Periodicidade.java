@@ -4,5 +4,6 @@ public enum Periodicidade {
     ANTES_VIAGEM,
     DIARIA,
     SEMANAL,
-    MENSAL
+    MENSAL,
+    ANUAL
 }

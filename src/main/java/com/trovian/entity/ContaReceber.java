@@ -68,6 +68,10 @@ public class ContaReceber {
     @JoinColumn(name = "viagem_id")
     private Viagem viagem;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cliente_plano_id")
+    private ClientePlano clientePlano;
+
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal valorOriginal;
 
