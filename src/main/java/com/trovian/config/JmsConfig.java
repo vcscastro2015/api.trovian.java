@@ -19,6 +19,7 @@ public class JmsConfig {
     public static final String DOCUMENTOS_CTE = "DOCUMENTOS_CTE";
     public static final String ABASTECIMENTO = "ABASTECIMENTO";
     public static final String CHECK_LIST = "CHECK_LIST";
+    public static final String DOCUMENTOS_VEICULO = "DOCUMENTOS_VEICULO";
 
     @Bean
     public JmsListenerContainerFactory<?> jmsListenerContainerFactory(

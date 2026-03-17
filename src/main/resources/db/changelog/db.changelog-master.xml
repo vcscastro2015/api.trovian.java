@@ -11,4 +11,5 @@
     <include file="db/changelog/changes/v003-andar-vazio-viagem.sql"/>
     <include file="db/changelog/changes/v004-foto-checklist-item.sql"/>
     <include file="db/changelog/changes/v005-foto-checklist-item-update.sql"/>
+    <include file="db/changelog/changes/v006-documento-veiculo.sql"/>
 </databaseChangeLog>
