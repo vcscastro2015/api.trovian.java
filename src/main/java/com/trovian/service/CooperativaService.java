@@ -1,7 +1,9 @@
 package com.trovian.service;
 
 import com.trovian.dto.CooperativaDTO;
+import com.trovian.entity.Cliente;
 import com.trovian.entity.Cooperativa;
+import com.trovian.repository.ClienteRepository;
 import com.trovian.repository.CooperativaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +21,7 @@ import java.util.stream.Collectors;
 public class CooperativaService {
 
     private final CooperativaRepository cooperativaRepository;
+    private final ClienteRepository clienteRepository;
 
     /**
      * Busca todas as cooperativas
@@ -28,6 +31,17 @@ public class CooperativaService {
         log.info("Buscando todas as cooperativas");
         return cooperativaRepository.findAll()
                 .stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Busca cooperativas por cliente
+     */
+    @Transactional(readOnly = true)
+    public List<CooperativaDTO> findByCliente(Long clienteId) {
+        log.info("Buscando cooperativas por cliente ID: {}", clienteId);
+        return cooperativaRepository.findByClienteId(clienteId).stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
@@ -56,7 +70,11 @@ public class CooperativaService {
                     throw new RuntimeException("Já existe uma cooperativa cadastrada com o CNPJ: " + cooperativaDTO.getCnpj());
                 });
 
-        Cooperativa cooperativa = toEntity(cooperativaDTO);
+        // Validar cliente
+        Cliente cliente = clienteRepository.findById(cooperativaDTO.getClienteId())
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado com ID: " + cooperativaDTO.getClienteId()));
+
+        Cooperativa cooperativa = toEntity(cooperativaDTO, cliente);
         Cooperativa savedCooperativa = cooperativaRepository.save(cooperativa);
         log.info("Cooperativa criada com sucesso. ID: {}", savedCooperativa.getId());
         return toDTO(savedCooperativa);
@@ -260,14 +278,16 @@ public class CooperativaService {
         dto.setAtiva(cooperativa.getAtiva());
         dto.setDataCadastro(cooperativa.getDataCadastro());
         dto.setUpdatedAt(cooperativa.getUpdatedAt());
+        dto.setClienteId(cooperativa.getCliente().getId());
         return dto;
     }
 
     /**
      * Converte DTO para Entity
      */
-    private Cooperativa toEntity(CooperativaDTO dto) {
+    private Cooperativa toEntity(CooperativaDTO dto, Cliente cliente) {
         Cooperativa cooperativa = new Cooperativa();
+        cooperativa.setCliente(cliente);
         cooperativa.setNome(dto.getNome());
         cooperativa.setCnpj(dto.getCnpj());
         cooperativa.setEndereco(dto.getEndereco());

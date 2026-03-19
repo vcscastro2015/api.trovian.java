@@ -1,6 +1,6 @@
 package com.trovian.dto;
 
-import com.trovian.entity.Role;
+import com.trovian.enums.Role;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 

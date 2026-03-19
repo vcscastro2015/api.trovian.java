@@ -1,8 +1,10 @@
 package com.trovian.service;
 
 import com.trovian.dto.FornecedorDTO;
+import com.trovian.entity.Cliente;
 import com.trovian.entity.Fornecedor;
 import com.trovian.enums.TipoFornecedor;
+import com.trovian.repository.ClienteRepository;
 import com.trovian.repository.FornecedorRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,16 +21,21 @@ import org.springframework.transaction.annotation.Transactional;
 public class FornecedorService {
 
     private final FornecedorRepository fornecedorRepository;
+    private final ClienteRepository clienteRepository;
 
     @Transactional
     public FornecedorDTO create(FornecedorDTO dto) {
         log.info("Criando fornecedor: {}", dto.getRazaoSocial());
 
-        if (dto.getCnpjCpf() != null && fornecedorRepository.existsByCnpjCpf(dto.getCnpjCpf())) {
+        if (dto.getCnpjCpf() != null && fornecedorRepository.existsByCnpjCpfAndClienteId(dto.getCnpjCpf(), dto.getClienteId())) {
             throw new RuntimeException("CNPJ/CPF já cadastrado: " + dto.getCnpjCpf());
         }
 
-        Fornecedor fornecedor = toEntity(dto);
+        // Validar cliente
+        Cliente cliente = clienteRepository.findById(dto.getClienteId())
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado com ID: " + dto.getClienteId()));
+
+        Fornecedor fornecedor = toEntity(dto, cliente);
         Fornecedor saved = fornecedorRepository.save(fornecedor);
 
         log.info("Fornecedor criado com sucesso. ID: {}", saved.getId());
@@ -70,7 +77,12 @@ public class FornecedorService {
             }
         }
 
+        // Validar cliente
+        Cliente cliente = clienteRepository.findById(dto.getClienteId())
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado com ID: " + dto.getClienteId()));
+
         updateEntityFromDTO(fornecedor, dto);
+        fornecedor.setCliente(cliente);
         Fornecedor updated = fornecedorRepository.save(fornecedor);
 
         log.info("Fornecedor atualizado com sucesso. ID: {}", id);
@@ -138,10 +150,11 @@ public class FornecedorService {
         dto.setTipo(entity.getTipo());
         dto.setObservacao(entity.getObservacao());
         dto.setStatus(entity.getStatus());
+        dto.setClienteId(entity.getCliente().getId());
         return dto;
     }
 
-    private Fornecedor toEntity(FornecedorDTO dto) {
+    private Fornecedor toEntity(FornecedorDTO dto, Cliente cliente) {
         Fornecedor entity = new Fornecedor();
         entity.setRazaoSocial(dto.getRazaoSocial());
         entity.setNomeFantasia(dto.getNomeFantasia());
@@ -168,6 +181,7 @@ public class FornecedorService {
         entity.setTipo(dto.getTipo());
         entity.setObservacao(dto.getObservacao());
         entity.setStatus(dto.getStatus() != null ? dto.getStatus() : true);
+        entity.setCliente(cliente);
         return entity;
     }
 
@@ -198,4 +212,11 @@ public class FornecedorService {
         entity.setObservacao(dto.getObservacao());
         entity.setStatus(dto.getStatus());
     }
+
+    @Transactional(readOnly = true)
+    public Page<FornecedorDTO> findByCliente(Long clienteId, Pageable pageable) {
+        return fornecedorRepository.findByClienteId(clienteId, pageable).map(this::toDTO);
+    }
+
+
 }

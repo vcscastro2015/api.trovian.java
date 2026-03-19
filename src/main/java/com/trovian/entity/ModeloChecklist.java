@@ -59,6 +59,14 @@ public class ModeloChecklist {
     @OneToMany(mappedBy = "modeloChecklist", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItemModeloChecklist> itens = new ArrayList<>();
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "modelo_checklist_veiculo",
+            joinColumns = @JoinColumn(name = "modelo_checklist_id"),
+            inverseJoinColumns = @JoinColumn(name = "veiculo_id")
+    )
+    private List<Veiculo> veiculos = new ArrayList<>();
+
     @NotNull(message = "Cliente é obrigatório")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cliente_id", nullable = false)

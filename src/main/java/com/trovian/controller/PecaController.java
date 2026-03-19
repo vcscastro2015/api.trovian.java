@@ -4,6 +4,8 @@ import com.trovian.dto.PecaDTO;
 import com.trovian.service.PecaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -45,6 +48,25 @@ public class PecaController {
         return ResponseEntity.ok(pecas);
     }
 
+    @GetMapping("/cliente/{clienteId}")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
+    })
+    public ResponseEntity<Page<PecaDTO>> findByCliente(
+            @Parameter(description = "ID do cliente", example = "1")
+            @PathVariable Long clienteId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "descricao") String sortBy,
+            @RequestParam(defaultValue = "ASC") String direction) {
+
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+
+        Page<PecaDTO> fornecedores = pecaService.findByCliente(clienteId, pageable);
+        return ResponseEntity.ok(fornecedores);
+    }
+
     @GetMapping("/{id}")
     @Operation(summary = "Buscar peça por ID")
     public ResponseEntity<PecaDTO> findById(@PathVariable Long id) {
@@ -75,30 +97,29 @@ public class PecaController {
         return ResponseEntity.ok(pecas);
     }
 
-    @GetMapping("/estoque-baixo")
+    @GetMapping("/cliente/{clienteId}/estoque-baixo")
     @Operation(summary = "Listar peças com estoque baixo")
-    public ResponseEntity<List<PecaDTO>> findPecasEstoqueBaixo() {
-        List<PecaDTO> pecas = pecaService.findPecasEstoqueBaixo();
+    public ResponseEntity<List<PecaDTO>> findPecasEstoqueBaixo(@PathVariable Long clienteId) {
+        List<PecaDTO> pecas = pecaService.findPecasEstoqueBaixo(clienteId);
         return ResponseEntity.ok(pecas);
     }
 
-    @GetMapping("/categorias")
+    @GetMapping("/categorias/{clienteId}")
     @Operation(summary = "Listar todas as categorias de peças")
-    public ResponseEntity<List<String>> findAllCategorias() {
-        List<String> categorias = pecaService.findAllCategorias();
+    public ResponseEntity<List<String>> findAllCategorias(@PathVariable Long clienteId) {
+        List<String> categorias = pecaService.findAllCategorias(clienteId);
         return ResponseEntity.ok(categorias);
     }
 
-    @GetMapping("/buscar")
+    @GetMapping("/buscar/{clienteId}")
     @Operation(summary = "Buscar peças por descrição")
-    public ResponseEntity<Page<PecaDTO>> findByDescricao(
-        @Parameter(description = "Descrição da peça", required = true)
+    public ResponseEntity<Page<PecaDTO>> findByDescricao(@PathVariable Long clienteId,
         @RequestParam String descricao,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "20") int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<PecaDTO> pecas = pecaService.findByDescricaoContaining(descricao, pageable);
+        Page<PecaDTO> pecas = pecaService.findByDescricaoContaining(clienteId, descricao, pageable);
         return ResponseEntity.ok(pecas);
     }
 

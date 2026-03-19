@@ -1,7 +1,14 @@
 package com.trovian.service;
 
 import com.trovian.dto.*;
+import com.trovian.entity.Cliente;
+import com.trovian.entity.ConsentimentoWhatsapp;
+import com.trovian.entity.Funcionalidade;
 import com.trovian.entity.Usuario;
+import com.trovian.enums.StatusWhatsapp;
+import com.trovian.repository.ClienteRepository;
+import com.trovian.repository.ConsentimentoWhatsappRepository;
+import com.trovian.repository.FuncionalidadeRepository;
 import com.trovian.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -12,7 +19,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,6 +32,10 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenService refreshTokenService;
+    private final ClienteRepository clienteRepository;
+    private final FuncionalidadeRepository funcionalidadeRepository;
+    private final ConsentimentoWhatsappRepository consentimentoWhatsappRepository;
+    private final NotificacaoService notificacaoService;
 
     // Listar todos com paginação
     @Transactional(readOnly = true)
@@ -37,6 +51,7 @@ public class UsuarioService {
     // Listar com filtros
     @Transactional(readOnly = true)
     public UsuarioPageResponse listarComFiltros(
+            Long clienteId,
             UsuarioFiltroRequest filtro,
             int pagina,
             int tamanho,
@@ -47,6 +62,7 @@ public class UsuarioService {
         Pageable pageable = PageRequest.of(pagina, tamanho, Sort.by(sortDirection, ordenarPor));
 
         Page<Usuario> paginaUsuarios = usuarioRepository.findByFiltrosCompletos(
+                clienteId,
                 filtro.getNome(),
                 filtro.getEmail(),
                 filtro.getAtivo(),
@@ -54,6 +70,12 @@ public class UsuarioService {
                 pageable
         );
 
+        return construirPageResponse(paginaUsuarios);
+    }
+
+    @Transactional(readOnly = true)
+    public UsuarioPageResponse findByCliente(Long clienteId, Pageable pageable) {
+        Page<Usuario> paginaUsuarios =  usuarioRepository.findByClienteId(clienteId, pageable);
         return construirPageResponse(paginaUsuarios);
     }
 
@@ -74,6 +96,11 @@ public class UsuarioService {
             throw new RuntimeException("Email já cadastrado: " + request.getEmail());
         }
 
+        // Validar cliente
+        Cliente cliente = clienteRepository.findById(request.getClienteId())
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado com ID: " + request.getClienteId()));
+
+
         Usuario usuario = new Usuario();
         usuario.setNome(request.getNome());
         usuario.setEmail(request.getEmail());
@@ -81,8 +108,32 @@ public class UsuarioService {
         usuario.setTelefone(request.getTelefone());
         usuario.setAtivo(request.getAtivo() != null ? request.getAtivo() : true);
         usuario.setRoles(request.getRoles());
+        usuario.setCliente(cliente);
+        usuario.setReceberNotificacao(request.getReceberNotificacao() != null ? request.getReceberNotificacao() : false);
+        usuario.setConsultarVeiculosWhatsapp(request.getConsultarVeiculosWhatsapp() != null ? request.getConsultarVeiculosWhatsapp() : false);
+
+        ConsentimentoWhatsapp consentimento = new ConsentimentoWhatsapp();
+        consentimento.setStatusWhatsapp(StatusWhatsapp.AGUARDANDO_CONSENTIMENTO);
+        consentimento.setOrigem("whatsapp");
+        consentimento.setAutorizado(false);
+        consentimento.setDataCadastro(LocalDateTime.now());
+        ConsentimentoWhatsapp savedConsentimento = consentimentoWhatsappRepository.save(consentimento);
+        usuario.setConsentimentoWhatsapp(savedConsentimento);
+
+        // Buscar funcionalidades pelos códigos
+        if (request.getFuncionalidades() != null && request.getFuncionalidades().length > 0) {
+            Set<Funcionalidade> funcionalidades = new HashSet<>();
+            for (String codigo : request.getFuncionalidades()) {
+                Funcionalidade funcionalidade = funcionalidadeRepository.findByCodigo(codigo)
+                        .orElseThrow(() -> new RuntimeException("Funcionalidade não encontrada com código: " + codigo));
+                funcionalidades.add(funcionalidade);
+            }
+            usuario.setFuncionalidades(funcionalidades);
+        }
 
         usuario = usuarioRepository.save(usuario);
+
+        notificacaoService.criarNotificacaoBemVindo(usuario);
 
         return converterParaResponse(usuario);
     }
@@ -118,6 +169,34 @@ public class UsuarioService {
                 usuario.setTokenDispositivo(null);
                 refreshTokenService.deleteByUsuario(usuario);
             }
+        }
+
+        if (request.getRoles() != null) {
+            usuario.setRoles(request.getRoles());
+        }
+
+        if (request.getReceberNotificacao() != null) {
+            usuario.setReceberNotificacao(request.getReceberNotificacao());
+        }
+
+        if (request.getConsultarVeiculosWhatsapp() != null) {
+            usuario.setConsultarVeiculosWhatsapp(request.getConsultarVeiculosWhatsapp());
+        }
+
+        // Validar cliente
+        Cliente cliente = clienteRepository.findById(request.getClienteId())
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado com ID: " + request.getClienteId()));
+        usuario.setCliente(cliente);
+
+        // Buscar funcionalidades pelos códigos
+        if (request.getFuncionalidades() != null && request.getFuncionalidades().length > 0) {
+            Set<Funcionalidade> funcionalidades = new HashSet<>();
+            for (String codigo : request.getFuncionalidades()) {
+                Funcionalidade funcionalidade = funcionalidadeRepository.findByCodigo(codigo)
+                        .orElseThrow(() -> new RuntimeException("Funcionalidade não encontrada com código: " + codigo));
+                funcionalidades.add(funcionalidade);
+            }
+            usuario.setFuncionalidades(funcionalidades);
         }
 
         usuario = usuarioRepository.save(usuario);
@@ -253,7 +332,7 @@ public class UsuarioService {
 
     // Estatísticas
     @Transactional(readOnly = true)
-    public UsuarioEstatisticasResponse obterEstatisticas() {
+    public UsuarioEstatisticasResponse obterEstatisticasAdm() {
         long totalUsuarios = usuarioRepository.count();
         long usuariosAtivos = usuarioRepository.countUsuariosAtivos();
         long usuariosInativos = usuarioRepository.countUsuariosInativos();
@@ -265,8 +344,25 @@ public class UsuarioService {
                 .build();
     }
 
+    @Transactional(readOnly = true)
+    public UsuarioEstatisticasResponse obterEstatisticas(Long clienteId) {
+        long totalUsuarios = usuarioRepository.countByClienteId(clienteId);
+        long usuariosAtivos = usuarioRepository.countUsuariosAtivosByClienteId(clienteId);
+        long usuariosInativos = usuarioRepository.countUsuariosInativosByClienteId(clienteId);
+
+        return UsuarioEstatisticasResponse.builder()
+                .totalUsuarios(totalUsuarios)
+                .usuariosAtivos(usuariosAtivos)
+                .usuariosInativos(usuariosInativos)
+                .build();
+    }
+
     // Métodos auxiliares
     private UsuarioResponse converterParaResponse(Usuario usuario) {
+        Set<String> funcionalidadeCodigos = usuario.getFuncionalidades().stream()
+                .map(Funcionalidade::getCodigo)
+                .collect(Collectors.toSet());
+
         return UsuarioResponse.builder()
                 .id(usuario.getId())
                 .nome(usuario.getNome())
@@ -274,9 +370,15 @@ public class UsuarioService {
                 .telefone(usuario.getTelefone())
                 .ativo(usuario.getAtivo())
                 .roles(usuario.getRoles())
+                .funcionalidades(funcionalidadeCodigos)
                 .ultimoLogin(usuario.getUltimoLogin())
                 .criadoEm(usuario.getCriadoEm())
                 .atualizadoEm(usuario.getAtualizadoEm())
+                .clienteId(usuario.getCliente().getId())
+                .clienteNome(usuario.getCliente().getNome())
+                .receberNotificacao(usuario.getReceberNotificacao())
+                .consultarVeiculosWhatsapp(usuario.getConsultarVeiculosWhatsapp())
+                .statusWhatsapp(usuario.getConsentimentoWhatsapp() != null ? usuario.getConsentimentoWhatsapp().getStatusWhatsapp() : null)
                 .build();
     }
 

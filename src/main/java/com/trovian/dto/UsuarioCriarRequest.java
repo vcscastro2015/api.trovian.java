@@ -1,10 +1,8 @@
 package com.trovian.dto;
 
-import com.trovian.entity.Role;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.Size;
+import com.trovian.enums.Role;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.util.Set;
@@ -31,4 +29,14 @@ public class UsuarioCriarRequest {
     private Set<Role> roles;
 
     private Boolean ativo = true;
+
+    @NotNull(message = "ID do cliente é obrigatório")
+    @Schema(description = "ID do cliente proprietário", example = "1", required = true)
+    private Long clienteId;
+
+    private String[] funcionalidades;
+
+    private Boolean receberNotificacao = false;
+
+    private Boolean consultarVeiculosWhatsapp = false;
 }

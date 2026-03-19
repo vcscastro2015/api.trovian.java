@@ -71,4 +71,8 @@ public class ChecklistRealizadoDTO {
 
     @Schema(description = "Lista de respostas dos itens do checklist")
     private List<RespostaItemChecklistDTO> respostas = new ArrayList<>();
+
+    @NotNull(message = "ID do cliente é obrigatório")
+    @Schema(description = "ID do cliente proprietário", example = "1", required = true)
+    private Long clienteId;
 }

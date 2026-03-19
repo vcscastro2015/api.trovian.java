@@ -20,15 +20,17 @@ public interface PecaRepository extends JpaRepository<Peca, Long> {
 
     Page<Peca> findByStatus(Boolean status, Pageable pageable);
 
-    @Query("SELECT p FROM Peca p WHERE p.descricao LIKE %:descricao%")
-    Page<Peca> findByDescricaoContaining(@Param("descricao") String descricao, Pageable pageable);
+    @Query("SELECT p FROM Peca p WHERE p.descricao LIKE %:descricao% AND p.cliente.id = :cliente")
+    Page<Peca> findByDescricaoContaining(@Param("cliente") Long clienteId, @Param("descricao") String descricao, Pageable pageable);
 
-    @Query("SELECT p FROM Peca p WHERE p.estoqueAtual <= p.estoqueMinimo")
-    List<Peca> findPecasEstoqueBaixo();
+    @Query("SELECT p FROM Peca p WHERE p.estoqueAtual <= p.estoqueMinimo AND p.cliente.id = :cliente")
+    List<Peca> findPecasEstoqueBaixo(@Param("cliente") Long clienteId);
 
-    @Query("SELECT DISTINCT p.categoria FROM Peca p WHERE p.status = true ORDER BY p.categoria")
-    List<String> findAllCategorias();
+    @Query("SELECT DISTINCT p.categoria FROM Peca p WHERE p.status = true AND p.cliente.id = :cliente ORDER BY p.categoria")
+    List<String> findAllCategorias(@Param("cliente") Long clienteId);
 
     @Query("SELECT p FROM Peca p WHERE p.codigo LIKE %:codigo%")
     Page<Peca> findByCodigoContaining(@Param("codigo") String codigo, Pageable pageable);
+
+    Page<Peca> findByClienteId(Long clienteId, Pageable pageable);
 }

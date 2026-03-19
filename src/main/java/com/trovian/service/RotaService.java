@@ -182,9 +182,9 @@ public class RotaService {
      * Busca rotas por cliente
      */
     @Transactional(readOnly = true)
-    public Page<RotaDTO> findByCliente(Long clienteId, Pageable pageable) {
+    public Page<RotaDTO> findByCliente(Long clienteId, RotaFiltrosDTO filtros, Pageable pageable) {
         log.info("Buscando rotas do cliente ID: {}", clienteId);
-        return rotaRepository.findByClienteId(clienteId, pageable).map(this::toDTO);
+        return rotaRepository.findByClienteId(clienteId, filtros.getNome(), pageable).map(this::toDTO);
     }
 
     /**

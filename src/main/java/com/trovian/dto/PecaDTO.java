@@ -57,4 +57,8 @@ public class PecaDTO {
 
     @Schema(description = "Indica se o estoque está baixo")
     private Boolean estoqueBaixo;
+
+    @NotNull(message = "ID do cliente é obrigatório")
+    @Schema(description = "ID do cliente proprietário", example = "1", required = true)
+    private Long clienteId;
 }

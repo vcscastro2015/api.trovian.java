@@ -16,7 +16,9 @@ public class JmsConfig {
 
     public static final String PRODUCT_QUEUE = "product.queue";
     public static final String NOTIFICATION_QUEUE = "notification.queue";
-    public static final String DOCUMENTOS_CTE = "documentos.cte";
+    public static final String DOCUMENTOS_CTE = "DOCUMENTOS_CTE";
+    public static final String ABASTECIMENTO = "ABASTECIMENTO";
+    public static final String CHECK_LIST = "CHECK_LIST";
 
     @Bean
     public JmsListenerContainerFactory<?> jmsListenerContainerFactory(
@@ -32,7 +34,6 @@ public class JmsConfig {
     public MessageConverter jacksonJmsMessageConverter() {
         MappingJackson2MessageConverter converter = new MappingJackson2MessageConverter();
         converter.setTargetType(MessageType.TEXT);
-        converter.setTypeIdPropertyName("_type");
         return converter;
     }
 

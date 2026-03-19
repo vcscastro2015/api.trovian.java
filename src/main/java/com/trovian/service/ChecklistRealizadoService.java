@@ -1,25 +1,25 @@
 package com.trovian.service;
 
-import com.trovian.dto.ChecklistRealizadoDTO;
-import com.trovian.dto.EstatisticasChecklistDTO;
-import com.trovian.dto.OrdemServicoDTO;
-import com.trovian.dto.RespostaItemChecklistDTO;
+import com.trovian.dto.*;
 import com.trovian.entity.*;
 import com.trovian.enums.StatusChecklist;
 import com.trovian.enums.StatusOrdemServico;
 import com.trovian.enums.TipoManutencao;
 import com.trovian.repository.*;
+import com.trovian.util.TelefoneUtils;
+import com.trovian.util.TextoUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,12 +34,20 @@ public class ChecklistRealizadoService {
     private final ViagemRepository viagemRepository;
     private final ItemModeloChecklistRepository itemModeloChecklistRepository;
     private final OrdemServicoService ordemServicoService;
+    private final ClienteRepository clienteRepository;
+    private final RespostaItemChecklistRepository respostaItemChecklistRepository;
+    private final ImagemRespostaRepository imagemRespostaRepository;
 
     @Transactional(readOnly = true)
     public Page<ChecklistRealizadoDTO> findAll(Pageable pageable) {
         log.info("Buscando todos os checklists realizados com paginação");
         Page<ChecklistRealizado> checklists = checklistRealizadoRepository.findAll(pageable);
         return checklists.map(this::toDTO);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ChecklistRealizadoDTO> findByCliente(Long clienteId, Pageable pageable) {
+        return checklistRealizadoRepository.findByClienteId(clienteId, pageable).map(this::toDTO);
     }
 
     @Transactional(readOnly = true)
@@ -65,20 +73,20 @@ public class ChecklistRealizadoService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ChecklistRealizadoDTO> findByStatus(StatusChecklist status, Pageable pageable) {
+    public Page<ChecklistRealizadoDTO> findByStatus(Long clienteId, StatusChecklist status, Pageable pageable) {
         log.info("Buscando checklists com status: {}", status);
-        Page<ChecklistRealizado> checklists = checklistRealizadoRepository.findByStatus(status, pageable);
+        Page<ChecklistRealizado> checklists = checklistRealizadoRepository.findByClienteIdAndStatus(clienteId, status, pageable);
         return checklists.map(this::toDTO);
     }
 
     @Transactional(readOnly = true)
-    public EstatisticasChecklistDTO getEstatisticas() {
+    public EstatisticasChecklistDTO getEstatisticas(Long clienteId) {
         log.info("Calculando estatísticas de checklists realizados");
 
-        Long totalRealizados = checklistRealizadoRepository.count();
-        Long aprovados = checklistRealizadoRepository.countByStatus(StatusChecklist.APROVADO);
-        Long reprovados = checklistRealizadoRepository.countByStatus(StatusChecklist.REPROVADO);
-        Long emAndamento = checklistRealizadoRepository.countByStatus(StatusChecklist.EM_ANDAMENTO);
+        Long totalRealizados = checklistRealizadoRepository.countByClienteId(clienteId);
+        Long aprovados = checklistRealizadoRepository.countByClienteIdAndStatus(clienteId, StatusChecklist.APROVADO);
+        Long reprovados = checklistRealizadoRepository.countByClienteIdAndStatus(clienteId, StatusChecklist.REPROVADO);
+        Long emAndamento = checklistRealizadoRepository.countByClienteIdAndStatus(clienteId, StatusChecklist.EM_ANDAMENTO);
 
         // Calcula percentual de conformidade
         // Conformidade = (aprovados / total de finalizados) * 100
@@ -125,10 +133,14 @@ public class ChecklistRealizadoService {
         Motorista motorista = motoristaRepository.findById(dto.getMotoristaId())
                 .orElseThrow(() -> new RuntimeException("Motorista não encontrado com ID: " + dto.getMotoristaId()));
 
+        Cliente cliente = clienteRepository.findById(dto.getClienteId())
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado com ID: " + dto.getClienteId()));
+
         ChecklistRealizado checklist = toEntity(dto);
         checklist.setModeloChecklist(modelo);
         checklist.setVeiculo(veiculo);
         checklist.setMotorista(motorista);
+        checklist.setCliente(cliente);
 
         // Viagem é opcional
         if (dto.getViagemId() != null) {
@@ -163,33 +175,18 @@ public class ChecklistRealizadoService {
     }
 
     @Transactional
-    public ChecklistRealizadoDTO update(UUID id, ChecklistRealizadoDTO dto) {
+    public ChecklistRealizadoDTO updateSomenteChecklistRealizado(UUID id, ChecklistRealizadoDTO dto) {
         log.info("Atualizando checklist realizado com ID: {}", id);
 
         ChecklistRealizado checklist = checklistRealizadoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Checklist realizado não encontrado com ID: " + id));
 
-        // Atualiza campos básicos
+        // Atualiza campos básicos mas nao atualiza as respostas.
         checklist.setKmVeiculo(dto.getKmVeiculo());
         checklist.setStatus(dto.getStatus());
         checklist.setObservacoesGerais(dto.getObservacoesGerais());
         checklist.setLocalizacao(dto.getLocalizacao());
-        checklist.setDataHoraConclusao(dto.getDataHoraConclusao());
-
-        // Atualiza respostas
-        if (dto.getRespostas() != null) {
-            checklist.getRespostas().clear();
-            for (RespostaItemChecklistDTO respostaDTO : dto.getRespostas()) {
-                RespostaItemChecklist resposta = toRespostaEntity(respostaDTO);
-                resposta.setChecklistRealizado(checklist);
-
-                ItemModeloChecklist itemModelo = itemModeloChecklistRepository.findById(respostaDTO.getItemModeloId())
-                        .orElseThrow(() -> new RuntimeException("Item do modelo não encontrado com ID: " + respostaDTO.getItemModeloId()));
-                resposta.setItemModelo(itemModelo);
-
-                checklist.getRespostas().add(resposta);
-            }
-        }
+        checklist.setDataHoraConclusao(LocalDateTime.now());
 
         ChecklistRealizado updatedChecklist = checklistRealizadoRepository.save(checklist);
         log.info("Checklist realizado atualizado com sucesso. ID: {}", id);
@@ -259,6 +256,7 @@ public class ChecklistRealizadoService {
             OrdemServicoDTO ordemServicoDTO = new OrdemServicoDTO();
             ordemServicoDTO.setNumeroOs(gerarNumeroOS());
             ordemServicoDTO.setVeiculoId(checklist.getVeiculo().getId());
+            ordemServicoDTO.setClienteId(checklist.getCliente().getId());
             ordemServicoDTO.setMotoristaId(checklist.getMotorista().getId());
             ordemServicoDTO.setTipoManutencao(TipoManutencao.CORRETIVA);
             ordemServicoDTO.setKmVeiculo(checklist.getKmVeiculo());
@@ -283,6 +281,38 @@ public class ChecklistRealizadoService {
         int ano = LocalDate.now().getYear();
         long count = ordemServicoService.findAll(0, 1, "id", "DESC").getTotalElements() + 1;
         return String.format("OS-%d-%05d", ano, count);
+    }
+
+    @Transactional
+    public void salvarFotoItem(UUID checklistId, UUID itemId, MultipartFile foto) {
+        log.info("Salvando foto do item {} do checklist {}", itemId, checklistId);
+
+        RespostaItemChecklist resposta = respostaItemChecklistRepository.findById(itemId)
+                .orElseThrow(() -> new RuntimeException("Item do checklist não encontrado com ID: " + itemId));
+
+        if (!resposta.getChecklistRealizado().getId().equals(checklistId)) {
+            throw new RuntimeException("Item " + itemId + " não pertence ao checklist " + checklistId);
+        }
+
+        byte[] conteudo;
+        try {
+            conteudo = foto.getBytes();
+        } catch (IOException e) {
+            throw new RuntimeException("Erro ao ler o conteúdo da foto", e);
+        }
+
+        String contentType = foto.getContentType() != null ? foto.getContentType() : "image/png";
+
+        ImagemResposta imagem = imagemRespostaRepository
+                .findByRespostaItemChecklistId(itemId)
+                .orElse(new ImagemResposta());
+
+        imagem.setRespostaItemChecklist(resposta);
+        imagem.setConteudoBinario(conteudo);
+        imagem.setContentType(contentType);
+        imagemRespostaRepository.save(imagem);
+
+        log.info("Foto salva com sucesso para o item {}", itemId);
     }
 
     @Transactional
@@ -360,7 +390,7 @@ public class ChecklistRealizadoService {
                     .collect(Collectors.toList());
             dto.setRespostas(respostasDTO);
         }
-
+        dto.setClienteId(checklist.getCliente().getId());
         return dto;
     }
 
@@ -385,6 +415,13 @@ public class ChecklistRealizadoService {
         dto.setObservacao(resposta.getObservacao());
         dto.setFotoUrl(resposta.getFotoUrl());
         dto.setRequerAtencao(resposta.getRequerAtencao());
+
+        imagemRespostaRepository.findByRespostaItemChecklistId(resposta.getId())
+                .ifPresent(img -> {
+                    String base64 = Base64.getEncoder().encodeToString(img.getConteudoBinario());
+                    dto.setFotoDoItem("data:" + img.getContentType() + ";base64," + base64);
+                });
+
         return dto;
     }
 
@@ -396,4 +433,73 @@ public class ChecklistRealizadoService {
         resposta.setRequerAtencao(dto.getRequerAtencao() != null ? dto.getRequerAtencao() : false);
         return resposta;
     }
+
+    public void processarCheckListDoWpp(DadosFilaDTO dadosFila){
+        try{
+            Optional<Veiculo> optionalVeiculo = veiculoRepository.findByPlacaIgnoreCase(dadosFila.getPlaca());
+            String telefoneConvertido =
+                    TelefoneUtils.converterNumeroWpp(dadosFila.getNumeroTelefone());
+            Motorista motorista = motoristaRepository.findByTelefone(TelefoneUtils.converterNumeroWpp(telefoneConvertido)).orElse(null);
+            if(optionalVeiculo.isPresent()) {
+                Veiculo veiculo = optionalVeiculo.get();
+                ChecklistRealizado checklistRealizado = null;
+                for(int i = 0; i < dadosFila.getListaRespostaItemChecklist().size(); i++){
+                    RespostaItemChecklistWhatAppDTO checklistWhatAppDTO = dadosFila.getListaRespostaItemChecklist().get(i);
+                    ItemModeloChecklist itemModeloChecklist = itemModeloChecklistRepository.findById(UUID.fromString(checklistWhatAppDTO.getItemId()))
+                            .orElseThrow(() -> new RuntimeException("Modelo de checklist não encontrado com ID: " + checklistWhatAppDTO.getItemId()));
+                    if(Objects.isNull(checklistRealizado)) {
+                        checklistRealizado = new ChecklistRealizado();
+                        checklistRealizado.setNumeroChecklist(gerarNumeroChecklist());
+                        checklistRealizado.setModeloChecklist(itemModeloChecklist.getModeloChecklist());
+                        checklistRealizado.setMotorista(motorista);
+                        checklistRealizado.setVeiculo(veiculo);
+                        checklistRealizado.setCliente(veiculo.getCliente());
+                        checklistRealizado.setDataHoraInicio(dadosFila.getDataEnvio());
+                        int hod = 0;
+                        if (Objects.nonNull(dadosFila.getHodometro()) && !dadosFila.getHodometro().isEmpty()) {
+                            hod = Integer.parseInt(dadosFila.getHodometro());
+                        }
+                        checklistRealizado.setKmVeiculo(hod);
+                        checklistRealizado.setStatus(StatusChecklist.EM_ANDAMENTO);
+                        checklistRealizado.setObservacoesGerais("Dados processados do WhatsApp");
+                        checklistRealizado = checklistRealizadoRepository.save(checklistRealizado);
+                    }
+                    RespostaItemChecklist respostaItemChecklist = getRespostaItemChecklist(checklistWhatAppDTO, checklistRealizado, itemModeloChecklist);
+                    RespostaItemChecklist respostaItemChecklistSaved = respostaItemChecklistRepository.save(respostaItemChecklist);
+                    if(Objects.nonNull(checklistWhatAppDTO.getFotoBase64())){
+                        gravarImagemDoWpp(respostaItemChecklistSaved, checklistWhatAppDTO.getFotoBase64());
+                    }
+                }
+            }
+        }catch (Exception e){
+            log.error("processarCheckListDoWpp", e);
+        }
+    }
+
+    private void gravarImagemDoWpp(RespostaItemChecklist respostaItemChecklist, String base64Input){
+        try {
+            ImagemResposta imagem = new ImagemResposta();
+            imagem.setRespostaItemChecklist(respostaItemChecklist);
+            String cleanBase64 = base64Input.contains(",") ?
+                    base64Input.split(",")[1] : base64Input;
+            byte[] bytes = Base64.getDecoder().decode(cleanBase64);
+            imagem.setConteudoBinario(bytes);
+            imagem.setContentType("image/png");
+            imagemRespostaRepository.save(imagem);
+        }catch (Exception e){
+            log.error("gravarImagemDoWpp", e);
+        }
+    }
+
+    private RespostaItemChecklist getRespostaItemChecklist(RespostaItemChecklistWhatAppDTO checklistWhatAppDTO, ChecklistRealizado checklistRealizado, ItemModeloChecklist itemModeloChecklist) {
+        RespostaItemChecklist respostaItemChecklist = new RespostaItemChecklist();
+        respostaItemChecklist.setObservacao(checklistWhatAppDTO.getObservacao());
+        respostaItemChecklist.setResposta(checklistWhatAppDTO.getResposta());
+        respostaItemChecklist.setRequerAtencao(TextoUtils.contemNao(checklistWhatAppDTO.getResposta()));
+        respostaItemChecklist.setChecklistRealizado(checklistRealizado);
+        respostaItemChecklist.setItemModelo(itemModeloChecklist);
+        return respostaItemChecklist;
+    }
+
+
 }

@@ -1,7 +1,9 @@
 package com.trovian.service;
 
 import com.trovian.dto.ModeloDTO;
+import com.trovian.entity.Cliente;
 import com.trovian.entity.Modelo;
+import com.trovian.repository.ClienteRepository;
 import com.trovian.repository.ModeloRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ModeloService {
 
     private final ModeloRepository modeloRepository;
+    private final ClienteRepository clienteRepository;
 
     private static final String TIPO_EQUIPAMENTO = "Equipamento";
     private static final String TIPO_VEICULO = "Veiculo";
@@ -32,24 +35,24 @@ public class ModeloService {
     }
 
     /**
-     * Busca todos os modelos do tipo Equipamento com paginação
+     * Busca todos os modelos do tipo Equipamento por cliente com paginação
      */
     @Transactional(readOnly = true)
-    public Page<ModeloDTO> findAllEquipamentos(Pageable pageable) {
-        log.info("Buscando modelos do tipo Equipamento com paginação - Página: {}, Tamanho: {}",
-                pageable.getPageNumber(), pageable.getPageSize());
-        Page<Modelo> modelos = modeloRepository.findByTipoIgnoreCase(TIPO_EQUIPAMENTO, pageable);
+    public Page<ModeloDTO> findAllEquipamentos(Long clienteId, Pageable pageable) {
+        log.info("Buscando modelos do tipo Equipamento por cliente ID: {} com paginação - Página: {}, Tamanho: {}",
+                clienteId, pageable.getPageNumber(), pageable.getPageSize());
+        Page<Modelo> modelos = modeloRepository.findByTipoIgnoreCaseAndClienteId(TIPO_EQUIPAMENTO, clienteId, pageable);
         return modelos.map(this::toDTO);
     }
 
     /**
-     * Busca todos os modelos do tipo Veiculo com paginação
+     * Busca todos os modelos do tipo Veiculo por cliente com paginação
      */
     @Transactional(readOnly = true)
-    public Page<ModeloDTO> findAllVeiculos(Pageable pageable) {
-        log.info("Buscando modelos do tipo Veiculo com paginação - Página: {}, Tamanho: {}",
-                pageable.getPageNumber(), pageable.getPageSize());
-        Page<Modelo> modelos = modeloRepository.findByTipoIgnoreCase(TIPO_VEICULO, pageable);
+    public Page<ModeloDTO> findAllVeiculos(Long clienteId, Pageable pageable) {
+        log.info("Buscando modelos do tipo Veiculo por cliente ID: {} com paginação - Página: {}, Tamanho: {}",
+                clienteId, pageable.getPageNumber(), pageable.getPageSize());
+        Page<Modelo> modelos = modeloRepository.findByTipoIgnoreCaseAndClienteId(TIPO_VEICULO, clienteId, pageable);
         return modelos.map(this::toDTO);
     }
 
@@ -60,7 +63,11 @@ public class ModeloService {
     public ModeloDTO create(ModeloDTO modeloDTO) {
         log.info("Criando novo modelo: {} - {}", modeloDTO.getFabricante(), modeloDTO.getMarca());
         validateTipo(modeloDTO.getTipo());
-        Modelo modelo = toEntity(modeloDTO);
+
+        Cliente cliente = clienteRepository.findById(modeloDTO.getClienteId())
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado com ID: " + modeloDTO.getClienteId()));
+
+        Modelo modelo = toEntity(modeloDTO, cliente);
         Modelo savedModelo = modeloRepository.save(modelo);
         log.info("Modelo criado com sucesso. ID: {}", savedModelo.getId());
         return toDTO(savedModelo);
@@ -122,14 +129,20 @@ public class ModeloService {
         dto.setStatus(modelo.getStatus());
         dto.setCreatedAt(modelo.getCreatedAt());
         dto.setUpdatedAt(modelo.getUpdatedAt());
+
+        if (modelo.getCliente() != null) {
+            dto.setClienteId(modelo.getCliente().getId());
+        }
+
         return dto;
     }
 
     /**
      * Converte DTO para Entity
      */
-    private Modelo toEntity(ModeloDTO dto) {
+    private Modelo toEntity(ModeloDTO dto, Cliente cliente) {
         Modelo modelo = new Modelo();
+        modelo.setCliente(cliente);
         modelo.setFabricante(dto.getFabricante());
         modelo.setMarca(dto.getMarca());
         modelo.setTipo(dto.getTipo());

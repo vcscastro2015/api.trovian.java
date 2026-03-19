@@ -43,15 +43,17 @@ public class ModeloController {
         return ResponseEntity.ok(modelo);
     }
 
-    @Operation(summary = "Lista modelos do tipo Equipamento com paginação",
-               description = "Retorna uma página de modelos do tipo Equipamento com suporte a paginação e ordenação")
+    @Operation(summary = "Lista modelos do tipo Equipamento por cliente com paginação",
+               description = "Retorna uma página de modelos do tipo Equipamento de um cliente específico")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Página de modelos retornada com sucesso",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = Page.class)))
     })
-    @GetMapping(value = "/equipamentos", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/equipamentos/cliente/{clienteId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Page<ModeloDTO>> getAllEquipamentos(
+            @Parameter(description = "ID do cliente", example = "1")
+            @PathVariable Long clienteId,
             @Parameter(description = "Número da página (inicia em 0)", example = "0")
             @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Tamanho da página", example = "10")
@@ -63,19 +65,21 @@ public class ModeloController {
 
         Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
-        Page<ModeloDTO> modelos = modeloService.findAllEquipamentos(pageable);
+        Page<ModeloDTO> modelos = modeloService.findAllEquipamentos(clienteId, pageable);
         return ResponseEntity.ok(modelos);
     }
 
-    @Operation(summary = "Lista modelos do tipo Veículo com paginação",
-               description = "Retorna uma página de modelos do tipo Veículo com suporte a paginação e ordenação")
+    @Operation(summary = "Lista modelos do tipo Veículo por cliente com paginação",
+               description = "Retorna uma página de modelos do tipo Veículo de um cliente específico")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Página de modelos retornada com sucesso",
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = Page.class)))
     })
-    @GetMapping(value = "/veiculos", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/veiculos/cliente/{clienteId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Page<ModeloDTO>> getAllVeiculos(
+            @Parameter(description = "ID do cliente", example = "1")
+            @PathVariable Long clienteId,
             @Parameter(description = "Número da página (inicia em 0)", example = "0")
             @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Tamanho da página", example = "10")
@@ -87,7 +91,7 @@ public class ModeloController {
 
         Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
-        Page<ModeloDTO> modelos = modeloService.findAllVeiculos(pageable);
+        Page<ModeloDTO> modelos = modeloService.findAllVeiculos(clienteId, pageable);
         return ResponseEntity.ok(modelos);
     }
 

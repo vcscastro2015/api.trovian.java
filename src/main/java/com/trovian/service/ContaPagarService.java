@@ -3,6 +3,7 @@ package com.trovian.service;
 import com.trovian.dto.ContaPagarDTO;
 import com.trovian.entity.*;
 import com.trovian.enums.StatusConta;
+import com.trovian.enums.TipoConta;
 import com.trovian.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +37,7 @@ public class ContaPagarService {
     @Transactional
     public ContaPagarDTO create(ContaPagarDTO dto) {
         log.info("Criando conta a pagar: {}", dto.getDescricao());
+        dto.setNumeroControle(gerarNumeroControle());
         ContaPagar conta = toEntity(dto);
         ContaPagar saved = contaPagarRepository.save(conta);
         log.info("Conta a pagar criada com sucesso. ID: {}", saved.getId());
@@ -69,6 +75,11 @@ public class ContaPagarService {
             throw new RuntimeException("Conta a pagar não encontrada com ID: " + id);
         }
         contaPagarRepository.deleteById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ContaPagarDTO> findByCliente(Long clienteId, Pageable pageable) {
+        return contaPagarRepository.findByClienteId(clienteId, pageable).map(this::toDTO);
     }
 
     @Transactional(readOnly = true)
@@ -121,14 +132,14 @@ public class ContaPagarService {
     }
 
     @Transactional(readOnly = true)
-    public BigDecimal getTotalPendente() {
-        BigDecimal total = contaPagarRepository.sumTotalByStatus(StatusConta.PENDENTE);
+    public BigDecimal getTotalPendente(Long clienteId) {
+        BigDecimal total = contaPagarRepository.sumTotalByStatus(StatusConta.PENDENTE, clienteId);
         return total != null ? total : BigDecimal.ZERO;
     }
 
     @Transactional(readOnly = true)
-    public BigDecimal getSaldoAPagar() {
-        BigDecimal saldo = contaPagarRepository.sumSaldoAPagar();
+    public BigDecimal getSaldoAPagar(Long clienteId) {
+        BigDecimal saldo = contaPagarRepository.sumSaldoAPagar(clienteId);
         return saldo != null ? saldo : BigDecimal.ZERO;
     }
 
@@ -246,16 +257,138 @@ public class ContaPagarService {
         entity.setDescricao(dto.getDescricao());
         entity.setNumeroDocumento(dto.getNumeroDocumento());
         entity.setNumeroNotaFiscal(dto.getNumeroNotaFiscal());
-        entity.setNumeroControle(dto.getNumeroControle());
         entity.setValorOriginal(dto.getValorOriginal());
         entity.setValorDesconto(dto.getValorDesconto());
         entity.setValorJuros(dto.getValorJuros());
         entity.setValorMulta(dto.getValorMulta());
         entity.setValorTotal(dto.getValorTotal());
+        entity.setValorPago(dto.getValorPago());
         entity.setDataEmissao(dto.getDataEmissao());
         entity.setDataVencimento(dto.getDataVencimento());
         entity.setDataCompetencia(dto.getDataCompetencia());
+        entity.setDataPagamento(dto.getDataPagamento());
         entity.setStatus(dto.getStatus());
         entity.setObservacao(dto.getObservacao());
+        if (dto.getCentroCustoId() != null) {
+            entity.setCentroCusto(centroCustoRepository.findById(dto.getCentroCustoId()).orElse(null));
+        }
+        if (dto.getFormaPagamentoId() != null) {
+            entity.setFormaPagamento(formaPagamentoRepository.findById(dto.getFormaPagamentoId()).orElse(null));
+        }
+        if (dto.getVeiculoId() != null) {
+            entity.setVeiculo(veiculoRepository.findById(dto.getVeiculoId()).orElse(null));
+        }
+        if (dto.getMotoristaId() != null) {
+            entity.setMotorista(motoristaRepository.findById(dto.getMotoristaId()).orElse(null));
+        }
+        if (dto.getCategoriaId() != null) {
+            entity.setCategoria(categoriaContaRepository.findById(dto.getCategoriaId()).orElse(null));
+        }
     }
+
+ public void salvarContaPagarAbastecimentoWpp(Abastecimento abastecimento,
+                                              Veiculo veiculo){
+        try {
+            Optional<Fornecedor>  optionalFornecedor = fornecedorRepository.buscarFornecedorPendente();
+            if(optionalFornecedor.isPresent()){
+                CategoriaConta categoriaConta = buscarCategoriaAbastecimento(veiculo.getCliente());
+                Fornecedor fornecedor = optionalFornecedor.get();
+                ContaPagar contaPagar = construirContaPagarAbastecimentoWpp(abastecimento, veiculo.getCliente(), categoriaConta,fornecedor, veiculo);
+                contaPagarRepository.save(contaPagar);
+            }
+
+        }catch (Exception e){
+            log.error("salvarContaPagarAbastecimentoWpp", e);
+        }
+ }
+
+    private ContaPagar construirContaPagarAbastecimentoWpp(
+            Abastecimento abastecimento,
+            Cliente cliente,
+            CategoriaConta categoria,
+            Fornecedor fornecedor,
+            Veiculo veiculo) {
+
+        ContaPagar conta = new ContaPagar();
+
+        // Informações básicas
+        conta.setDescricao("Abastecimento Automatico");
+        conta.setNumeroDocumento("Não informado");
+        conta.setNumeroNotaFiscal("Não informado");
+        conta.setNumeroControle(gerarNumeroControle());
+
+        // Relacionamentos
+        conta.setCliente(cliente);
+        conta.setCategoria(categoria);
+        conta.setFornecedor(fornecedor);
+        // Relacionamentos opcionais (se viagem encontrada)
+        if (Objects.nonNull(veiculo)) {
+            conta.setVeiculo(veiculo);
+        }
+
+        // Valores financeiros
+        BigDecimal valorTotal = abastecimento.getValorTotal();
+        if(Objects.isNull(valorTotal)){
+            valorTotal = BigDecimal.ZERO;
+        }
+        conta.setValorOriginal(valorTotal);
+        conta.setValorDesconto(BigDecimal.ZERO);
+        conta.setValorJuros(BigDecimal.ZERO);
+        conta.setValorMulta(BigDecimal.ZERO);
+        conta.setValorTotal(valorTotal);
+        conta.setValorPago(valorTotal);
+
+        // Datas
+        LocalDate dataEmissao = LocalDate.now();
+        conta.setDataEmissao(dataEmissao);
+        conta.setDataVencimento(calcularDataVencimento(dataEmissao));
+        conta.setDataCompetencia(dataEmissao);
+
+
+        // Status
+        conta.setStatus(StatusConta.PENDENTE);
+
+        // Observações - armazena detalhes do CT-e
+        conta.setObservacao("Contas a pagar referente Abastecimento recebido atraves de WhatsApp.");
+
+        // Auditoria
+        conta.setUsuarioCadastro("SISTEMA_ABASTECIMENTO_AUTOMATICO");
+        conta.setRecorrente(false);
+
+        return conta;
+    }
+
+    private  String gerarNumeroControle() {
+        String data = LocalDate.now()
+                .format(DateTimeFormatter.BASIC_ISO_DATE);
+        long seq = contaPagarRepository.nextNumeroControle();
+        return String.format("CP-%s-%06d", data, seq);
+    }
+
+
+    private LocalDate calcularDataVencimento(LocalDate dataEmissao) {
+        // Padrão: 30 dias a partir da emissão
+        // Pode ser configurado por cliente ou categoria no futuro
+        return dataEmissao.plusDays(30);
+    }
+
+    private CategoriaConta buscarCategoriaAbastecimento(Cliente cliente) {
+        String codigo = "001-ABASTECIMENTO";
+        Optional<CategoriaConta> categoriaOpt = categoriaContaRepository.findByClienteAndCodigo(cliente, codigo);
+        if (categoriaOpt.isPresent()) {
+            return categoriaOpt.get();
+        }
+        //Criar uma categoria
+        CategoriaConta categoriaConta = new CategoriaConta();
+        categoriaConta.setPodeEditar(Boolean.FALSE);
+        categoriaConta.setNome(codigo);
+        categoriaConta.setCodigo(codigo);
+        categoriaConta.setCliente(cliente);
+        categoriaConta.setTipo(TipoConta.RECEBER);
+        categoriaConta.setStatus(Boolean.TRUE);
+        categoriaConta.setDataCadastro(new Date());
+        return categoriaContaRepository.save(categoriaConta);
+    }
+
+
 }

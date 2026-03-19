@@ -33,6 +33,7 @@ public class OrdemServicoService {
     private final FornecedorRepository fornecedorRepository;
     private final ContaPagarRepository contaPagarRepository;
     private final CategoriaContaRepository categoriaContaRepository;
+    private final ClienteRepository clienteRepository;
 
     @Transactional
     public OrdemServicoDTO create(OrdemServicoDTO dto) {
@@ -42,7 +43,11 @@ public class OrdemServicoService {
             throw new RuntimeException("Já existe uma OS com o número: " + dto.getNumeroOs());
         }
 
-        OrdemServico ordemServico = toEntity(dto);
+        // Validar cliente
+        Cliente cliente = clienteRepository.findById(dto.getClienteId())
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado com ID: " + dto.getClienteId()));
+
+        OrdemServico ordemServico = toEntity(dto, cliente);
         OrdemServico saved = ordemServicoRepository.save(ordemServico);
 
         if (dto.getItens() != null && !dto.getItens().isEmpty()) {
@@ -71,6 +76,11 @@ public class OrdemServicoService {
     }
 
     @Transactional(readOnly = true)
+    public Page<OrdemServicoDTO> findByCliente(Long clienteId, Pageable pageable) {
+        return ordemServicoRepository.findByClienteId(clienteId, pageable).map(this::toDTO);
+    }
+
+    @Transactional(readOnly = true)
     public OrdemServicoDTO findById(Long id) {
         log.info("Buscando ordem de serviço por ID: {}", id);
         OrdemServico ordemServico = ordemServicoRepository.findById(id)
@@ -92,7 +102,12 @@ public class OrdemServicoService {
         OrdemServico ordemServico = ordemServicoRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Ordem de serviço não encontrada com ID: " + id));
 
+        // Validar cliente
+        Cliente cliente = clienteRepository.findById(dto.getClienteId())
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado com ID: " + dto.getClienteId()));
+
         updateEntityFromDTO(ordemServico, dto);
+        ordemServico.setCliente(cliente);
         OrdemServico updated = ordemServicoRepository.save(ordemServico);
         log.info("Ordem de serviço atualizada com sucesso. ID: {}", id);
         return toDTO(updated);
@@ -109,8 +124,8 @@ public class OrdemServicoService {
     }
 
     @Transactional(readOnly = true)
-    public Page<OrdemServicoDTO> findByStatus(StatusOrdemServico status, Pageable pageable) {
-        return ordemServicoRepository.findByStatus(status, pageable).map(this::toDTO);
+    public Page<OrdemServicoDTO> findByStatus(Long clienteId, StatusOrdemServico status, Pageable pageable) {
+        return ordemServicoRepository.findByClienteIdAndStatus(clienteId, status, pageable).map(this::toDTO);
     }
 
     @Transactional(readOnly = true)
@@ -119,8 +134,8 @@ public class OrdemServicoService {
     }
 
     @Transactional(readOnly = true)
-    public List<OrdemServicoDTO> findOrdensAtrasadas() {
-        return ordemServicoRepository.findOrdensAtrasadas(LocalDate.now())
+    public List<OrdemServicoDTO> findOrdensAtrasadas(Long clienteId) {
+        return ordemServicoRepository.findOrdensAtrasadas(clienteId, LocalDate.now())
             .stream()
             .map(this::toDTO)
             .collect(Collectors.toList());
@@ -232,6 +247,8 @@ public class OrdemServicoService {
                 .collect(Collectors.toList()));
         }
 
+        dto.setClienteId(entity.getCliente().getId());
+
         return dto;
     }
 
@@ -255,7 +272,7 @@ public class OrdemServicoService {
         return dto;
     }
 
-    private OrdemServico toEntity(OrdemServicoDTO dto) {
+    private OrdemServico toEntity(OrdemServicoDTO dto, Cliente cliente) {
         OrdemServico entity = new OrdemServico();
         entity.setNumeroOs(dto.getNumeroOs());
         entity.setTipoManutencao(dto.getTipoManutencao());
@@ -268,6 +285,7 @@ public class OrdemServicoService {
         entity.setDiagnostico(dto.getDiagnostico());
         entity.setValorTotal(dto.getValorTotal() != null ? dto.getValorTotal() : BigDecimal.ZERO);
         entity.setObservacoes(dto.getObservacoes());
+        entity.setCliente(cliente);
 
         if (dto.getVeiculoId() != null) {
             Veiculo veiculo = veiculoRepository.findById(dto.getVeiculoId())

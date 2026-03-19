@@ -66,4 +66,6 @@ public interface CooperativaRepository extends JpaRepository<Cooperativa, Long> 
      * Busca cooperativas por cidade e UF com paginação
      */
     Page<Cooperativa> findByCidadeIgnoreCaseAndUfIgnoreCase(String cidade, String uf, Pageable pageable);
+
+    List<Cooperativa> findByClienteId(Long clienteId);
 }

@@ -42,6 +42,20 @@ public class CooperativaController {
         return ResponseEntity.ok(cooperativas);
     }
 
+    @Operation(summary = "Busca cooperativas por cliente",
+            description = "Retorna uma lista de cooperativas de um cliente específico")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de cooperativas retornada com sucesso",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = CooperativaDTO.class)))
+    })
+    @GetMapping(value = "/cliente/{clienteId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<CooperativaDTO>> findByCliente(@Parameter(description = "ID do cliente", example = "1")
+                                                                  @PathVariable Long clienteId) {
+        List<CooperativaDTO> cooperativas = cooperativaService.findByCliente(clienteId);
+        return ResponseEntity.ok(cooperativas);
+    }
+
     @Operation(summary = "Busca cooperativa por ID", description = "Retorna uma cooperativa específica pelo seu ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Cooperativa encontrada",

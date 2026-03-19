@@ -1,14 +1,24 @@
 package com.trovian.service;
 
 import com.trovian.dto.AbastecimentoDTO;
+import com.trovian.dto.AbastecimentoWhatAppDTO;
+import com.trovian.dto.DadosFilaDTO;
 import com.trovian.entity.*;
+import com.trovian.enums.TipoCombustivel;
 import com.trovian.repository.*;
+import com.trovian.util.TelefoneUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Base64;
+import java.util.Date;
+import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +31,10 @@ public class AbastecimentoService {
     private final ClienteRepository clienteRepository;
     private final LocalRepository localRepository;
     private final RotaRepository rotaRepository;
+    private final ImagemArquivoRepository arquivoRepository;
+
+    @Autowired
+    private ContaPagarService contaPagarService;
 
     /**
      * Lista todos os abastecimentos com paginação
@@ -222,6 +236,7 @@ public class AbastecimentoService {
         dto.setCriadoEm(entity.getCriadoEm());
         dto.setAtualizadoEm(entity.getAtualizadoEm());
         dto.setStatus(entity.getStatus());
+        dto.setTemImagem(entity.getTemImagem());
 
         return dto;
     }
@@ -243,6 +258,7 @@ public class AbastecimentoService {
         entity.setTanqueCheio(dto.getTanqueCheio());
         entity.setObservacoes(dto.getObservacoes());
         entity.setStatus(dto.getStatus());
+        entity.setTemImagem(dto.getTemImagem());
 
         // Local (opcional)
         if (dto.getLocalId() != null) {
@@ -259,5 +275,61 @@ public class AbastecimentoService {
         }
 
         return entity;
+    }
+
+    public void processarAbastecimentoWhatsApp(DadosFilaDTO dadosFilaDTO){
+        try {
+            Optional<Veiculo> optionalVeiculo = veiculoRepository.findByPlacaIgnoreCase(dadosFilaDTO.getPlaca());
+            if(optionalVeiculo.isPresent()) {
+                Veiculo veiculo = optionalVeiculo.get();
+                String telefoneConvertido =
+                        TelefoneUtils.converterNumeroWpp(dadosFilaDTO.getNumeroTelefone());
+                Motorista motorista = motoristaRepository.findByTelefone(TelefoneUtils.converterNumeroWpp(telefoneConvertido)).orElse(null);
+                Abastecimento abastecimento = getAbastecimento(dadosFilaDTO, veiculo);
+                abastecimento.setMotorista(motorista);
+                Abastecimento savedAbastecimento = abastecimentoRepository.save(abastecimento);
+                if(savedAbastecimento.getTemImagem()){
+                    salvarImagem(veiculo.getCliente(), savedAbastecimento, dadosFilaDTO);
+                }
+                contaPagarService.salvarContaPagarAbastecimentoWpp(savedAbastecimento, veiculo);
+            }
+        } catch (Exception e) {
+            log.error("processarAbastecimentoWhatsApp", e);
+        }
+    }
+
+    private static Abastecimento getAbastecimento(DadosFilaDTO dadosFilaDTO, Veiculo veiculo) {
+        AbastecimentoWhatAppDTO abastecimentoDTO = dadosFilaDTO.getAbastecimento();
+        Abastecimento abastecimento = new Abastecimento();
+        abastecimento.setDataHora(new Date());
+        abastecimento.setCombustivelTipo(TipoCombustivel.DIESEL);
+        abastecimento.setKmOdometro(Integer.valueOf(dadosFilaDTO.getHodometro()));
+        abastecimento.setLitrosAbastecidos(abastecimentoDTO.getLitros());
+        abastecimento.setObservacoes("Abastecimento criado via informação originadas do WhatsApp.");
+        abastecimento.setPrecoLitro(abastecimentoDTO.getPrecoPorLitro());
+        abastecimento.setStatus(Boolean.TRUE);
+        abastecimento.setValorTotal(abastecimentoDTO.getTotalAPagar());
+        abastecimento.setVeiculo(veiculo);
+        abastecimento.setCliente(veiculo.getCliente());
+        if(Objects.nonNull(dadosFilaDTO.getBase64())){
+            abastecimento.setTemImagem(Boolean.TRUE);
+        }
+        return abastecimento;
+    }
+
+    private void salvarImagem(Cliente cliente, Abastecimento abastecimento, DadosFilaDTO dadosFilaDTO){
+        try {
+            String base64Input = dadosFilaDTO.getBase64();
+            String cleanBase64 = base64Input.contains(",") ?
+                    base64Input.split(",")[1] : base64Input;
+            byte[] bytes = Base64.getDecoder().decode(cleanBase64);
+            ImagemArquivo imagemArquivo = new ImagemArquivo();
+            imagemArquivo.setAbastecimento(abastecimento);
+            imagemArquivo.setCliente(cliente);
+            imagemArquivo.setConteudoBinario(bytes);
+            arquivoRepository.save(imagemArquivo);
+        }catch (Exception e){
+            log.error("salvarImagem", e);
+        }
     }
 }

@@ -76,4 +76,8 @@ public class AlertaManutencaoDTO {
 
     @Schema(description = "Observação sobre a resolução do alerta")
     private String observacaoResolucao;
+
+    @NotNull(message = "ID do cliente é obrigatório")
+    @Schema(description = "ID do cliente proprietário", example = "1", required = true)
+    private Long clienteId;
 }

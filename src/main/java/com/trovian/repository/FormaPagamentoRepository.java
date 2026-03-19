@@ -15,4 +15,6 @@ public interface FormaPagamentoRepository extends JpaRepository<FormaPagamento, 
     Page<FormaPagamento> findByTipo(TipoFormaPagamento tipo, Pageable pageable);
 
     Page<FormaPagamento> findByPermiteParcelamento(Boolean permiteParcelamento, Pageable pageable);
+
+    Page<FormaPagamento> findByClienteId(Long clienteId, Pageable pageable);
 }

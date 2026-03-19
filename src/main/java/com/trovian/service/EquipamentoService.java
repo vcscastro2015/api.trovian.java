@@ -1,8 +1,10 @@
 package com.trovian.service;
 
 import com.trovian.dto.EquipamentoDTO;
+import com.trovian.entity.Cliente;
 import com.trovian.entity.Equipamento;
 import com.trovian.entity.Modelo;
+import com.trovian.repository.ClienteRepository;
 import com.trovian.repository.EquipamentoRepository;
 import com.trovian.repository.ModeloRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ public class EquipamentoService {
 
     private final EquipamentoRepository equipamentoRepository;
     private final ModeloRepository modeloRepository;
+    private final ClienteRepository clienteRepository;
 
     private static final String TIPO_PROPRIETARIO = "PR";
     private static final String TIPO_PARTICULAR = "PA";
@@ -28,6 +31,14 @@ public class EquipamentoService {
         log.info("Buscando todos os equipamentos com paginação - Página: {}, Tamanho: {}",
                 pageable.getPageNumber(), pageable.getPageSize());
         Page<Equipamento> equipamentos = equipamentoRepository.findAll(pageable);
+        return equipamentos.map(this::toDTO);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<EquipamentoDTO> findByCliente(Long clienteId, Pageable pageable) {
+        log.info("Buscando equipamentos por cliente ID: {} com paginação - Página: {}, Tamanho: {}",
+                clienteId, pageable.getPageNumber(), pageable.getPageSize());
+        Page<Equipamento> equipamentos = equipamentoRepository.findByClienteId(clienteId, pageable);
         return equipamentos.map(this::toDTO);
     }
 
@@ -49,7 +60,10 @@ public class EquipamentoService {
         Modelo modelo = modeloRepository.findById(equipamentoDTO.getModeloId())
                 .orElseThrow(() -> new RuntimeException("Modelo não encontrado com ID: " + equipamentoDTO.getModeloId()));
 
-        Equipamento equipamento = toEntity(equipamentoDTO);
+        Cliente cliente = clienteRepository.findById(equipamentoDTO.getClienteId())
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado com ID: " + equipamentoDTO.getClienteId()));
+
+        Equipamento equipamento = toEntity(equipamentoDTO, cliente);
         equipamento.setModelo(modelo);
 
         Equipamento savedEquipamento = equipamentoRepository.save(equipamento);
@@ -139,11 +153,17 @@ public class EquipamentoService {
             dto.setModeloFabricante(equipamento.getModelo().getFabricante());
         }
 
+        // Inclui informação do cliente
+        if (equipamento.getCliente() != null) {
+            dto.setClienteId(equipamento.getCliente().getId());
+        }
+
         return dto;
     }
 
-    private Equipamento toEntity(EquipamentoDTO dto) {
+    private Equipamento toEntity(EquipamentoDTO dto, Cliente cliente) {
         Equipamento equipamento = new Equipamento();
+        equipamento.setCliente(cliente);
         equipamento.setImei(dto.getImei());
         equipamento.setNumeroCelular(dto.getNumeroCelular());
         equipamento.setNumeroSerial(dto.getNumeroSerial());

@@ -9,5 +9,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ModeloRepository extends JpaRepository<Modelo, Long> {
 
-    Page<Modelo> findByTipoIgnoreCase(String tipo, Pageable pageable);
+    Page<Modelo> findByTipoIgnoreCaseAndClienteId(String tipo, Long clienteId, Pageable pageable);
 }

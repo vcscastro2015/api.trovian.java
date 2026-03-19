@@ -5,9 +5,11 @@ import com.trovian.dto.ModeloChecklistDTO;
 import com.trovian.entity.Cliente;
 import com.trovian.entity.ItemModeloChecklist;
 import com.trovian.entity.ModeloChecklist;
+import com.trovian.entity.Veiculo;
 import com.trovian.repository.ClienteRepository;
 import com.trovian.repository.ItemModeloChecklistRepository;
 import com.trovian.repository.ModeloChecklistRepository;
+import com.trovian.repository.VeiculoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -27,6 +29,7 @@ public class ModeloChecklistService {
     private final ModeloChecklistRepository modeloChecklistRepository;
     private final ItemModeloChecklistRepository itemModeloChecklistRepository;
     private final ClienteRepository clienteRepository;
+    private final VeiculoRepository veiculoRepository;
 
     @Transactional(readOnly = true)
     public Page<ModeloChecklistDTO> findAll(Pageable pageable) {
@@ -66,6 +69,11 @@ public class ModeloChecklistService {
 
         ModeloChecklist modelo = toEntity(dto);
         modelo.setCliente(cliente);
+
+        if (dto.getVeiculoIds() != null && !dto.getVeiculoIds().isEmpty()) {
+            List<Veiculo> veiculos = veiculoRepository.findAllById(dto.getVeiculoIds());
+            modelo.setVeiculos(veiculos);
+        }
 
         // Salva o modelo primeiro
         ModeloChecklist savedModelo = modeloChecklistRepository.save(modelo);
@@ -113,6 +121,12 @@ public class ModeloChecklistService {
             }
         }
 
+        // Atualiza a lista de veículos
+        if (dto.getVeiculoIds() != null) {
+            List<Veiculo> veiculos = veiculoRepository.findAllById(dto.getVeiculoIds());
+            modelo.setVeiculos(veiculos);
+        }
+
         ModeloChecklist updatedModelo = modeloChecklistRepository.save(modelo);
         log.info("Modelo de checklist atualizado com sucesso. ID: {}", id);
         return toDTO(updatedModelo);
@@ -152,6 +166,15 @@ public class ModeloChecklistService {
                     .map(this::toItemDTO)
                     .collect(Collectors.toList());
             dto.setItens(itensDTO);
+        }
+
+        if (modelo.getVeiculos() != null && !modelo.getVeiculos().isEmpty()) {
+            dto.setVeiculoIds(modelo.getVeiculos().stream()
+                    .map(Veiculo::getId)
+                    .collect(Collectors.toList()));
+            dto.setVeiculoPlacas(modelo.getVeiculos().stream()
+                    .map(Veiculo::getPlaca)
+                    .collect(Collectors.toList()));
         }
 
         return dto;

@@ -21,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/conta-receber")
@@ -52,7 +53,7 @@ public class ContaReceberController {
     })
     public ResponseEntity<ContaReceberDTO> processarCte(@Valid @RequestBody DocumentoCteDTO cteDTO) {
         log.info("Request para processar CT-e: {}", cteDTO.getNumero());
-        ContaReceberDTO created = contaReceberService.processarDocumentoCte(cteDTO);
+        ContaReceberDTO created = contaReceberService.processarDocumentoCte(null/*cteDTO*/);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
@@ -204,17 +205,23 @@ public class ContaReceberController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/total/pendente")
+    @GetMapping("/total/pendente/{clienteId}")
     @Operation(summary = "Total de contas pendentes")
-    public ResponseEntity<BigDecimal> totalPendente() {
-        BigDecimal total = contaReceberService.getTotalPendente();
+    public ResponseEntity<BigDecimal> totalPendente(@PathVariable Long clienteId) {
+        BigDecimal total = contaReceberService.getTotalPendente(clienteId);
         return ResponseEntity.ok(total);
     }
 
-    @GetMapping("/saldo/a-receber")
+    @GetMapping("/saldo/a-receber/{clienteId}")
     @Operation(summary = "Saldo total a receber")
-    public ResponseEntity<BigDecimal> saldoAReceber() {
-        BigDecimal saldo = contaReceberService.getSaldoAReceber();
+    public ResponseEntity<BigDecimal> saldoAReceber(@PathVariable Long clienteId) {
+        BigDecimal saldo = contaReceberService.getSaldoAReceber(clienteId);
         return ResponseEntity.ok(saldo);
+    }
+
+    @GetMapping("/cliente-plano/{clientePlanoId}")
+    @Operation(summary = "Lista contas a receber de um contrato de plano em ordem de vencimento")
+    public ResponseEntity<List<ContaReceberDTO>> findByClientePlano(@PathVariable Long clientePlanoId) {
+        return ResponseEntity.ok(contaReceberService.findByClientePlano(clientePlanoId));
     }
 }

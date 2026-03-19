@@ -21,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
@@ -54,6 +55,25 @@ public class ChecklistRealizadoController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
         Page<ChecklistRealizadoDTO> checklists = checklistRealizadoService.findAll(pageable);
         return ResponseEntity.ok(checklists);
+    }
+
+    @GetMapping("/cliente/{clienteId}")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
+    })
+    public ResponseEntity<Page<ChecklistRealizadoDTO>> findByCliente(
+            @Parameter(description = "ID do cliente", example = "1")
+            @PathVariable Long clienteId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "dataHoraInicio") String sortBy,
+            @RequestParam(defaultValue = "DESC") String direction) {
+
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+
+        Page<ChecklistRealizadoDTO> lista = checklistRealizadoService.findByCliente(clienteId, pageable);
+        return ResponseEntity.ok(lista);
     }
 
     @Operation(summary = "Busca checklist realizado por ID", description = "Retorna um checklist realizado específico pelo seu ID")
@@ -130,9 +150,9 @@ public class ChecklistRealizadoController {
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = EstatisticasChecklistDTO.class)))
     })
-    @GetMapping(value = "/estatisticas", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<EstatisticasChecklistDTO> getEstatisticas() {
-        EstatisticasChecklistDTO estatisticas = checklistRealizadoService.getEstatisticas();
+    @GetMapping(value = "/cliente/{clienteId}/estatisticas", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<EstatisticasChecklistDTO> getEstatisticas(@PathVariable Long clienteId) {
+        EstatisticasChecklistDTO estatisticas = checklistRealizadoService.getEstatisticas(clienteId);
         return ResponseEntity.ok(estatisticas);
     }
 
@@ -143,8 +163,9 @@ public class ChecklistRealizadoController {
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = Page.class)))
     })
-    @GetMapping(value = "/status/{status}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/cliente/{clienteId}/status/{status}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Page<ChecklistRealizadoDTO>> getChecklistsByStatus(
+            @PathVariable Long clienteId,
             @Parameter(description = "Status do checklist (EM_ANDAMENTO, APROVADO ou REPROVADO)", required = true)
             @PathVariable StatusChecklist status,
             @Parameter(description = "Número da página (inicia em 0)", example = "0")
@@ -158,7 +179,7 @@ public class ChecklistRealizadoController {
 
         Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
-        Page<ChecklistRealizadoDTO> checklists = checklistRealizadoService.findByStatus(status, pageable);
+        Page<ChecklistRealizadoDTO> checklists = checklistRealizadoService.findByStatus(clienteId, status, pageable);
         return ResponseEntity.ok(checklists);
     }
 
@@ -223,7 +244,7 @@ public class ChecklistRealizadoController {
             @PathVariable UUID id,
             @Parameter(description = "Novos dados do checklist", required = true)
             @Valid @RequestBody ChecklistRealizadoDTO checklistDTO) {
-        ChecklistRealizadoDTO updatedChecklist = checklistRealizadoService.update(id, checklistDTO);
+        ChecklistRealizadoDTO updatedChecklist = checklistRealizadoService.updateSomenteChecklistRealizado(id, checklistDTO);
         return ResponseEntity.ok(updatedChecklist);
     }
 
@@ -240,6 +261,23 @@ public class ChecklistRealizadoController {
             @PathVariable UUID id) {
         ChecklistRealizadoDTO finalized = checklistRealizadoService.finalizar(id);
         return ResponseEntity.ok(finalized);
+    }
+
+    @Operation(summary = "Salva a foto de um item do checklist",
+               description = "Recebe a imagem via multipart/form-data e associa ao item informado")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Foto salva com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Checklist ou item não encontrado")
+    })
+    @PostMapping(value = "/{checklistId}/item/{itemId}/foto", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> salvarFotoItem(
+            @Parameter(description = "ID do checklist realizado", required = true)
+            @PathVariable UUID checklistId,
+            @Parameter(description = "ID do item do checklist", required = true)
+            @PathVariable UUID itemId,
+            @RequestParam("foto") MultipartFile foto) {
+        checklistRealizadoService.salvarFotoItem(checklistId, itemId, foto);
+        return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "Deleta um checklist realizado", description = "Remove um checklist realizado do sistema")

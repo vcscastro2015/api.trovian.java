@@ -55,6 +55,11 @@ public class MovimentacaoEstoque {
     @Column(name = "data_cadastro", nullable = false, updatable = false)
     private LocalDateTime dataCadastro;
 
+    @NotNull(message = "Cliente é obrigatório")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cliente_id", nullable = false)
+    private Cliente cliente;
+
     @PrePersist
     protected void onCreate() {
         this.dataCadastro = LocalDateTime.now();

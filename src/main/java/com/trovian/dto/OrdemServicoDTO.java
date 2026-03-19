@@ -78,4 +78,8 @@ public class OrdemServicoDTO {
 
     @Schema(description = "Lista de itens da manutenção")
     private List<ItemManutencaoDTO> itens = new ArrayList<>();
+
+    @NotNull(message = "ID do cliente é obrigatório")
+    @Schema(description = "ID do cliente proprietário", example = "1", required = true)
+    private Long clienteId;
 }
