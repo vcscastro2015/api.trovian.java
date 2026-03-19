@@ -1,8 +1,0 @@
- Backlog:
-  - Paginação
-  - Cache (Redis)
-  - Segurança (Spring Security + JWT)
-  - Soft delete
-  - Auditoria avançada (createdBy/updatedBy)
-  - Internacionalização
-  - Mensageria para eventos de cooperativa
