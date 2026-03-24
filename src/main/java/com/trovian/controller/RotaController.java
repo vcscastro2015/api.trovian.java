@@ -2,6 +2,7 @@ package com.trovian.controller;
 
 import com.trovian.dto.RotaDTO;
 import com.trovian.dto.RotaFiltrosDTO;
+import com.trovian.dto.RotaSummaryDTO;
 import com.trovian.service.RotaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -161,6 +162,31 @@ public class RotaController {
         filtros.setNome(nome);
 
         return ResponseEntity.ok(rotaService.findByCliente(clienteId, filtros, pageable));
+    }
+
+    /**
+     * Busca rotas por cliente (versão light, sem pontos, segmentos, pedágios e estatísticas)
+     */
+    @GetMapping("/cliente/{clienteId}/light")
+    @Operation(summary = "Busca rotas por cliente (light)", description = "Retorna rotas de um cliente sem pontos, segmentos, pedágios e estatísticas")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de rotas retornada com sucesso")
+    })
+    public ResponseEntity<Page<RotaSummaryDTO>> getByClienteLight(
+            @Parameter(description = "ID do cliente") @PathVariable Long clienteId,
+            @Parameter(description = "Número da página") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Tamanho da página") @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Campo para ordenação") @RequestParam(defaultValue = "id") String sortBy,
+            @Parameter(description = "Direção da ordenação") @RequestParam(defaultValue = "ASC") String direction,
+            @Parameter(description = "Filtro por nome") @RequestParam(required = false) String nome
+    ) {
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+
+        RotaFiltrosDTO filtros = new RotaFiltrosDTO();
+        filtros.setNome(nome);
+
+        return ResponseEntity.ok(rotaService.findByClienteLight(clienteId, filtros, pageable));
     }
 
     /**

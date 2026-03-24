@@ -188,6 +188,15 @@ public class RotaService {
     }
 
     /**
+     * Busca rotas por cliente sem pontos, segmentos, pedágios e estatísticas
+     */
+    @Transactional(readOnly = true)
+    public Page<RotaSummaryDTO> findByClienteLight(Long clienteId, RotaFiltrosDTO filtros, Pageable pageable) {
+        log.info("Buscando rotas (light) do cliente ID: {}", clienteId);
+        return rotaRepository.findByClienteId(clienteId, filtros.getNome(), pageable).map(this::toSummaryDTO);
+    }
+
+    /**
      * Busca rotas por veículo
      */
     @Transactional(readOnly = true)
@@ -328,6 +337,35 @@ public class RotaService {
             dto.setPedagios(rota.getPedagios().stream()
                     .map(this::toRotaPedagioDTO)
                     .collect(Collectors.toList()));
+        }
+
+        return dto;
+    }
+
+    /**
+     * Converte Entity para DTO resumido (sem coleções)
+     */
+    private RotaSummaryDTO toSummaryDTO(Rota rota) {
+        RotaSummaryDTO dto = new RotaSummaryDTO();
+        dto.setId(rota.getId());
+        dto.setNome(rota.getNome());
+        dto.setDescricao(rota.getDescricao());
+        dto.setAtiva(rota.getAtiva());
+        dto.setDataCadastro(rota.getDataCadastro());
+        dto.setDataAtualizacao(rota.getDataAtualizacao());
+        dto.setDistanciaTotal(rota.getDistanciaTotal());
+
+        if (rota.getCliente() != null) {
+            dto.setClienteId(rota.getCliente().getId());
+            dto.setClienteNome(rota.getCliente().getNome());
+        }
+        if (rota.getVeiculo() != null) {
+            dto.setVeiculoId(rota.getVeiculo().getId());
+            dto.setVeiculoPlaca(rota.getVeiculo().getPlaca());
+        }
+        if (rota.getCooperativa() != null) {
+            dto.setCooperativaId(rota.getCooperativa().getId());
+            dto.setCooperativaNome(rota.getCooperativa().getNome());
         }
 
         return dto;
