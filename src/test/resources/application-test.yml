@@ -1,0 +1,71 @@
+spring:
+  # H2 in-memory - substitui PostgreSQL nos testes
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: false
+
+  # Liquibase desabilitado - usamos DDL auto no H2
+  liquibase:
+    enabled: false
+
+  # ActiveMQ embarcado para testes
+  activemq:
+    broker-url: vm://embedded?broker.persistent=false
+    user: admin
+    password: admin
+    packages:
+      trust-all: true
+
+  jms:
+    pub-sub-domain: false
+
+  # MongoDB com auto-index desabilitado (não conecta em testes unitários)
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: testdb
+      username:
+      password:
+
+  # Mail desabilitado em testes
+  mail:
+    host: localhost
+    port: 25
+    username: test@test.com
+    password: test
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+# JWT com valores fixos para testes (mesma chave do application.yml)
+jwt:
+  secret: TrovianSecretKeyMuitoSeguraComMinimo256BitsParaHS256AlgorithmQueDeveSerTrocadaEmProducao
+  access-token:
+    expiration: 900000
+  refresh-token:
+    expiration: 604800000
+
+trovian:
+  app:
+    url: http://localhost:4200
+
+server:
+  servlet:
+    context-path: /api
+
+logging:
+  level:
+    root: WARN
+    com.trovian: DEBUG
