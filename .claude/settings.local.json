@@ -10,7 +10,8 @@
       "Bash(powershell -Command \"Get-Content ''BACKEND_DASHBOARD.txt'' | Select-Object -Skip 935 | Select-Object -First 313 | Out-File ''src/main/java/com/trovian/repository/impl/ViagemRepositoryImpl.java'' -Encoding UTF8\")",
       "Bash(powershell -Command:*)",
       "Bash(echo:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(JAVA_HOME=\"/c/Program Files/Java/jdk-17\" PATH=\"$JAVA_HOME/bin:$PATH\" mvn test)"
     ],
     "deny": [],
     "ask": []
