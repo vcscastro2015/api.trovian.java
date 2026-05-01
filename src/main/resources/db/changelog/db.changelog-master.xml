@@ -15,4 +15,5 @@
     <include file="db/changelog/changes/v007-categoria-assinatura.sql"/>
     <include file="db/changelog/changes/v008-fornecedor-trovian.sql"/>
     <include file="db/changelog/changes/v009-billing-melhorias.sql"/>
+    <include file="db/changelog/changes/v010-hodometro.sql"/>
 </databaseChangeLog>
