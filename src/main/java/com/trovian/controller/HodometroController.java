@@ -59,6 +59,15 @@ public class HodometroController {
         return ResponseEntity.ok(result);
     }
 
+    @GetMapping("/veiculo/{veiculoId}/ultimo")
+    @Operation(summary = "Buscar último hodômetro do veículo", description = "Retorna o registro de hodômetro mais recente de um veículo")
+    @ApiResponse(responseCode = "200", description = "Registro encontrado")
+    @ApiResponse(responseCode = "404", description = "Nenhum hodômetro encontrado para o veículo")
+    public ResponseEntity<HodometroDTO> findUltimoByVeiculoId(
+            @Parameter(description = "ID do veículo") @PathVariable Long veiculoId) {
+        return ResponseEntity.ok(hodometroService.findUltimoByVeiculoId(veiculoId));
+    }
+
     @GetMapping("/veiculo/{veiculoId}/periodo")
     @Operation(summary = "Listar hodômetros por veículo e período",
             description = "Retorna todos os registros de hodômetro de um veículo dentro do intervalo de datas informado (inclusive), para uso em relatórios")

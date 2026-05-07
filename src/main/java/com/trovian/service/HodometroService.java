@@ -44,6 +44,13 @@ public class HodometroService {
     }
 
     @Transactional(readOnly = true)
+    public HodometroDTO findUltimoByVeiculoId(Long veiculoId) {
+        Hodometro hodometro = hodometroRepository.findFirstByVeiculoIdOrderByDataCadastroDesc(veiculoId)
+                .orElseThrow(() -> new RuntimeException("Nenhum hodômetro encontrado para o veículo com id: " + veiculoId));
+        return toDTO(hodometro);
+    }
+
+    @Transactional(readOnly = true)
     public List<HodometroDTO> findByVeiculoIdAndPeriodo(Long veiculoId, LocalDate dataInicial, LocalDate dataFinal) {
         Date inicio = Date.from(dataInicial.atStartOfDay(ZoneId.systemDefault()).toInstant());
         Date fim = Date.from(dataFinal.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant());

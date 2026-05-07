@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface HodometroRepository extends JpaRepository<Hodometro, Integer> {
@@ -16,4 +17,6 @@ public interface HodometroRepository extends JpaRepository<Hodometro, Integer> {
 
     List<Hodometro> findByVeiculoIdAndDataCadastroBetweenOrderByDataCadastroDesc(
             Long veiculoId, Date dataInicial, Date dataFinal);
+
+    Optional<Hodometro> findFirstByVeiculoIdOrderByDataCadastroDesc(Long veiculoId);
 }
