@@ -20,7 +20,7 @@ public class Peca {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "codigo", unique = true, nullable = false, length = 50)
+    @Column(name = "codigo", nullable = false, length = 50)
     @NotNull(message = "Código é obrigatório")
     private String codigo;
 

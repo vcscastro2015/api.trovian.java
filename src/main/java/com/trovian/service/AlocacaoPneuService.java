@@ -41,6 +41,7 @@ public class AlocacaoPneuService {
     private final VeiculoRepository veiculoRepository;
     private final InspecaoPneuRepository inspecaoPneuRepository;
     private final InspecaoPneuService inspecaoPneuService;
+    private final PneuEstoqueService pneuEstoqueService;
 
     @Transactional
     public AlocacaoPneuDTO montar(Long pneuId, Long veiculoId, PosicaoPneu posicao, Integer km, String responsavel) {
@@ -70,6 +71,8 @@ public class AlocacaoPneuService {
 
         pneu.setStatus(StatusPneu.EM_USO);
         pneuRepository.save(pneu);
+        pneuEstoqueService.registrarSaida(pneu, "Montagem DOT " + pneu.getNumeroDot()
+                + " veículo " + veiculo.getPlaca() + " posição " + posicao);
 
         return toDTO(alocacaoPneuRepository.save(alocacao));
     }
@@ -104,6 +107,13 @@ public class AlocacaoPneuService {
         };
         pneu.setStatus(novoStatus);
         pneuRepository.save(pneu);
+
+        if (novoStatus == StatusPneu.NOVO || novoStatus == StatusPneu.RECAPADO) {
+            pneuEstoqueService.registrarEntrada(pneu, "Desmontagem DOT " + pneu.getNumeroDot() + " motivo " + motivo);
+        } else if (novoStatus == StatusPneu.INATIVO) {
+            pneuEstoqueService.registrarSaida(pneu, "Desmontagem para inativo DOT " + pneu.getNumeroDot() + " motivo " + motivo);
+        }
+        // EM_RECAPAGEM: sem movimento - tratado em enviarParaRecapagem/registrarRetorno
 
         return toDTO(alocacaoPneuRepository.save(alocacao));
     }

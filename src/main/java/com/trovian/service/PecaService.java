@@ -29,7 +29,7 @@ public class PecaService {
     public PecaDTO create(PecaDTO dto) {
         log.info("Criando peça: {}", dto.getCodigo());
 
-        if (pecaRepository.findByCodigo(dto.getCodigo()).isPresent()) {
+        if (pecaRepository.findByCodigoAndClienteId(dto.getCodigo(), dto.getClienteId()).isPresent()) {
             throw new RuntimeException("Já existe uma peça com o código: " + dto.getCodigo());
         }
 

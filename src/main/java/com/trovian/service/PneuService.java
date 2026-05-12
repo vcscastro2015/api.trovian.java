@@ -33,6 +33,7 @@ public class PneuService {
     private final RecapagemPneuRepository recapagemPneuRepository;
     private final AlertaManutencaoRepository alertaManutencaoRepository;
     private final VeiculoRepository veiculoRepository;
+    private final PneuEstoqueService pneuEstoqueService;
 
     @Transactional
     public PneuDTO cadastrar(PneuDTO dto) {
@@ -54,7 +55,9 @@ public class PneuService {
             pneu.setFornecedor(fornecedor);
         }
 
-        return toDTO(pneuRepository.save(pneu));
+        Pneu saved = pneuRepository.save(pneu);
+        pneuEstoqueService.registrarEntrada(saved, "Cadastro pneu DOT " + saved.getNumeroDot());
+        return toDTO(saved);
     }
 
     @Transactional
@@ -113,9 +116,15 @@ public class PneuService {
             throw new RuntimeException("Não é possível descartar pneu em uso. Desmonte-o primeiro.");
         }
 
+        StatusPneu statusAnterior = pneu.getStatus();
         pneu.setStatus(StatusPneu.DESCARTADO);
         pneu.setObservacoes(motivo != null ? motivo : pneu.getObservacoes());
-        pneuRepository.save(pneu);
+        Pneu saved = pneuRepository.save(pneu);
+
+        if (statusAnterior == StatusPneu.NOVO || statusAnterior == StatusPneu.RECAPADO) {
+            pneuEstoqueService.registrarSaida(saved, "Descarte DOT " + saved.getNumeroDot()
+                    + (motivo != null ? ": " + motivo : ""));
+        }
         log.info("Pneu id: {} descartado com sucesso", id);
     }
 
@@ -221,6 +230,9 @@ public class PneuService {
         if (pneu.getFornecedor() != null) {
             dto.setFornecedorId(pneu.getFornecedor().getId());
             dto.setFornecedorNome(pneu.getFornecedor().getRazaoSocial());
+        }
+        if (pneu.getPecaTipo() != null) {
+            dto.setPecaTipoId(pneu.getPecaTipo().getId());
         }
 
         alocacaoPneuRepository.findAlocacaoAtivaByPneuId(pneu.getId()).ifPresent(alocacao -> {
