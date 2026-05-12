@@ -16,6 +16,8 @@ public interface PecaRepository extends JpaRepository<Peca, Long> {
 
     Optional<Peca> findByCodigo(String codigo);
 
+    Optional<Peca> findByCodigoAndClienteId(String codigo, Long clienteId);
+
     Page<Peca> findByCategoria(String categoria, Pageable pageable);
 
     Page<Peca> findByStatus(Boolean status, Pageable pageable);
