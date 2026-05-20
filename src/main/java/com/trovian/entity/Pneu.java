@@ -86,6 +86,10 @@ public class Pneu {
     @JoinColumn(name = "cliente_id", nullable = false)
     private Cliente cliente;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "peca_id")
+    private Peca pecaTipo;
+
     @Column(name = "observacoes", columnDefinition = "TEXT")
     private String observacoes;
 
