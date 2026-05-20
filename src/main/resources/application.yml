@@ -104,7 +104,7 @@ management:
 jwt:
   secret: TrovianSecretKeyMuitoSeguraComMinimo256BitsParaHS256AlgorithmQueDeveSerTrocadaEmProducao
   access-token:
-    expiration: 900000
+    expiration: 3600000
   refresh-token:
     expiration: 604800000
 
