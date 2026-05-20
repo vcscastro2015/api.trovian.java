@@ -112,3 +112,5 @@ jwt:
 trovian:
   app:
     url: ${APP_URL:http://localhost:4200}
+  telemetria:
+    publisher-interval-ms: ${TELEMETRIA_PUBLISHER_INTERVAL_MS:5000}
