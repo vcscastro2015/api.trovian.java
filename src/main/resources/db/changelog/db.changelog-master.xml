@@ -18,4 +18,5 @@
     <include file="db/changelog/changes/v010-hodometro.sql"/>
     <include file="db/changelog/changes/v011-gestao-pneus.sql"/>
     <include file="db/changelog/changes/v012-pneu-peca-integracao.sql"/>
+    <include file="db/changelog/changes/v013-telemetria.sql"/>
 </databaseChangeLog>
