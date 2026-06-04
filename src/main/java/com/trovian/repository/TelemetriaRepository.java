@@ -42,14 +42,14 @@ public interface TelemetriaRepository extends JpaRepository<Telemetria, Integer>
                                             AS veiculos_ativos
             FROM agg
             """, nativeQuery = true)
-    Object[] findKpisPeriodo(@Param("inicio") LocalDateTime inicio, @Param("fim") LocalDateTime fim);
+    List<Object[]> findKpisPeriodo(@Param("inicio") LocalDateTime inicio, @Param("fim") LocalDateTime fim);
 
     // -------------------------------------------------------------------------
     // 2. Heatmap hora × dia da semana
     // -------------------------------------------------------------------------
     @Query(value = """
-            SELECT EXTRACT(DOW FROM data_cadastro)::int  AS dia_semana,
-                   EXTRACT(HOUR FROM data_cadastro)::int AS hora,
+            SELECT CAST(EXTRACT(DOW FROM data_cadastro) AS INTEGER)  AS dia_semana,
+                   CAST(EXTRACT(HOUR FROM data_cadastro) AS INTEGER) AS hora,
                    COUNT(*)                              AS total
             FROM telemetria
             WHERE data_cadastro BETWEEN :inicio AND :fim
@@ -75,7 +75,7 @@ public interface TelemetriaRepository extends JpaRepository<Telemetria, Integer>
             WHERE t.data_cadastro BETWEEN :inicio AND :fim
               AND t.rpm IS NOT NULL
             """, nativeQuery = true)
-    Object[] findRpmDistribuicao(@Param("inicio") LocalDateTime inicio, @Param("fim") LocalDateTime fim);
+    List<Object[]> findRpmDistribuicao(@Param("inicio") LocalDateTime inicio, @Param("fim") LocalDateTime fim);
 
     // -------------------------------------------------------------------------
     // 4. Top veículos por eventos / 100 km
@@ -91,7 +91,7 @@ public interface TelemetriaRepository extends JpaRepository<Telemetria, Integer>
                 ) as eventos,
             	(MAX(t.total_odometer) - MIN(t.total_odometer)) as km,
             	ROUND(
-                    (
+                    CAST(
                         COUNT(*) filter (
                             where t.acelaracao_brusca
                                or t.freada_brusca
@@ -102,7 +102,7 @@ public interface TelemetriaRepository extends JpaRepository<Telemetria, Integer>
                             (MAX(t.total_odometer) - MIN(t.total_odometer)),
                             0
                         )
-                    )::numeric,
+                    AS NUMERIC),
                     2
                 ) as eventos_por_100km
             from telemetria t

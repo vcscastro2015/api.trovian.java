@@ -21,13 +21,14 @@ public class TelemetriaService {
     private final TelemetriaRepository telemetriaRepository;
 
     public KpiDashboardDTO getKpis(LocalDateTime inicio, LocalDateTime fim) {
-        Object[] row = telemetriaRepository.findKpisPeriodo(inicio, fim);
-        if (row == null || row[0] == null) {
+        List<Object[]> rows = telemetriaRepository.findKpisPeriodo(inicio, fim);
+        if (rows == null || rows.isEmpty() || rows.get(0) == null || rows.get(0)[0] == null) {
             return KpiDashboardDTO.builder()
                     .kmTotal(0).litrosTotal(0).kmPorLitro(null)
                     .eventosBruscos(0).scoreMedio(0).veiculosAtivos(0)
                     .build();
         }
+        Object[] row = rows.get(0);
         double kmTotal     = toDouble(row[0]);
         double litrosTotal = toDouble(row[1]);
         long eventos       = toLong(row[2]);
@@ -46,10 +47,11 @@ public class TelemetriaService {
     }
 
     public RpmDistribuicaoDTO getRpmDistribuicao(LocalDateTime inicio, LocalDateTime fim) {
-        Object[] row = telemetriaRepository.findRpmDistribuicao(inicio, fim);
-        if (row == null || row[0] == null) {
+        List<Object[]> rows = telemetriaRepository.findRpmDistribuicao(inicio, fim);
+        if (rows == null || rows.isEmpty() || rows.get(0) == null) {
             return new RpmDistribuicaoDTO(null, null, null, null, null);
         }
+        Object[] row = rows.get(0);
         return RpmDistribuicaoDTO.builder()
                 .pctLenta(toDoubleNullable(row[0]))
                 .pctEco(toDoubleNullable(row[1]))
