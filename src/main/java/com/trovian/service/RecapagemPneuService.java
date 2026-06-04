@@ -28,6 +28,7 @@ public class RecapagemPneuService {
     private final FornecedorRepository fornecedorRepository;
     private final AlocacaoPneuRepository alocacaoPneuRepository;
     private final AlocacaoPneuService alocacaoPneuService;
+    private final PneuEstoqueService pneuEstoqueService;
 
     @Transactional
     public RecapagemPneuDTO enviarParaRecapagem(RecapagemPneuDTO dto) {
@@ -37,6 +38,8 @@ public class RecapagemPneuService {
                 .orElseThrow(() -> new RuntimeException("Pneu não encontrado com id: " + dto.getPneuId()));
 
         validarViabilidade(pneu);
+
+        StatusPneu statusAnterior = pneu.getStatus();
 
         alocacaoPneuRepository.findAlocacaoAtivaByPneuId(pneu.getId())
                 .ifPresent(alocacao -> alocacaoPneuService.desmontar(
@@ -57,6 +60,10 @@ public class RecapagemPneuService {
 
         pneu.setStatus(StatusPneu.EM_RECAPAGEM);
         pneuRepository.save(pneu);
+
+        if (statusAnterior == StatusPneu.NOVO || statusAnterior == StatusPneu.RECAPADO) {
+            pneuEstoqueService.registrarSaida(pneu, "Envio para recapagem DOT " + pneu.getNumeroDot());
+        }
 
         return toDTO(recapagemPneuRepository.save(recapagem));
     }
@@ -92,6 +99,13 @@ public class RecapagemPneuService {
         }
 
         pneuRepository.save(pneu);
+
+        if (Boolean.TRUE.equals(dto.getAprovado())) {
+            pneuEstoqueService.registrarEntrada(pneu, "Retorno recapagem nº" + recapagem.getNumeroRecapagem()
+                    + " DOT " + pneu.getNumeroDot());
+        }
+        // Recapagem rejeitada: pneu já estava fora do estoque, sem movimento adicional
+
         return toDTO(recapagemPneuRepository.save(recapagem));
     }
 

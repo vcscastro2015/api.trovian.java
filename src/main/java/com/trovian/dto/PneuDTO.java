@@ -94,6 +94,9 @@ public class PneuDTO {
     @Schema(accessMode = Schema.AccessMode.READ_ONLY, description = "Posição atual no veículo")
     private PosicaoPneu posicaoAtual;
 
+    @Schema(accessMode = Schema.AccessMode.READ_ONLY, description = "ID da peça-tipo correspondente no inventário")
+    private Long pecaTipoId;
+
     @Schema(accessMode = Schema.AccessMode.READ_ONLY)
     private LocalDateTime dataCadastro;
 
