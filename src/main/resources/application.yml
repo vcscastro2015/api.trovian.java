@@ -31,7 +31,6 @@ spring:
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.xml
     enabled: false
-    enabled: false
     drop-first: false
     default-schema: public
     liquibase-schema: public
