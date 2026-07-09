@@ -55,6 +55,13 @@ public class VeiculoService {
     }
 
     @Transactional(readOnly = true)
+    public Veiculo buscarVeiculo(Long id) {
+        log.info("Buscando veículo com ID: {}", id);
+        return veiculoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Veículo não encontrado com ID: " + id));
+    }
+
+    @Transactional(readOnly = true)
     public Page<VeiculoDTO> findByClienteId(Long clienteId, Pageable pageable) {
         log.info("Buscando veículos do cliente com ID: {} - Página: {}, Tamanho: {}",
                 clienteId, pageable.getPageNumber(), pageable.getPageSize());
