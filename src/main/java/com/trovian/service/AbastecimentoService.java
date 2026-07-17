@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Objects;
@@ -298,23 +299,27 @@ public class AbastecimentoService {
         }
     }
 
-    private static Abastecimento getAbastecimento(DadosFilaDTO dadosFilaDTO, Veiculo veiculo) {
+    private Abastecimento getAbastecimento(DadosFilaDTO dadosFilaDTO, Veiculo veiculo) {
         AbastecimentoWhatAppDTO abastecimentoDTO = dadosFilaDTO.getAbastecimento();
         Abastecimento abastecimento = new Abastecimento();
         abastecimento.setDataHora(new Date());
         abastecimento.setCombustivelTipo(TipoCombustivel.DIESEL);
         abastecimento.setKmOdometro(Integer.valueOf(dadosFilaDTO.getHodometro()));
-        abastecimento.setLitrosAbastecidos(abastecimentoDTO.getLitros());
+        abastecimento.setLitrosAbastecidos(defaultSeNulo(abastecimentoDTO.getLitros()));
         abastecimento.setObservacoes("Abastecimento criado via informação originadas do WhatsApp.");
-        abastecimento.setPrecoLitro(abastecimentoDTO.getPrecoPorLitro());
+        abastecimento.setPrecoLitro(defaultSeNulo(abastecimentoDTO.getPrecoPorLitro()));
         abastecimento.setStatus(Boolean.TRUE);
-        abastecimento.setValorTotal(abastecimentoDTO.getTotalAPagar());
+        abastecimento.setValorTotal(defaultSeNulo(abastecimentoDTO.getTotalAPagar()));
         abastecimento.setVeiculo(veiculo);
         abastecimento.setCliente(veiculo.getCliente());
         if(Objects.nonNull(dadosFilaDTO.getBase64())){
             abastecimento.setTemImagem(Boolean.TRUE);
         }
         return abastecimento;
+    }
+
+    private BigDecimal defaultSeNulo(BigDecimal valor) {
+        return Objects.requireNonNullElse(valor, BigDecimal.ZERO);
     }
 
     private void salvarImagem(Cliente cliente, Abastecimento abastecimento, DadosFilaDTO dadosFilaDTO){
@@ -332,4 +337,6 @@ public class AbastecimentoService {
             log.error("salvarImagem", e);
         }
     }
+
+
 }
