@@ -4,6 +4,7 @@ import com.trovian.enums.TipoCombustivel;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -43,22 +44,22 @@ public class Abastecimento {
     private Date dataHora;
 
     @NotNull(message = "KM do odômetro é obrigatório")
-    @Positive(message = "KM do odômetro deve ser positivo")
+    @PositiveOrZero(message = "KM do odômetro deve ser positivo")
     @Column(name = "km_odometro", nullable = false)
     private Integer kmOdometro;
 
     @NotNull(message = "Litros abastecidos é obrigatório")
-    @Positive(message = "Litros abastecidos deve ser positivo")
+    @PositiveOrZero(message = "Litros abastecidos deve ser positivo")
     @Column(name = "litros_abastecidos", nullable = false, precision = 10, scale = 2)
     private BigDecimal litrosAbastecidos;
 
     @NotNull(message = "Valor total é obrigatório")
-    @Positive(message = "Valor total deve ser positivo")
+    @PositiveOrZero(message = "Valor total deve ser positivo")
     @Column(name = "valor_total", nullable = false, precision = 10, scale = 2)
     private BigDecimal valorTotal;
 
     @NotNull(message = "Preço por litro é obrigatório")
-    @Positive(message = "Preço por litro deve ser positivo")
+    @PositiveOrZero(message = "Preço por litro deve ser positivo")
     @Column(name = "preco_litro", nullable = false, precision = 10, scale = 2)
     private BigDecimal precoLitro;
 
