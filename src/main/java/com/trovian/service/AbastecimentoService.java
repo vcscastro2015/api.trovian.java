@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Objects;
@@ -305,23 +306,48 @@ public class AbastecimentoService {
         abastecimento.setDataHora(new Date());
         abastecimento.setCombustivelTipo(TipoCombustivel.DIESEL);
         abastecimento.setKmOdometro(Integer.valueOf(dadosFilaDTO.getHodometro()));
-        abastecimento.setLitrosAbastecidos(defaultSeNulo(abastecimentoDTO.getLitros()));
         abastecimento.setObservacoes("Abastecimento criado via informação originadas do WhatsApp.");
-        abastecimento.setPrecoLitro(defaultSeNulo(abastecimentoDTO.getPrecoPorLitro()));
         abastecimento.setStatus(Boolean.TRUE);
-        abastecimento.setValorTotal(defaultSeNulo(abastecimentoDTO.getTotalAPagar()));
         abastecimento.setVeiculo(veiculo);
         abastecimento.setCliente(veiculo.getCliente());
-        if(Objects.nonNull(dadosFilaDTO.getBase64())){
+
+        preencherValoresAbastecimento(abastecimentoDTO, abastecimento);
+
+        if (Objects.nonNull(dadosFilaDTO.getBase64())) {
             abastecimento.setTemImagem(Boolean.TRUE);
         }
         return abastecimento;
+    }
+
+    private void preencherValoresAbastecimento(AbastecimentoWhatAppDTO dto, Abastecimento abastecimento) {
+        BigDecimal litros = dto.getLitros();
+        BigDecimal valorTotal = dto.getTotalAPagar();
+        BigDecimal precoLitro = dto.getPrecoPorLitro();
+
+        if (isVazio(precoLitro) && isPreenchido(litros) && isPreenchido(valorTotal)) {
+            precoLitro = valorTotal.divide(litros, 2, RoundingMode.HALF_UP);
+        } else if (isVazio(litros) && isPreenchido(precoLitro) && isPreenchido(valorTotal)) {
+            litros = valorTotal.divide(precoLitro, 2, RoundingMode.HALF_UP);
+        } else if (isVazio(valorTotal) && isPreenchido(litros) && isPreenchido(precoLitro)) {
+            valorTotal = litros.multiply(precoLitro).setScale(2, RoundingMode.HALF_UP);
+        }
+
+        abastecimento.setLitrosAbastecidos(defaultSeNulo(litros));
+        abastecimento.setValorTotal(defaultSeNulo(valorTotal));
+        abastecimento.setPrecoLitro(defaultSeNulo(precoLitro));
     }
 
     private BigDecimal defaultSeNulo(BigDecimal valor) {
         return Objects.requireNonNullElse(valor, BigDecimal.ZERO);
     }
 
+    private boolean isPreenchido(BigDecimal valor) {
+        return valor != null && valor.compareTo(BigDecimal.ZERO) > 0;
+    }
+
+    private boolean isVazio(BigDecimal valor) {
+        return !isPreenchido(valor);
+    }
     private void salvarImagem(Cliente cliente, Abastecimento abastecimento, DadosFilaDTO dadosFilaDTO){
         try {
             String base64Input = dadosFilaDTO.getBase64();
