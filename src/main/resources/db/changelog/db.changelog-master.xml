@@ -19,4 +19,5 @@
     <include file="db/changelog/changes/v011-gestao-pneus.sql"/>
     <include file="db/changelog/changes/v012-pneu-peca-integracao.sql"/>
     <include file="db/changelog/changes/v013-telemetria.sql"/>
+    <include file="db/changelog/changes/v014-agendamento_comando.sql"/>
 </databaseChangeLog>
