@@ -1,5 +1,7 @@
 package com.trovian.entity;
 
+import com.trovian.enums.StatusNotificacao;
+import com.trovian.enums.TipoNotificacao;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -65,46 +67,5 @@ public class Notificacao {
     @PrePersist
     protected void onCreate() {
         dataCriacao = LocalDateTime.now();
-    }
-
-    public enum TipoNotificacao {
-        MANUTENCAO_VENCIDA("Manutenção Vencida"),
-        MANUTENCAO_PROXIMA("Manutenção Próxima"),
-        CHECKLIST_PENDENTE("Checklist Pendente"),
-        FINANCEIRO_PENDENTE("Pendência Financeira"),
-        ALERTA_GERAL("Alerta Geral"),
-        CONFIRMACAO("Confirmação"),
-        LEMBRETE("Lembrete"),
-        MENSAGEM_BEM_VINDO("Bem vindo");
-
-        private final String descricao;
-
-        TipoNotificacao(String descricao) {
-            this.descricao = descricao;
-        }
-
-        public String getDescricao() {
-            return descricao;
-        }
-    }
-
-    public enum StatusNotificacao {
-        PENDENTE("Pendente"),
-        ENVIANDO("Enviando"),
-        ENVIADA("Enviada"),
-        LIDA("Lida"),
-        RESPONDIDA("Respondida"),
-        ERRO("Erro"),
-        CANCELADA("Cancelada");
-
-        private final String descricao;
-
-        StatusNotificacao(String descricao) {
-            this.descricao = descricao;
-        }
-
-        public String getDescricao() {
-            return descricao;
-        }
     }
 }

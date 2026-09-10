@@ -2,8 +2,8 @@ package com.trovian.service;
 
 import com.trovian.entity.Motorista;
 import com.trovian.entity.Notificacao;
-import com.trovian.entity.Notificacao.TipoNotificacao;
 import com.trovian.entity.Usuario;
+import com.trovian.enums.TipoNotificacao;
 import com.trovian.repository.NotificacaoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

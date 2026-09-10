@@ -20,8 +20,7 @@ public class ImagemResposta {
     @JoinColumn(name = "resposta_item_checklist_id", nullable = false, unique = true)
     private RespostaItemChecklist respostaItemChecklist;
 
-    @Lob
-    @Column(name = "conteudo_binario", nullable = false)
+    @Column(name = "conteudo_binario", nullable = false, columnDefinition = "bytea")
     private byte[] conteudoBinario;
 
     @Column(name = "content_type", nullable = false, length = 100)

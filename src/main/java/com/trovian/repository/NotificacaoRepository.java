@@ -1,12 +1,12 @@
 package com.trovian.repository;
 
 import com.trovian.entity.Notificacao;
-import com.trovian.entity.Notificacao.StatusNotificacao;
-import com.trovian.entity.Notificacao.TipoNotificacao;
+import com.trovian.enums.StatusNotificacao;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import com.trovian.enums.TipoNotificacao;
 
 import java.util.List;
 
