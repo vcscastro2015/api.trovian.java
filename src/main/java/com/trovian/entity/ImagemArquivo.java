@@ -15,8 +15,7 @@ public class ImagemArquivo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Lob // Indica ao JPA que é um Large Object
-    @Column(name = "conteudo_binario", nullable = false)
+    @Column(name = "conteudo_binario", nullable = false, columnDefinition = "bytea")
     private byte[] conteudoBinario;
 
     @ManyToOne(fetch = FetchType.LAZY)
