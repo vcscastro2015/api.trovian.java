@@ -53,12 +53,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     );
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+
+                    Long clienteId = jwtService.extractClienteId(jwt);
+                    if (clienteId != null) {
+                        TenantContext.setClienteId(clienteId);
+                    }
                 }
             }
         } catch (Exception e) {
             logger.error("Erro ao processar token JWT: " + e.getMessage());
         }
 
-        filterChain.doFilter(request, response);
+        try {
+            filterChain.doFilter(request, response);
+        } finally {
+            TenantContext.clear();
+        }
     }
 }

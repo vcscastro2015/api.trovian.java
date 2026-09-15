@@ -10,9 +10,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Component
@@ -29,7 +30,7 @@ public class AgendamentoComandoScheduler {
 
     @Scheduled(fixedDelay = 300_000)
     public void processarAgendamentos() {
-        LocalDateTime agora = LocalDateTime.now(ZONA);
+        OffsetDateTime agora = ZonedDateTime.now(ZONA).toOffsetDateTime();
         List<AgendamentoComandoVeiculo> agendamentos = repository.findByAtivoTrue();
         log.info("Scheduler de agendamentos iniciado. Total ativo: {}", agendamentos.size());
         for (AgendamentoComandoVeiculo agendamento : agendamentos) {
@@ -58,12 +59,12 @@ public class AgendamentoComandoScheduler {
         return diffMinutos <= JANELA_MINUTOS;
     }
 
-    private boolean jaExecutadoRecentemente(LocalDateTime ultimaExecucao, LocalDateTime agora) {
+    private boolean jaExecutadoRecentemente(OffsetDateTime ultimaExecucao, OffsetDateTime agora) {
         if (ultimaExecucao == null) return false;
         return Duration.between(ultimaExecucao, agora).toMinutes() < INTERVALO_MINUTOS;
     }
 
-    private boolean recorrenciaAtiva(AgendamentoComandoVeiculo agendamento, LocalDateTime agora) {
+    private boolean recorrenciaAtiva(AgendamentoComandoVeiculo agendamento, OffsetDateTime agora) {
         return switch (agendamento.getTipoRecorrencia()) {
             case DIARIO -> true;
             case MENSAL -> agendamento.getDiaDomes() != null

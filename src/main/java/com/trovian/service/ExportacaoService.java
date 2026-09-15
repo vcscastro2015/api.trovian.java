@@ -11,7 +11,8 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+
 import java.util.List;
 import java.util.Map;
 
@@ -76,7 +77,7 @@ public class ExportacaoService {
                             cell.setCellValue(((Number) valor).doubleValue());
                         } else if (valor instanceof LocalDate) {
                             cell.setCellValue(valor.toString());
-                        } else if (valor instanceof LocalDateTime) {
+                        } else if (valor instanceof OffsetDateTime) {
                             cell.setCellValue(valor.toString());
                         } else {
                             cell.setCellValue(valor.toString());

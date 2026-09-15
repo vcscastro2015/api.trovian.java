@@ -8,7 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "alocacao_pneu")
@@ -38,10 +38,10 @@ public class AlocacaoPneu {
 
     @NotNull(message = "Data de montagem é obrigatória")
     @Column(name = "data_montagem", nullable = false)
-    private LocalDateTime dataMontagem;
+    private OffsetDateTime dataMontagem;
 
     @Column(name = "data_remocao")
-    private LocalDateTime dataRemocao;
+    private OffsetDateTime dataRemocao;
 
     @Column(name = "km_montagem")
     private Integer kmMontagem;
@@ -57,11 +57,14 @@ public class AlocacaoPneu {
     private String responsavel;
 
     @Column(name = "data_cadastro", nullable = false, updatable = false)
-    private LocalDateTime dataCadastro;
+    private OffsetDateTime dataCadastro;
+
+    @Column(name = "cliente_id")
+    private Long clienteId;
 
     @PrePersist
     protected void onCreate() {
-        dataCadastro = LocalDateTime.now();
-        if (dataMontagem == null) dataMontagem = LocalDateTime.now();
+        dataCadastro = OffsetDateTime.now();
+        if (dataMontagem == null) dataMontagem = OffsetDateTime.now();
     }
 }

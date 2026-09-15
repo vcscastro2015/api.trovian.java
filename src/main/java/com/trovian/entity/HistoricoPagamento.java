@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
@@ -44,13 +44,13 @@ public class HistoricoPagamento {
     private String observacao;
 
     @Column(nullable = false, updatable = false)
-    private LocalDateTime dataCriacao;
+    private OffsetDateTime dataCriacao;
 
     @PrePersist
     protected void onCreate() {
         if (uuid == null) {
             uuid = UUID.randomUUID();
         }
-        dataCriacao = LocalDateTime.now();
+        dataCriacao = OffsetDateTime.now();
     }
 }

@@ -10,9 +10,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -72,17 +71,16 @@ public class ModeloChecklist {
     @JoinColumn(name = "cliente_id", nullable = false)
     private Cliente cliente;
 
-    @Column(name = "criado_em", nullable = false, updatable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date criadoEm;
+    @Column(name = "criado_em", nullable = false, updatable = false, columnDefinition = "timestamptz")
+    private OffsetDateTime criadoEm;
 
     @Column(name = "atualizado_em")
-    private LocalDateTime atualizadoEm;
+    private OffsetDateTime atualizadoEm;
 
     @PrePersist
     protected void onCreate() {
-        this.criadoEm = new Date();
-        this.atualizadoEm = LocalDateTime.now();
+        this.criadoEm = OffsetDateTime.now();
+        this.atualizadoEm = OffsetDateTime.now();
         if (this.ativo == null) {
             this.ativo = true;
         }
@@ -93,6 +91,6 @@ public class ModeloChecklist {
 
     @PreUpdate
     protected void onUpdate() {
-        this.atualizadoEm = LocalDateTime.now();
+        this.atualizadoEm = OffsetDateTime.now();
     }
 }

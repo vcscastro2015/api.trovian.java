@@ -1,9 +1,8 @@
 package com.trovian.util.builders;
 
 import com.trovian.entity.Motorista;
-import com.trovian.enums.Sexo;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 /**
  * Builder de dados de teste para Motorista
@@ -14,8 +13,8 @@ public class MotoristaBuilder {
     private String nome = "João da Silva";
     private String cpf = "12345678901";
     private String numeroCnh = "12345678901";
-    private Date validadeCnh = new Date(System.currentTimeMillis() + 365L * 24 * 60 * 60 * 1000);
-    private Date dataNascimento = new Date(631152000000L); // 1990-01-01
+    private LocalDate validadeCnh = LocalDate.now().plusYears(1);
+    private LocalDate dataNascimento = LocalDate.of(1990, 1, 1);
     private Double comissao = 8.0;  // 8%
 
     public static MotoristaBuilder umMotorista() {

@@ -1,4 +1,5 @@
 package com.trovian.controller;
+import java.time.OffsetDateTime;
 
 import com.trovian.dto.MovimentacaoEstoqueDTO;
 import com.trovian.enums.TipoMovimentacaoEstoque;
@@ -20,7 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+
 import java.util.List;
 
 @RestController
@@ -131,9 +132,9 @@ public class MovimentacaoEstoqueController {
     @Operation(summary = "Buscar movimentações por período")
     public ResponseEntity<Page<MovimentacaoEstoqueDTO>> findByPeriodo(
         @Parameter(description = "Data inicial", required = true)
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime inicio,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime inicio,
         @Parameter(description = "Data final", required = true)
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fim,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime fim,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "20") int size
     ) {

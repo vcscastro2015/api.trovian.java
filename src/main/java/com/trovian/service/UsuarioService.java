@@ -1,4 +1,5 @@
 package com.trovian.service;
+import java.time.OffsetDateTime;
 
 import com.trovian.dto.*;
 import com.trovian.entity.Cliente;
@@ -19,7 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -116,7 +117,7 @@ public class UsuarioService {
         consentimento.setStatusWhatsapp(StatusWhatsapp.AGUARDANDO_CONSENTIMENTO);
         consentimento.setOrigem("whatsapp");
         consentimento.setAutorizado(false);
-        consentimento.setDataCadastro(LocalDateTime.now());
+        consentimento.setDataCadastro(OffsetDateTime.now());
         ConsentimentoWhatsapp savedConsentimento = consentimentoWhatsappRepository.save(consentimento);
         usuario.setConsentimentoWhatsapp(savedConsentimento);
 

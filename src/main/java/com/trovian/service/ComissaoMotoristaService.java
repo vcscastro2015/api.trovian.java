@@ -23,7 +23,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -169,8 +170,8 @@ public class ComissaoMotoristaService {
     @Transactional(readOnly = true)
     public ComissaoMotoristaRelatorioDTO gerarRelatorio(
             Long motoristaId,
-            LocalDateTime dataInicial,
-            LocalDateTime dataFinal,
+            OffsetDateTime dataInicial,
+            OffsetDateTime dataFinal,
             StatusComissao status) {
 
         log.info("Gerando relatório de comissões - Motorista: {}, Período: {} a {}, Status: {}",

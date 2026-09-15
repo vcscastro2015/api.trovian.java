@@ -10,8 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Date;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "abastecimento")
@@ -39,9 +38,8 @@ public class Abastecimento {
     private Rota rota;
 
     @NotNull(message = "Data e hora são obrigatórios")
-    @Column(name = "data_hora", nullable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date dataHora;
+    @Column(name = "data_hora", nullable = false, columnDefinition = "timestamptz")
+    private OffsetDateTime dataHora;
 
     @NotNull(message = "KM do odômetro é obrigatório")
     @PositiveOrZero(message = "KM do odômetro deve ser positivo")
@@ -83,22 +81,22 @@ public class Abastecimento {
     @JoinColumn(name = "cliente_id", nullable = false)
     private Cliente cliente;
 
-    @Column(name = "criado_em", nullable = false, updatable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date criadoEm;
+    @Column(name = "criado_em", nullable = false, updatable = false, columnDefinition = "timestamptz")
+    private OffsetDateTime criadoEm;
 
     @Column(name = "atualizado_em")
-    private LocalDateTime atualizadoEm;
+    private OffsetDateTime atualizadoEm;
 
     @Column(name = "status")
     private Boolean status;
 
-    private Boolean temImagem = false;
+    @Column(name = "qtd_midias")
+    private Short qtdMidias = 0;
 
     @PrePersist
     protected void onCreate() {
-        this.criadoEm = new Date();
-        this.atualizadoEm = LocalDateTime.now();
+        this.criadoEm = OffsetDateTime.now();
+        this.atualizadoEm = OffsetDateTime.now();
         if (this.status == null) {
             this.status = true;
         }
@@ -109,6 +107,6 @@ public class Abastecimento {
 
     @PreUpdate
     protected void onUpdate() {
-        this.atualizadoEm = LocalDateTime.now();
+        this.atualizadoEm = OffsetDateTime.now();
     }
 }

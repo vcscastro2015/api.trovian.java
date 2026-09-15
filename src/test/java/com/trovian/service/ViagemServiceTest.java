@@ -17,7 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -322,7 +322,7 @@ class ViagemServiceTest {
         viagem.setVeiculo(VeiculoBuilder.umVeiculo().build());
         viagem.setMotorista(MotoristaBuilder.umMotorista().build());
         viagem.setRotaIda(RotaBuilder.umaRota().build());
-        viagem.setDataViagem(new Date());
+        viagem.setDataViagem(LocalDate.now());
         viagem.setStatus(true);
         viagem.setStatusViagem(StatusViagem.ABERTA);
         viagem.setQuantidadeToneladasIda(25.0);

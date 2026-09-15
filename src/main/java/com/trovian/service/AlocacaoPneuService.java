@@ -26,7 +26,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -65,7 +66,7 @@ public class AlocacaoPneuService {
         alocacao.setPneu(pneu);
         alocacao.setVeiculo(veiculo);
         alocacao.setPosicao(posicao);
-        alocacao.setDataMontagem(LocalDateTime.now());
+        alocacao.setDataMontagem(OffsetDateTime.now());
         alocacao.setKmMontagem(km);
         alocacao.setResponsavel(responsavel);
 
@@ -88,7 +89,7 @@ public class AlocacaoPneuService {
             throw new RuntimeException("Esta alocação já foi encerrada");
         }
 
-        alocacao.setDataRemocao(LocalDateTime.now());
+        alocacao.setDataRemocao(OffsetDateTime.now());
         alocacao.setKmRemocao(kmRemocao);
         alocacao.setMotivoRemocao(motivo);
 

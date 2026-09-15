@@ -59,7 +59,16 @@ public class JwtService {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", usuario.getId());
         claims.put("roles", usuario.getRoles());
+        claims.put("clienteId", usuario.getCliente().getId());
         return createToken(claims, usuario.getEmail());
+    }
+
+    public Long extractClienteId(String token) {
+        return extractClaim(token, claims -> {
+            Object val = claims.get("clienteId");
+            if (val == null) return null;
+            return ((Number) val).longValue();
+        });
     }
 
     private String createToken(Map<String, Object> claims, String subject) {

@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Data
 @Builder
@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 public class ComandoDTO {
 
     @Schema(description = "ID do comando", example = "1")
-    private Integer id;
+    private Long id;
 
     @Schema(description = "Texto do comando enviado ao equipamento", example = "CMD,123456789012345,RELAY,1#")
     private String comando;
@@ -46,7 +46,7 @@ public class ComandoDTO {
     private Boolean dependeOutroComando;
 
     @Schema(description = "ID do comando referenciado quando há dependência", example = "5")
-    private Integer idComandoReferente;
+    private Long idComandoReferente;
 
     @Schema(description = "Indica se o retorno deve ser exibido ao usuário", example = "true")
     private Boolean mostrarRetorno;
@@ -58,7 +58,7 @@ public class ComandoDTO {
     private Integer ultimoIbuttonInserido;
 
     @Schema(description = "ID do cliente associado ao comando", example = "7")
-    private Integer cliente;
+    private Long cliente;
 
     @Schema(description = "Sequência do comando na fila de processamento", example = "1")
     private Integer sequencia;
@@ -67,10 +67,10 @@ public class ComandoDTO {
     private String nomeDaFila;
 
     @Schema(description = "Data e hora em que o comando foi criado", example = "2025-01-15T10:30:00")
-    private LocalDateTime dataCadastro;
+    private OffsetDateTime dataCadastro;
 
     @Schema(description = "Data e hora em que o processamento foi finalizado", example = "2025-01-15T10:30:05")
-    private LocalDateTime dataFimProcesso;
+    private OffsetDateTime dataFimProcesso;
 
     @Schema(description = "ID do veículo ao qual o comando pertence", example = "10")
     private Long veiculoId;

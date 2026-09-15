@@ -16,7 +16,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @RestController
@@ -62,8 +62,8 @@ public class TransmissaoController {
     })
     public ResponseEntity<Page<TransmissaoDTO>> findByVeiculoEPeriodo(
             @Parameter(description = "ID do veículo") @PathVariable Long veiculoId,
-            @Parameter(description = "Data inicial (ISO 8601)") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date dataInicial,
-            @Parameter(description = "Data final (ISO 8601)") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date dataFinal,
+            @Parameter(description = "Data inicial (ISO 8601)") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime dataInicial,
+            @Parameter(description = "Data final (ISO 8601)") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime dataFinal,
             @Parameter(description = "Número da página (inicia em 0)") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Tamanho da página") @RequestParam(defaultValue = "10") int size,
             @Parameter(description = "Campo para ordenação") @RequestParam(defaultValue = "dataTransmissao") String sortBy,
@@ -81,8 +81,8 @@ public class TransmissaoController {
     })
     public ResponseEntity<Page<TransmissaoDTO>> findByVeiculosEPeriodo(
             @Parameter(description = "IDs dos veículos separados por vírgula") @RequestParam List<Long> veiculoIds,
-            @Parameter(description = "Data inicial (ISO 8601)") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date dataInicial,
-            @Parameter(description = "Data final (ISO 8601)") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date dataFinal,
+            @Parameter(description = "Data inicial (ISO 8601)") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime dataInicial,
+            @Parameter(description = "Data final (ISO 8601)") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime dataFinal,
             @Parameter(description = "Número da página (inicia em 0)") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Tamanho da página") @RequestParam(defaultValue = "10") int size,
             @Parameter(description = "Campo para ordenação") @RequestParam(defaultValue = "dataTransmissao") String sortBy,

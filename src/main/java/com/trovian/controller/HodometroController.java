@@ -43,7 +43,7 @@ public class HodometroController {
     @ApiResponse(responseCode = "200", description = "Registro encontrado")
     @ApiResponse(responseCode = "404", description = "Registro não encontrado")
     public ResponseEntity<HodometroDTO> findById(
-            @Parameter(description = "ID do hodômetro") @PathVariable Integer id) {
+            @Parameter(description = "ID do hodômetro") @PathVariable Long id) {
         return ResponseEntity.ok(hodometroService.findById(id));
     }
 
@@ -93,7 +93,7 @@ public class HodometroController {
     @ApiResponse(responseCode = "200", description = "Registro atualizado com sucesso")
     @ApiResponse(responseCode = "404", description = "Registro não encontrado")
     public ResponseEntity<HodometroDTO> update(
-            @Parameter(description = "ID do hodômetro") @PathVariable Integer id,
+            @Parameter(description = "ID do hodômetro") @PathVariable Long id,
             @Valid @RequestBody HodometroDTO hodometroDTO) {
         return ResponseEntity.ok(hodometroService.update(id, hodometroDTO));
     }
@@ -103,7 +103,7 @@ public class HodometroController {
     @ApiResponse(responseCode = "204", description = "Registro excluído com sucesso")
     @ApiResponse(responseCode = "404", description = "Registro não encontrado")
     public ResponseEntity<Void> delete(
-            @Parameter(description = "ID do hodômetro") @PathVariable Integer id) {
+            @Parameter(description = "ID do hodômetro") @PathVariable Long id) {
         hodometroService.delete(id);
         return ResponseEntity.noContent().build();
     }
