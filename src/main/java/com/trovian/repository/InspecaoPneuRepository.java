@@ -8,14 +8,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface InspecaoPneuRepository extends JpaRepository<InspecaoPneu, Long> {
 
-    List<InspecaoPneu> findByPneuIdAndDataInspecaoBetween(Long pneuId, LocalDateTime inicio, LocalDateTime fim);
+    List<InspecaoPneu> findByPneuIdAndDataInspecaoBetween(Long pneuId, OffsetDateTime inicio, OffsetDateTime fim);
 
     Page<InspecaoPneu> findByPneuIdOrderByDataInspecaoDesc(Long pneuId, Pageable pageable);
 

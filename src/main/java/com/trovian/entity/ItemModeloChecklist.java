@@ -62,6 +62,9 @@ public class ItemModeloChecklist {
     @Column(name = "tipo_resposta", nullable = false, length = 20)
     private TipoResposta tipoResposta;
 
+    @Column(name = "cliente_id")
+    private Long clienteId;
+
     @PrePersist
     protected void onCreate() {
         if (this.obrigatorio == null) {

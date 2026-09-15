@@ -7,8 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-import java.util.Date;
+import java.time.OffsetDateTime;
 
 @Data
 @NoArgsConstructor
@@ -17,7 +16,7 @@ import java.util.Date;
 public class HodometroDTO {
 
     @Schema(accessMode = Schema.AccessMode.READ_ONLY)
-    private Integer id;
+    private Long id;
 
     @NotNull(message = "Hodômetro é obrigatório")
     @Schema(required = true, example = "125000.5", description = "Leitura do hodômetro em km")
@@ -37,17 +36,14 @@ public class HodometroDTO {
     private TipoHodometro tipo;
 
     @Schema(example = "42", description = "ID da transmissão associada")
-    private Integer idTransmissao;
-
-    @Schema(example = "João Silva", description = "Nome do motorista")
-    private String nomeMotorista;
+    private Long idTransmissao;
 
     @Schema(example = "7", description = "ID do motorista")
-    private Integer idMotorista;
+    private Long idMotorista;
 
     @Schema(accessMode = Schema.AccessMode.READ_ONLY)
-    private Date dataCadastro;
+    private OffsetDateTime dataCadastro;
 
     @Schema(accessMode = Schema.AccessMode.READ_ONLY)
-    private LocalDateTime dataAtualizacao;
+    private OffsetDateTime dataAtualizacao;
 }

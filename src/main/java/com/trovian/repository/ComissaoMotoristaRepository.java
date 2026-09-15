@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,21 +31,21 @@ public interface ComissaoMotoristaRepository extends JpaRepository<ComissaoMotor
 
     List<ComissaoMotorista> findByMotoristaIdAndCreatedAtBetween(
             Long motoristaId,
-            LocalDateTime dataInicial,
-            LocalDateTime dataFinal
+            OffsetDateTime dataInicial,
+            OffsetDateTime dataFinal
     );
 
     List<ComissaoMotorista> findByMotoristaIdAndCreatedAtBetweenAndStatus(
             Long motoristaId,
-            LocalDateTime dataInicial,
-            LocalDateTime dataFinal,
+            OffsetDateTime dataInicial,
+            OffsetDateTime dataFinal,
             StatusComissao status
     );
 
     @Query("SELECT COALESCE(SUM(c.valorComissao), 0) FROM ComissaoMotorista c WHERE c.cliente.id = :clienteId AND c.createdAt BETWEEN :dataInicial AND :dataFinal")
     BigDecimal sumTotalComissoesPorClienteEPeriodo(
             @Param("clienteId") Long clienteId,
-            @Param("dataInicial") LocalDateTime dataInicial,
-            @Param("dataFinal") LocalDateTime dataFinal
+            @Param("dataInicial") OffsetDateTime dataInicial,
+            @Param("dataFinal") OffsetDateTime dataFinal
     );
 }

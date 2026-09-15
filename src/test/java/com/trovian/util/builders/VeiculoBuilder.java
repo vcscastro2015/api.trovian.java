@@ -3,7 +3,7 @@ package com.trovian.util.builders;
 import com.trovian.entity.Veiculo;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.OffsetDateTime;
 
 /**
  * Builder de dados de teste para Veiculo
@@ -15,7 +15,7 @@ public class VeiculoBuilder {
     private BigDecimal tara = BigDecimal.valueOf(15.0);     // 15 toneladas
     private Double cargaMaxima = 50.0;                      // 50 toneladas
     private Integer numeroEixos = 6;
-    private Date dataCadastro = new Date();
+    private OffsetDateTime dataCadastro = OffsetDateTime.now();
 
     public static VeiculoBuilder umVeiculo() {
         return new VeiculoBuilder();

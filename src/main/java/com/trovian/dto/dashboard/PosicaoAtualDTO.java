@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.time.OffsetDateTime;
 
 @Data
 @Builder
@@ -18,5 +18,5 @@ public class PosicaoAtualDTO {
     private Double longitude;
     private Double velocidadeGps;
     private Boolean ignicaoAtiva;
-    private Date dataTransmissao;
+    private OffsetDateTime dataTransmissao;
 }

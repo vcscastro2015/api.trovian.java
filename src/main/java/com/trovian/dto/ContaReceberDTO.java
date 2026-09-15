@@ -80,8 +80,8 @@ public class ContaReceberDTO {
     @Schema(description = "Nome do fornecedor")
     private String fornecedorNome;
 
-    @Schema(description = "Se existe alguma imagem anexado")
-    private Boolean temImagem;
+    @Schema(description = "Quantidade de mídias vinculadas à conta")
+    private Short qtdMidias;
 
     @Schema(description = "ID da viagem de origem")
     private Long viagemId;

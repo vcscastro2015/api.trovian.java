@@ -99,4 +99,7 @@ public class ConsumoDetalhado {
 
     @Column(name = "distancia_total")
     private Double distanciaTotal;
+
+    @Column(name = "cliente_id")
+    private Long clienteId;
 }

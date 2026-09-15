@@ -8,8 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
 
 /**
  * Entidade que representa uma Viagem completa com cálculos de custos e receitas
@@ -67,8 +67,7 @@ public class Viagem {
 
     @NotNull(message = "Data da viagem é obrigatória")
     @Column(name = "data_viagem", nullable = false)
-    @Temporal(TemporalType.DATE)
-    private Date dataViagem;
+    private LocalDate dataViagem;
 
     @NotNull(message = "Status é obrigatório")
     @Column(name = "status", nullable = false)
@@ -170,17 +169,16 @@ public class Viagem {
 
     // ==================== AUDITORIA ====================
 
-    @Column(name = "data_cadastro", nullable = false, updatable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date dataCadastro;
+    @Column(name = "data_cadastro", nullable = false, updatable = false, columnDefinition = "timestamptz")
+    private OffsetDateTime dataCadastro;
 
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    private OffsetDateTime updatedAt;
 
     @PrePersist
     protected void onCreate() {
-        this.dataCadastro = new Date();
-        this.updatedAt = LocalDateTime.now();
+        this.dataCadastro = OffsetDateTime.now();
+        this.updatedAt = OffsetDateTime.now();
         if (this.status == null) {
             this.status = true;
         }
@@ -191,6 +189,6 @@ public class Viagem {
 
     @PreUpdate
     protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = OffsetDateTime.now();
     }
 }

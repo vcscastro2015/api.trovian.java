@@ -40,11 +40,14 @@ public class RespostaItemChecklist {
     @Column(name = "observacao", columnDefinition = "TEXT")
     private String observacao;
 
-    @Column(name = "foto_url", length = 500)
-    private String fotoUrl;
-
     @Column(name = "requer_atencao", nullable = false)
     private Boolean requerAtencao = false;
+
+    @Column(name = "qtd_midias")
+    private Short qtdMidias;
+
+    @Column(name = "cliente_id")
+    private Long clienteId;
 
     @PrePersist
     protected void onCreate() {

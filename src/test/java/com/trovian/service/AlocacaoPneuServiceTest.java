@@ -19,7 +19,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -55,7 +55,7 @@ class AlocacaoPneuServiceTest {
         alocacaoSalva.setPneu(pneu);
         alocacaoSalva.setVeiculo(veiculo);
         alocacaoSalva.setPosicao(PosicaoPneu.DIANTEIRO_ESQUERDO);
-        alocacaoSalva.setDataCadastro(LocalDateTime.now());
+        alocacaoSalva.setDataCadastro(OffsetDateTime.now());
         given(alocacaoPneuRepository.save(any(AlocacaoPneu.class))).willReturn(alocacaoSalva);
         given(pneuRepository.save(any(Pneu.class))).willReturn(pneu);
 
@@ -106,8 +106,8 @@ class AlocacaoPneuServiceTest {
         alocacao.setPneu(pneu);
         alocacao.setVeiculo(veiculo);
         alocacao.setKmMontagem(50000);
-        alocacao.setDataMontagem(LocalDateTime.now().minusDays(30));
-        alocacao.setDataCadastro(LocalDateTime.now().minusDays(30));
+        alocacao.setDataMontagem(OffsetDateTime.now().minusDays(30));
+        alocacao.setDataCadastro(OffsetDateTime.now().minusDays(30));
 
         given(alocacaoPneuRepository.findById(10L)).willReturn(Optional.of(alocacao));
         given(alocacaoPneuRepository.save(any(AlocacaoPneu.class))).willReturn(alocacao);
@@ -125,8 +125,8 @@ class AlocacaoPneuServiceTest {
     void desmontar_comAlocacaoJaEncerrada_deveLancarExcecao() {
         AlocacaoPneu alocacao = new AlocacaoPneu();
         alocacao.setId(10L);
-        alocacao.setDataRemocao(LocalDateTime.now().minusDays(1));
-        alocacao.setDataCadastro(LocalDateTime.now().minusDays(10));
+        alocacao.setDataRemocao(OffsetDateTime.now().minusDays(1));
+        alocacao.setDataCadastro(OffsetDateTime.now().minusDays(10));
 
         given(alocacaoPneuRepository.findById(10L)).willReturn(Optional.of(alocacao));
 

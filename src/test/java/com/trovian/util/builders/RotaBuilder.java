@@ -3,7 +3,7 @@ package com.trovian.util.builders;
 import com.trovian.entity.Rota;
 import com.trovian.entity.RotaEstatisticas;
 
-import java.util.Date;
+import java.time.OffsetDateTime;
 
 /**
  * Builder de dados de teste para Rota.
@@ -57,7 +57,7 @@ public class RotaBuilder {
         rota.setNome(nome);
         rota.setDistanciaTotal(distanciaTotal);
         rota.setAtiva(ativa);
-        rota.setDataCadastro(new Date());
+        rota.setDataCadastro(OffsetDateTime.now());
         rota.setEstatisticas(estatisticas);
 
         return rota;

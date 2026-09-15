@@ -20,4 +20,10 @@
     <include file="db/changelog/changes/v012-pneu-peca-integracao.sql"/>
     <include file="db/changelog/changes/v013-telemetria.sql"/>
     <include file="db/changelog/changes/v014-agendamento_comando.sql"/>
+    <include file="db/changelog/changes/v015-fase-menos1-cadastro.sql"/>
+    <include file="db/changelog/changes/v016-p0a-tipos-bigint.sql"/>
+    <include file="db/changelog/changes/v017-p0b-timestamptz.sql"/>
+    <include file="db/changelog/changes/v018-p0c-particionamento.sql"/>
+    <include file="db/changelog/changes/v019-p0d-multitenant-rls.sql"/>
+    <include file="db/changelog/changes/v020-p0e-midia-s3.sql"/>
 </databaseChangeLog>

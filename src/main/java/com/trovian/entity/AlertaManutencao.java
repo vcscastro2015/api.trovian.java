@@ -8,7 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "alerta_manutencao")
@@ -56,10 +56,10 @@ public class AlertaManutencao {
     private Integer kmVeiculo;
 
     @Column(name = "data_geracao", nullable = false)
-    private LocalDateTime dataGeracao;
+    private OffsetDateTime dataGeracao;
 
     @Column(name = "data_leitura")
-    private LocalDateTime dataLeitura;
+    private OffsetDateTime dataLeitura;
 
     @Column(name = "lido", nullable = false)
     private Boolean lido;
@@ -68,16 +68,16 @@ public class AlertaManutencao {
     private Boolean resolvido;
 
     @Column(name = "data_resolucao")
-    private LocalDateTime dataResolucao;
+    private OffsetDateTime dataResolucao;
 
     @Column(name = "observacao_resolucao", columnDefinition = "TEXT")
     private String observacaoResolucao;
 
     @Column(name = "data_cadastro", nullable = false, updatable = false)
-    private LocalDateTime dataCadastro;
+    private OffsetDateTime dataCadastro;
 
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    private OffsetDateTime updatedAt;
 
     @NotNull(message = "Cliente é obrigatório")
     @ManyToOne(fetch = FetchType.LAZY)
@@ -86,9 +86,9 @@ public class AlertaManutencao {
 
     @PrePersist
     protected void onCreate() {
-        this.dataCadastro = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-        this.dataGeracao = LocalDateTime.now();
+        this.dataCadastro = OffsetDateTime.now();
+        this.updatedAt = OffsetDateTime.now();
+        this.dataGeracao = OffsetDateTime.now();
         if (this.lido == null) {
             this.lido = false;
         }
@@ -99,17 +99,17 @@ public class AlertaManutencao {
 
     @PreUpdate
     protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = OffsetDateTime.now();
     }
 
     public void marcarComoLido() {
         this.lido = true;
-        this.dataLeitura = LocalDateTime.now();
+        this.dataLeitura = OffsetDateTime.now();
     }
 
     public void marcarComoResolvido(String observacao) {
         this.resolvido = true;
-        this.dataResolucao = LocalDateTime.now();
+        this.dataResolucao = OffsetDateTime.now();
         this.observacaoResolucao = observacao;
     }
 }

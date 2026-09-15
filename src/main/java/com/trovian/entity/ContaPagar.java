@@ -7,8 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Date;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "conta_pagar")
@@ -113,12 +112,11 @@ public class ContaPagar {
     @Column(columnDefinition = "TEXT")
     private String anexos;
 
-    @Temporal(TemporalType.DATE)
-    @Column(nullable = false, updatable = false)
-    private Date dataCadastro = new Date();
+    @Column(nullable = false, updatable = false, columnDefinition = "timestamptz")
+    private OffsetDateTime dataCadastro = OffsetDateTime.now();
 
     @Column(nullable = false)
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    private OffsetDateTime updatedAt = OffsetDateTime.now();
 
     @Column(length = 100)
     private String usuarioCadastro;
@@ -128,7 +126,7 @@ public class ContaPagar {
 
     @PreUpdate
     protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = OffsetDateTime.now();
     }
 
     public BigDecimal calcularSaldo() {
