@@ -35,9 +35,6 @@ public class RespostaItemChecklistDTO {
     @Schema(description = "Observação sobre a resposta", example = "Nível de óleo está adequado")
     private String observacao;
 
-    @Schema(description = "URL da foto anexada", example = "/uploads/checklists/foto123.jpg")
-    private String fotoUrl;
-
     @Schema(description = "Indica se a resposta requer atenção (gera alerta)", example = "false")
     private Boolean requerAtencao;
 

@@ -5,13 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.sql.Time;
-import java.util.Date;
+import java.time.OffsetDateTime;
 
-/**
- * Mapeia a tabela public.telemetria existente no banco (serial4 / int4 / float8).
- * Sem FK constraints no DDL real — veiculo e id_transmissao são colunas int4 simples.
- */
 @Entity
 @Table(name = "telemetria")
 @Data
@@ -22,14 +17,16 @@ public class Telemetria {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private Integer id;
+    private Long id;
 
     @Column(name = "veiculo")
-    private Integer veiculo;
+    private Long veiculo;
 
-    @Column(name = "data_cadastro")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date dataCadastro;
+    @Column(name = "cliente_id")
+    private Long clienteId;
+
+    @Column(name = "data_cadastro", columnDefinition = "timestamptz")
+    private OffsetDateTime dataCadastro;
 
     @Column(name = "interruptor_de_freio")
     private Integer interruptorDeFreio;
@@ -62,7 +59,7 @@ public class Telemetria {
     private Integer temperaturaMotor;
 
     @Column(name = "id_transmissao")
-    private Integer idTransmissao;
+    private Long idTransmissao;
 
     @Column(name = "combustivel_total_usado_pelo_motor")
     private Double combustivelTotalUsadoPeloMotor;
@@ -109,6 +106,6 @@ public class Telemetria {
     @Column(name = "processado")
     private Boolean processado;
 
-    @Column(name = "data_processamento")
-    private Time dataProcessamento;
+    @Column(name = "data_processamento", columnDefinition = "timestamptz")
+    private OffsetDateTime dataProcessamento;
 }

@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.time.OffsetDateTime;
 
 @Data
 @NoArgsConstructor
@@ -20,7 +20,7 @@ public class TransmissaoDTO {
     private Integer altitude;
 
     @Schema(description = "Data e hora da transmissão", example = "2025-01-15T10:30:00")
-    private Date dataTransmissao;
+    private OffsetDateTime dataTransmissao;
 
     @Schema(description = "Direção do veículo (graus)", example = "180")
     private Integer direcao;
@@ -101,7 +101,7 @@ public class TransmissaoDTO {
     private Boolean ultimoEnvioSms;
 
     @Schema(description = "Data do envio SMS", example = "2025-01-15T10:30:00")
-    private Date dataEnvioSms;
+    private OffsetDateTime dataEnvioSms;
 
     @Schema(description = "Distância percorrida (km)", example = "250.5")
     private Double distanciaPercorrida;

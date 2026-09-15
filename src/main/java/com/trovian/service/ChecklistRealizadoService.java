@@ -18,7 +18,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -186,7 +187,7 @@ public class ChecklistRealizadoService {
         checklist.setStatus(dto.getStatus());
         checklist.setObservacoesGerais(dto.getObservacoesGerais());
         checklist.setLocalizacao(dto.getLocalizacao());
-        checklist.setDataHoraConclusao(LocalDateTime.now());
+        checklist.setDataHoraConclusao(OffsetDateTime.now());
 
         ChecklistRealizado updatedChecklist = checklistRealizadoRepository.save(checklist);
         log.info("Checklist realizado atualizado com sucesso. ID: {}", id);
@@ -334,7 +335,7 @@ public class ChecklistRealizadoService {
     public boolean verificarChecklistObrigatorio(Long veiculoId) {
         log.info("Verificando checklist obrigatório do veículo com ID: {}", veiculoId);
 
-        LocalDateTime hoje = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0);
+        OffsetDateTime hoje = OffsetDateTime.now().withHour(0).withMinute(0).withSecond(0);
         List<ChecklistRealizado> checklists = checklistRealizadoRepository
                 .findChecklistsRecentesPorVeiculo(veiculoId, hoje);
 
@@ -349,7 +350,7 @@ public class ChecklistRealizadoService {
     }
 
     private String gerarNumeroChecklist() {
-        int ano = LocalDateTime.now().getYear();
+        int ano = OffsetDateTime.now().getYear();
         long count = checklistRealizadoRepository.count() + 1;
         return String.format("CK-%d-%05d", ano, count);
     }
@@ -396,7 +397,7 @@ public class ChecklistRealizadoService {
 
     private ChecklistRealizado toEntity(ChecklistRealizadoDTO dto) {
         ChecklistRealizado checklist = new ChecklistRealizado();
-        checklist.setDataHoraInicio(dto.getDataHoraInicio() != null ? dto.getDataHoraInicio() : LocalDateTime.now());
+        checklist.setDataHoraInicio(dto.getDataHoraInicio() != null ? dto.getDataHoraInicio() : OffsetDateTime.now());
         checklist.setDataHoraConclusao(dto.getDataHoraConclusao());
         checklist.setKmVeiculo(dto.getKmVeiculo());
         checklist.setStatus(dto.getStatus() != null ? dto.getStatus() : StatusChecklist.EM_ANDAMENTO);
@@ -413,7 +414,6 @@ public class ChecklistRealizadoService {
         dto.setItemModeloDescricao(resposta.getItemModelo().getDescricao());
         dto.setResposta(resposta.getResposta());
         dto.setObservacao(resposta.getObservacao());
-        dto.setFotoUrl(resposta.getFotoUrl());
         dto.setRequerAtencao(resposta.getRequerAtencao());
 
         imagemRespostaRepository.findByRespostaItemChecklistId(resposta.getId())
@@ -429,7 +429,6 @@ public class ChecklistRealizadoService {
         RespostaItemChecklist resposta = new RespostaItemChecklist();
         resposta.setResposta(dto.getResposta());
         resposta.setObservacao(dto.getObservacao());
-        resposta.setFotoUrl(dto.getFotoUrl());
         resposta.setRequerAtencao(dto.getRequerAtencao() != null ? dto.getRequerAtencao() : false);
         return resposta;
     }

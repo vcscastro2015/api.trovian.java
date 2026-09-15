@@ -4,7 +4,7 @@ import com.trovian.dto.ViagemDTO;
 import com.trovian.enums.StatusViagem;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
 
 /**
  * Builder de dados de teste para ViagemDTO.
@@ -21,7 +21,7 @@ public class ViagemDTOBuilder {
     private Long abastecimentoId = null;
 
     // Dados básicos
-    private Date dataViagem = new Date();
+    private LocalDate dataViagem = LocalDate.now();
     private StatusViagem statusViagem = StatusViagem.ABERTA;
     private Boolean status = true;
     private Boolean andarVazioVolta = false;

@@ -8,9 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -39,12 +38,11 @@ public class Rota {
     @Column(nullable = false)
     private Boolean ativa = true;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "data_cadastro")
-    private Date dataCadastro;
+    @Column(name = "data_cadastro", columnDefinition = "timestamptz")
+    private OffsetDateTime dataCadastro;
 
     @Column(name = "data_atualizacao")
-    private LocalDateTime dataAtualizacao;
+    private OffsetDateTime dataAtualizacao;
 
     @NotNull(message = "Distância total é obrigatória")
     @Column(name = "distancia_total", nullable = false)
@@ -123,12 +121,12 @@ public class Rota {
     // Lifecycle callbacks
     @PrePersist
     protected void onCreate() {
-        dataCadastro = new Date();
-        dataAtualizacao = LocalDateTime.now();
+        dataCadastro = OffsetDateTime.now();
+        dataAtualizacao = OffsetDateTime.now();
     }
 
     @PreUpdate
     protected void onUpdate() {
-        dataAtualizacao = LocalDateTime.now();
+        dataAtualizacao = OffsetDateTime.now();
     }
 }

@@ -15,7 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+
 
 @Service
 @RequiredArgsConstructor
@@ -88,7 +89,7 @@ public class PneuEstoqueService {
         mov.setCliente(cliente);
         mov.setTipoMovimentacao(tipo);
         mov.setQuantidade(quantidade);
-        mov.setDataMovimentacao(LocalDateTime.now());
+        mov.setDataMovimentacao(OffsetDateTime.now());
         mov.setValorUnitario(valorUnitario);
         mov.setObservacao(observacao);
         mov.setUsuario("SISTEMA_PNEU");

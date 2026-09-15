@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "pneu")
@@ -94,15 +94,15 @@ public class Pneu {
     private String observacoes;
 
     @Column(name = "data_cadastro", nullable = false, updatable = false)
-    private LocalDateTime dataCadastro;
+    private OffsetDateTime dataCadastro;
 
     @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
+    private OffsetDateTime updatedAt;
 
     @PrePersist
     protected void onCreate() {
-        dataCadastro = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
+        dataCadastro = OffsetDateTime.now();
+        updatedAt = OffsetDateTime.now();
         if (status == null) status = StatusPneu.NOVO;
         if (numeroRecapagens == null) numeroRecapagens = 0;
         if (kmAcumulado == null) kmAcumulado = 0;
@@ -110,6 +110,6 @@ public class Pneu {
 
     @PreUpdate
     protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+        updatedAt = OffsetDateTime.now();
     }
 }

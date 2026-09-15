@@ -7,11 +7,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Repository
-public interface TelemetriaRepository extends JpaRepository<Telemetria, Integer> {
+public interface TelemetriaRepository extends JpaRepository<Telemetria, Long> {
 
     // -------------------------------------------------------------------------
     // 1. KPIs do período
@@ -42,7 +42,7 @@ public interface TelemetriaRepository extends JpaRepository<Telemetria, Integer>
                                             AS veiculos_ativos
             FROM agg
             """, nativeQuery = true)
-    List<Object[]> findKpisPeriodo(@Param("inicio") LocalDateTime inicio, @Param("fim") LocalDateTime fim);
+    List<Object[]> findKpisPeriodo(@Param("inicio") OffsetDateTime inicio, @Param("fim") OffsetDateTime fim);
 
     // -------------------------------------------------------------------------
     // 2. Heatmap hora × dia da semana
@@ -57,7 +57,7 @@ public interface TelemetriaRepository extends JpaRepository<Telemetria, Integer>
             GROUP BY 1, 2
             ORDER BY 1, 2
             """, nativeQuery = true)
-    List<Object[]> findHeatmapEventos(@Param("inicio") LocalDateTime inicio, @Param("fim") LocalDateTime fim);
+    List<Object[]> findHeatmapEventos(@Param("inicio") OffsetDateTime inicio, @Param("fim") OffsetDateTime fim);
 
     // -------------------------------------------------------------------------
     // 3. Distribuição de RPM por faixa configurada no veículo
@@ -75,7 +75,7 @@ public interface TelemetriaRepository extends JpaRepository<Telemetria, Integer>
             WHERE t.data_cadastro BETWEEN :inicio AND :fim
               AND t.rpm IS NOT NULL
             """, nativeQuery = true)
-    List<Object[]> findRpmDistribuicao(@Param("inicio") LocalDateTime inicio, @Param("fim") LocalDateTime fim);
+    List<Object[]> findRpmDistribuicao(@Param("inicio") OffsetDateTime inicio, @Param("fim") OffsetDateTime fim);
 
     // -------------------------------------------------------------------------
     // 4. Top veículos por eventos / 100 km
@@ -114,8 +114,8 @@ public interface TelemetriaRepository extends JpaRepository<Telemetria, Integer>
             limit :limite
             """, nativeQuery = true)
     List<Object[]> findTopVeiculos(
-            @Param("inicio") LocalDateTime inicio,
-            @Param("fim") LocalDateTime fim,
+            @Param("inicio") OffsetDateTime inicio,
+            @Param("fim") OffsetDateTime fim,
             @Param("limite") int limite);
 
     // -------------------------------------------------------------------------
@@ -174,5 +174,5 @@ public interface TelemetriaRepository extends JpaRepository<Telemetria, Integer>
     // -------------------------------------------------------------------------
     @Modifying
     @Query("UPDATE Telemetria t SET t.processado = true WHERE t.id IN :ids")
-    void marcarComoProcessados(@Param("ids") List<Integer> ids);
+    void marcarComoProcessados(@Param("ids") List<Long> ids);
 }

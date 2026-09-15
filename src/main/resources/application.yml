@@ -18,7 +18,7 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     show-sql: false
     properties:
       hibernate:
@@ -26,6 +26,7 @@ spring:
         use_sql_comments: true
         jdbc:
           batch_size: 20
+          time_zone: America/Sao_Paulo
 
   # Configuração do Liquibase
   liquibase:

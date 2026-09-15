@@ -10,9 +10,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -87,17 +86,16 @@ public class Local {
     @JoinColumn(name = "parametro_local_id")
     private ParametroLocal parametroLocal;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "data_cadastro")
-    private Date dataCadastro;
+    @Column(name = "data_cadastro", columnDefinition = "timestamptz")
+    private OffsetDateTime dataCadastro;
 
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    private OffsetDateTime updatedAt;
 
     @PrePersist
     protected void onCreate() {
-        dataCadastro = new Date();
-        updatedAt = LocalDateTime.now();
+        dataCadastro = OffsetDateTime.now();
+        updatedAt = OffsetDateTime.now();
         if (ativo == null) {
             ativo = true;
         }
@@ -105,7 +103,7 @@ public class Local {
 
     @PreUpdate
     protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+        updatedAt = OffsetDateTime.now();
     }
 
     // Helper methods para gerenciar coordenadas

@@ -74,4 +74,7 @@ public class RotaSegmento {
 
     @Column(length = 20)
     private String cor; // hex color
+
+    @Column(name = "cliente_id")
+    private Long clienteId;
 }

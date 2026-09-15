@@ -19,7 +19,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -104,7 +104,7 @@ public class MovimentacaoEstoqueService {
     }
 
     @Transactional(readOnly = true)
-    public Page<MovimentacaoEstoqueDTO> findByPeriodo(LocalDateTime inicio, LocalDateTime fim, Pageable pageable) {
+    public Page<MovimentacaoEstoqueDTO> findByPeriodo(OffsetDateTime inicio, OffsetDateTime fim, Pageable pageable) {
         return movimentacaoEstoqueRepository.findByDataMovimentacaoBetween(inicio, fim, pageable).map(this::toDTO);
     }
 
@@ -180,7 +180,7 @@ public class MovimentacaoEstoqueService {
         MovimentacaoEstoque entity = new MovimentacaoEstoque();
         entity.setTipoMovimentacao(dto.getTipoMovimentacao());
         entity.setQuantidade(dto.getQuantidade());
-        entity.setDataMovimentacao(dto.getDataMovimentacao() != null ? dto.getDataMovimentacao() : LocalDateTime.now());
+        entity.setDataMovimentacao(dto.getDataMovimentacao() != null ? dto.getDataMovimentacao() : OffsetDateTime.now());
         entity.setValorUnitario(dto.getValorUnitario());
         entity.setObservacao(dto.getObservacao());
         entity.setUsuario(dto.getUsuario());

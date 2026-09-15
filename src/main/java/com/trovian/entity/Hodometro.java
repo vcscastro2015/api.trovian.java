@@ -7,8 +7,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-import java.util.Date;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "hodometro")
@@ -19,15 +20,14 @@ public class Hodometro {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @NotNull(message = "Data de cadastro é obrigatória")
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "data_cadastro", nullable = false, updatable = false)
-    private Date dataCadastro;
+    @Column(name = "data_cadastro", nullable = false, updatable = false, columnDefinition = "timestamptz")
+    private OffsetDateTime dataCadastro;
 
     @Column(name = "data_atualizacao")
-    private LocalDateTime dataAtualizacao;
+    private OffsetDateTime dataAtualizacao;
 
     @NotNull(message = "Hodômetro é obrigatório")
     @Column(name = "hodometro", nullable = false)
@@ -46,22 +46,56 @@ public class Hodometro {
     private TipoHodometro tipo;
 
     @Column(name = "id_transmissao")
-    private Integer idTransmissao;
-
-    @Column(name = "nome_motorista", columnDefinition = "TEXT")
-    private String nomeMotorista;
+    private Long idTransmissao;
 
     @Column(name = "id_motorista")
-    private Integer idMotorista;
+    private Long idMotorista;
+
+    // ==================== v015: ANTIFRAUDE ====================
+
+    @Column(name = "confiavel")
+    private Boolean confiavel;
+
+    @Column(name = "origem_evento_id")
+    private UUID origemEventoId;
+
+    @Column(name = "origem_sistema", length = 20)
+    private String origemSistema; // WEB, WHATSAPP, APP, RASTREADOR, IMPORTACAO, API
+
+    @Column(name = "hodometro_normalizado", precision = 12, scale = 2)
+    private BigDecimal hodometroNormalizado;
+
+    @Column(name = "divergencia_km", precision = 12, scale = 2)
+    private BigDecimal divergenciaKm;
+
+    @Column(name = "divergencia_pct", precision = 8, scale = 3)
+    private BigDecimal divergenciaPct;
+
+    @Column(name = "horimetro", precision = 12, scale = 2)
+    private BigDecimal horimetro;
+
+    @Column(name = "horimetro_rastreador", precision = 12, scale = 2)
+    private BigDecimal horimetroRastreador;
+
+    @Column(name = "latitude", precision = 10, scale = 7)
+    private BigDecimal latitude;
+
+    @Column(name = "longitude", precision = 10, scale = 7)
+    private BigDecimal longitude;
+
+    // ==================== v019: MULTI-TENANT ====================
+
+    @Column(name = "cliente_id")
+    private Long clienteId;
 
     @PrePersist
     protected void onCreate() {
-        dataCadastro = new Date();
-        dataAtualizacao = LocalDateTime.now();
+        dataCadastro = OffsetDateTime.now();
+        dataAtualizacao = OffsetDateTime.now();
     }
 
     @PreUpdate
     protected void onUpdate() {
-        dataAtualizacao = LocalDateTime.now();
+        dataAtualizacao = OffsetDateTime.now();
     }
 }

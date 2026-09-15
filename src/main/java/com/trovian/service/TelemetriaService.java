@@ -7,8 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.Date;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,7 +20,7 @@ public class TelemetriaService {
 
     private final TelemetriaRepository telemetriaRepository;
 
-    public KpiDashboardDTO getKpis(LocalDateTime inicio, LocalDateTime fim) {
+    public KpiDashboardDTO getKpis(OffsetDateTime inicio, OffsetDateTime fim) {
         List<Object[]> rows = telemetriaRepository.findKpisPeriodo(inicio, fim);
         if (rows == null || rows.isEmpty() || rows.get(0) == null || rows.get(0)[0] == null) {
             return KpiDashboardDTO.builder()
@@ -46,7 +46,7 @@ public class TelemetriaService {
                 .build();
     }
 
-    public RpmDistribuicaoDTO getRpmDistribuicao(LocalDateTime inicio, LocalDateTime fim) {
+    public RpmDistribuicaoDTO getRpmDistribuicao(OffsetDateTime inicio, OffsetDateTime fim) {
         List<Object[]> rows = telemetriaRepository.findRpmDistribuicao(inicio, fim);
         if (rows == null || rows.isEmpty() || rows.get(0) == null) {
             return new RpmDistribuicaoDTO(null, null, null, null, null);
@@ -61,7 +61,7 @@ public class TelemetriaService {
                 .build();
     }
 
-    public List<HeatmapPontoDTO> getHeatmapEventos(LocalDateTime inicio, LocalDateTime fim) {
+    public List<HeatmapPontoDTO> getHeatmapEventos(OffsetDateTime inicio, OffsetDateTime fim) {
         return telemetriaRepository.findHeatmapEventos(inicio, fim).stream()
                 .map(row -> HeatmapPontoDTO.builder()
                         .diaSemana(toInt(row[0]))
@@ -71,7 +71,7 @@ public class TelemetriaService {
                 .collect(Collectors.toList());
     }
 
-    public List<TopVeiculoDTO> getTopVeiculos(LocalDateTime inicio, LocalDateTime fim, int limite) {
+    public List<TopVeiculoDTO> getTopVeiculos(OffsetDateTime inicio, OffsetDateTime fim, int limite) {
         return telemetriaRepository.findTopVeiculos(inicio, fim, limite).stream()
                 .map(row -> TopVeiculoDTO.builder()
                         .placa((String) row[0])
@@ -91,7 +91,7 @@ public class TelemetriaService {
                         .longitude(toDoubleNullable(row[3]))
                         .velocidadeGps(toDoubleNullable(row[4]))
                         .ignicaoAtiva(toBoolean(row[5]))
-                        .dataTransmissao(toDate(row[6]))
+                        .dataTransmissao(toOffsetDateTime(row[6]))
                         .build())
                 .collect(Collectors.toList());
     }
@@ -127,10 +127,10 @@ public class TelemetriaService {
         return Boolean.parseBoolean(o.toString());
     }
 
-    private Date toDate(Object o) {
+    private OffsetDateTime toOffsetDateTime(Object o) {
         if (o == null) return null;
-        if (o instanceof Date d) return d;
-        if (o instanceof java.sql.Timestamp ts) return new Date(ts.getTime());
+        if (o instanceof OffsetDateTime odt) return odt;
+        if (o instanceof java.sql.Timestamp ts) return ts.toInstant().atZone(ZoneId.of("America/Sao_Paulo")).toOffsetDateTime();
         return null;
     }
 }

@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "peca")
@@ -53,10 +53,10 @@ public class Peca {
     private String observacoes;
 
     @Column(name = "data_cadastro", nullable = false, updatable = false)
-    private LocalDateTime dataCadastro;
+    private OffsetDateTime dataCadastro;
 
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    private OffsetDateTime updatedAt;
 
     @NotNull(message = "Cliente é obrigatório")
     @ManyToOne(fetch = FetchType.LAZY)
@@ -65,8 +65,8 @@ public class Peca {
 
     @PrePersist
     protected void onCreate() {
-        this.dataCadastro = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        this.dataCadastro = OffsetDateTime.now();
+        this.updatedAt = OffsetDateTime.now();
         if (this.status == null) {
             this.status = true;
         }
@@ -80,7 +80,7 @@ public class Peca {
 
     @PreUpdate
     protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = OffsetDateTime.now();
     }
 
     public boolean verificarEstoqueBaixo() {

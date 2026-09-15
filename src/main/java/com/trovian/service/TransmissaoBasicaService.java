@@ -10,7 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Service
@@ -36,7 +36,7 @@ public class TransmissaoBasicaService {
     }
 
     @Transactional(readOnly = true)
-    public Page<TransmissaoBasicaDTO> findByVeiculoEPeriodo(Long veiculoId, Date dataInicial, Date dataFinal, Pageable pageable) {
+    public Page<TransmissaoBasicaDTO> findByVeiculoEPeriodo(Long veiculoId, OffsetDateTime dataInicial, OffsetDateTime dataFinal, Pageable pageable) {
         log.info("Buscando transmissões básicas do veículo {} entre {} e {}", veiculoId, dataInicial, dataFinal);
         return transmissaoBasicaRepository.findByVeiculoIdAndDataTransmissaoBetween(veiculoId, dataInicial, dataFinal, pageable)
                 .map(this::toDTO);
@@ -52,7 +52,7 @@ public class TransmissaoBasicaService {
     }
 
     @Transactional(readOnly = true)
-    public Page<TransmissaoBasicaDTO> findByVeiculosEPeriodo(List<Long> veiculoIds, Date dataInicial, Date dataFinal, Pageable pageable) {
+    public Page<TransmissaoBasicaDTO> findByVeiculosEPeriodo(List<Long> veiculoIds, OffsetDateTime dataInicial, OffsetDateTime dataFinal, Pageable pageable) {
         log.info("Buscando transmissões básicas dos veículos {} entre {} e {}", veiculoIds, dataInicial, dataFinal);
         return transmissaoBasicaRepository.findByVeiculoIdInAndDataTransmissaoBetween(veiculoIds, dataInicial, dataFinal, pageable)
                 .map(this::toDTO);

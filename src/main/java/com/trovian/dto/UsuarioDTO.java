@@ -1,10 +1,8 @@
 package com.trovian.dto;
 
 import lombok.Data;
-
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Set;
-
 @Data
 public class UsuarioDTO {
     private Long id;
@@ -14,6 +12,6 @@ public class UsuarioDTO {
     private Boolean ativo;
     private Set<String> roles;
     private Set<String> funcionalidades;
-    private LocalDateTime ultimoLogin;
-    private LocalDateTime criadoEm;
+    private OffsetDateTime ultimoLogin;
+    private OffsetDateTime criadoEm;
 }

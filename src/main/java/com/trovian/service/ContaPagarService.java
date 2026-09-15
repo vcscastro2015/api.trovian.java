@@ -15,8 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -386,7 +386,7 @@ public class ContaPagarService {
         categoriaConta.setCliente(cliente);
         categoriaConta.setTipo(TipoConta.RECEBER);
         categoriaConta.setStatus(Boolean.TRUE);
-        categoriaConta.setDataCadastro(new Date());
+        categoriaConta.setDataCadastro(OffsetDateTime.now());
         return categoriaContaRepository.save(categoriaConta);
     }
 

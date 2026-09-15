@@ -8,7 +8,7 @@ import com.trovian.enums.TipoPneu;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 public class PneuBuilder {
 
@@ -29,8 +29,8 @@ public class PneuBuilder {
     private Integer numeroRecapagens = 0;
     private Integer kmAcumulado = 0;
     private Cliente cliente = null;
-    private LocalDateTime dataCadastro = LocalDateTime.now();
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    private OffsetDateTime dataCadastro = OffsetDateTime.now();
+    private OffsetDateTime updatedAt = OffsetDateTime.now();
 
     public static PneuBuilder umPneu() {
         return new PneuBuilder();

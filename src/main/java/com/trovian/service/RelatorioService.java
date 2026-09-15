@@ -1,4 +1,5 @@
 package com.trovian.service;
+import java.time.OffsetDateTime;
 
 import com.trovian.dto.relatorios.*;
 import com.trovian.entity.relatorios.*;
@@ -10,7 +11,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -198,7 +199,7 @@ public class RelatorioService {
     }
 
     private String gerarNomeArquivo(RelatorioTemplate template, FormatoRelatorio formato) {
-        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+        String timestamp = OffsetDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
         String nomeBase = template.getNome().replaceAll("[^a-zA-Z0-9]", "_").toLowerCase();
         return String.format("%s_%s%s", nomeBase, timestamp, formato.getExtensao());
     }

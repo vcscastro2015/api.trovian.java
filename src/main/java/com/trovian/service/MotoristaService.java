@@ -16,7 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * Service para lógica de negócio de Motorista
@@ -93,7 +93,7 @@ public class MotoristaService {
         consentimento.setStatusWhatsapp(StatusWhatsapp.AGUARDANDO_CONSENTIMENTO);
         consentimento.setOrigem("whatsapp");
         consentimento.setAutorizado(false);
-        consentimento.setDataCadastro(LocalDateTime.now());
+        consentimento.setDataCadastro(OffsetDateTime.now());
         ConsentimentoWhatsapp savedConsentimento = consentimentoWhatsappRepository.save(consentimento);
         motorista.setConsentimentoWhatsapp(savedConsentimento);
 

@@ -1,4 +1,5 @@
 package com.trovian.controller;
+import java.time.OffsetDateTime;
 
 import com.trovian.dto.ComissaoMotoristaDTO;
 import com.trovian.dto.ComissaoMotoristaRelatorioDTO;
@@ -22,7 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+
 import java.util.List;
 
 @RestController
@@ -141,9 +142,9 @@ public class ComissaoMotoristaController {
             @Parameter(description = "ID do motorista", required = true)
             @PathVariable Long motoristaId,
             @Parameter(description = "Data inicial do período (formato: yyyy-MM-dd'T'HH:mm:ss)", required = true, example = "2025-01-01T00:00:00")
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dataInicial,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime dataInicial,
             @Parameter(description = "Data final do período (formato: yyyy-MM-dd'T'HH:mm:ss)", required = true, example = "2025-01-31T23:59:59")
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dataFinal,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime dataFinal,
             @Parameter(description = "Status da comissão para filtrar (opcional: PENDENTE, CALCULADA, PAGA, CANCELADA)")
             @RequestParam(required = false) StatusComissao status) {
 

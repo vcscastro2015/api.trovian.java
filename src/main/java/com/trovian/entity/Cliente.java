@@ -8,7 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
@@ -92,22 +92,22 @@ public class Cliente {
     private AliquotaImposto aliquotaImposto;
 
     @Column(nullable = false, updatable = false)
-    private LocalDateTime dataCadastro;
+    private OffsetDateTime dataCadastro;
 
     @Column(nullable = false)
-    private LocalDateTime updatedAt;
+    private OffsetDateTime updatedAt;
 
     @PrePersist
     protected void onCreate() {
         if (uuid == null) {
             uuid = UUID.randomUUID();
         }
-        dataCadastro = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
+        dataCadastro = OffsetDateTime.now();
+        updatedAt = OffsetDateTime.now();
     }
 
     @PreUpdate
     protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+        updatedAt = OffsetDateTime.now();
     }
 }

@@ -9,8 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Date;
+import java.time.OffsetDateTime;
 
 @Data
 @NoArgsConstructor
@@ -43,7 +42,7 @@ public class AbastecimentoDTO {
 
     @NotNull(message = "Data e hora são obrigatórios")
     @Schema(description = "Data e hora do abastecimento", example = "2025-11-11T10:30:00", required = true)
-    private Date dataHora;
+    private OffsetDateTime dataHora;
 
     @NotNull(message = "KM do odômetro é obrigatório")
     @Positive(message = "KM do odômetro deve ser positivo")
@@ -90,14 +89,14 @@ public class AbastecimentoDTO {
     private String clienteNome;
 
     @Schema(description = "Data de criação do registro", example = "2025-11-11T10:30:00", accessMode = Schema.AccessMode.READ_ONLY)
-    private Date criadoEm;
+    private OffsetDateTime criadoEm;
 
     @Schema(description = "Data de última atualização", example = "2025-11-11T10:30:00", accessMode = Schema.AccessMode.READ_ONLY)
-    private LocalDateTime atualizadoEm;
+    private OffsetDateTime atualizadoEm;
 
     @Schema(description = "Status do registro (ativo/inativo)", example = "true")
     private Boolean status;
 
-    @Schema(description = "Se abastecimento possui imagem da bomba de combustivel (ativo/inativo)", example = "true")
-    private Boolean temImagem = false;
+    @Schema(description = "Quantidade de mídias (fotos) vinculadas ao abastecimento")
+    private Short qtdMidias = 0;
 }

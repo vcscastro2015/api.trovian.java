@@ -9,9 +9,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Timestamp;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Slf4j
@@ -30,16 +30,16 @@ public class TelemetriaPublisherService {
         List<Object[]> rows = telemetriaRepository.findEventosNaoProcessados();
         if (rows.isEmpty()) return;
 
-        List<Integer> ids = new ArrayList<>(rows.size());
+        List<Long> ids = new ArrayList<>(rows.size());
 
         for (Object[] row : rows) {
-            // colunas: id(int4), veiculo(int4), placa, data_cadastro,
+            // colunas: id(bigint), veiculo(bigint), placa, data_cadastro,
             //          acelaracao_brusca, freada_brusca, curva_brusca,
             //          velocidade_baseada_na_roda, rpm, latitude, longitude
-            Integer telemetriaId = toInt(row[0]);
+            Long telemetriaId = toLong(row[0]);
             long veiculoId       = toLong(row[1]);
             String placa         = (String) row[2];
-            Date timestamp       = toDate(row[3]);
+            OffsetDateTime timestamp = toOffsetDateTime(row[3]);
             boolean aceleracao   = toBoolean(row[4]);
             boolean freada       = toBoolean(row[5]);
             boolean curva        = toBoolean(row[6]);
@@ -77,11 +77,6 @@ public class TelemetriaPublisherService {
         return "DESCONHECIDO";
     }
 
-    private Integer toInt(Object o) {
-        if (o == null) return null;
-        return ((Number) o).intValue();
-    }
-
     private long toLong(Object o) {
         if (o == null) return 0L;
         return ((Number) o).longValue();
@@ -104,10 +99,10 @@ public class TelemetriaPublisherService {
         return Boolean.parseBoolean(o.toString());
     }
 
-    private Date toDate(Object o) {
+    private OffsetDateTime toOffsetDateTime(Object o) {
         if (o == null) return null;
-        if (o instanceof Timestamp ts) return new Date(ts.getTime());
-        if (o instanceof Date d) return d;
+        if (o instanceof OffsetDateTime odt) return odt;
+        if (o instanceof java.sql.Timestamp ts) return ts.toInstant().atZone(ZoneId.of("America/Sao_Paulo")).toOffsetDateTime();
         return null;
     }
 }

@@ -4,8 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.time.LocalDateTime;
-import java.util.Date;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "centro_custo")
@@ -38,15 +37,14 @@ public class CentroCusto {
     @Column(nullable = false)
     private Boolean status = true;
 
-    @Temporal(TemporalType.DATE)
-    @Column(nullable = false, updatable = false)
-    private Date dataCadastro = new Date();
+    @Column(nullable = false, updatable = false, columnDefinition = "timestamptz")
+    private OffsetDateTime dataCadastro = OffsetDateTime.now();
 
     @Column(nullable = false)
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    private OffsetDateTime updatedAt = OffsetDateTime.now();
 
     @PreUpdate
     protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = OffsetDateTime.now();
     }
 }

@@ -10,7 +10,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Slf4j
@@ -26,8 +26,8 @@ public class DashboardTelemetriaController {
     @GetMapping("/kpis")
     @Operation(summary = "KPIs do período", description = "Retorna km total, litros consumidos, km/l, eventos bruscos, score médio e veículos ativos")
     public ResponseEntity<KpiDashboardDTO> getKpis(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime inicio,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fim
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime inicio,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime fim
     ) {
         log.info("GET /api/dashboard/telemetria/kpis - inicio={}, fim={}", inicio, fim);
         return ResponseEntity.ok(telemetriaService.getKpis(inicio, fim));
@@ -36,8 +36,8 @@ public class DashboardTelemetriaController {
     @GetMapping("/rpm-distribuicao")
     @Operation(summary = "Distribuição de RPM", description = "Percentual do tempo em cada faixa de RPM configurada no veículo")
     public ResponseEntity<RpmDistribuicaoDTO> getRpmDistribuicao(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime inicio,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fim
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime inicio,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime fim
     ) {
         log.info("GET /api/dashboard/telemetria/rpm-distribuicao - inicio={}, fim={}", inicio, fim);
         return ResponseEntity.ok(telemetriaService.getRpmDistribuicao(inicio, fim));
@@ -46,8 +46,8 @@ public class DashboardTelemetriaController {
     @GetMapping("/heatmap-eventos")
     @Operation(summary = "Heatmap de eventos bruscos", description = "Contagem de eventos por hora do dia × dia da semana")
     public ResponseEntity<List<HeatmapPontoDTO>> getHeatmapEventos(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime inicio,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fim
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime inicio,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime fim
     ) {
         log.info("GET /api/dashboard/telemetria/heatmap-eventos - inicio={}, fim={}", inicio, fim);
         return ResponseEntity.ok(telemetriaService.getHeatmapEventos(inicio, fim));
@@ -56,8 +56,8 @@ public class DashboardTelemetriaController {
     @GetMapping("/top-veiculos")
     @Operation(summary = "Top veículos por eventos / 100 km", description = "Ranking de veículos com mais eventos bruscos normalizados por 100 km rodados")
     public ResponseEntity<List<TopVeiculoDTO>> getTopVeiculos(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime inicio,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fim,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime inicio,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime fim,
             @RequestParam(defaultValue = "10") int limite
     ) {
         log.info("GET /api/dashboard/telemetria/top-veiculos - inicio={}, fim={}, limite={}", inicio, fim, limite);

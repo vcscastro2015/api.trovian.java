@@ -34,4 +34,7 @@ public class Coordenada {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "local_id")
     private Local local;
+
+    @Column(name = "cliente_id")
+    private Long clienteId;
 }

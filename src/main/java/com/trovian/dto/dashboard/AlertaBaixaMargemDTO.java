@@ -1,12 +1,11 @@
 package com.trovian.dto.dashboard;
 
 import lombok.AllArgsConstructor;
+import java.time.OffsetDateTime;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-
 @Data
 @Builder
 @NoArgsConstructor
@@ -19,7 +18,7 @@ public class AlertaBaixaMargemDTO {
     private BigDecimal margemPercentual;
     private BigDecimal lucro;
     private BigDecimal receita;
-    private LocalDateTime dataViagem;
+    private OffsetDateTime dataViagem;
     private String nivelAlerta;
     private String motivo;
 }

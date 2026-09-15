@@ -8,8 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Date;
+import java.time.OffsetDateTime;
 
 @Data
 @NoArgsConstructor
@@ -37,7 +36,7 @@ public class VeiculoDTO {
     private String cor;
 
     @Schema(description = "Data de cadastro", example = "2025-01-15T10:30:00", accessMode = Schema.AccessMode.READ_ONLY)
-    private Date dataCadastro;
+    private OffsetDateTime dataCadastro;
 
     @Schema(description = "Observações sobre o veículo", example = "Veículo em bom estado")
     private String observacao;
@@ -200,5 +199,5 @@ public class VeiculoDTO {
     private String clienteNome;
 
     @Schema(description = "Data da última atualização", example = "2025-01-20T14:45:00", accessMode = Schema.AccessMode.READ_ONLY)
-    private LocalDateTime updatedAt;
+    private OffsetDateTime updatedAt;
 }
