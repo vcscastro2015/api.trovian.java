@@ -57,6 +57,17 @@ public class ModeloService {
     }
 
     /**
+     * Busca todos os modelos do tipo Veiculo de todos os clientes com paginação
+     */
+    @Transactional(readOnly = true)
+    public Page<ModeloDTO> findAllVeiculos(Pageable pageable) {
+        log.info("Buscando modelos do tipo Veiculo de todos os clientes com paginação - Página: {}, Tamanho: {}",
+                pageable.getPageNumber(), pageable.getPageSize());
+        Page<Modelo> modelos = modeloRepository.findByTipoIgnoreCase(TIPO_VEICULO, pageable);
+        return modelos.map(this::toDTO);
+    }
+
+    /**
      * Cria um novo modelo
      */
     @Transactional
@@ -82,10 +93,15 @@ public class ModeloService {
         Modelo modelo = modeloRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Modelo não encontrado com ID: " + id));
         validateTipo(modeloDTO.getTipo());
+
+        Cliente cliente = clienteRepository.findById(modeloDTO.getClienteId())
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado com ID: " + modeloDTO.getClienteId()));
+
         modelo.setFabricante(modeloDTO.getFabricante());
         modelo.setMarca(modeloDTO.getMarca());
         modelo.setTipo(modeloDTO.getTipo());
         modelo.setStatus(modeloDTO.getStatus());
+        modelo.setCliente(cliente);
         Modelo updatedModelo = modeloRepository.save(modelo);
         log.info("Modelo atualizado com sucesso. ID: {}", id);
         return toDTO(updatedModelo);
@@ -132,6 +148,7 @@ public class ModeloService {
 
         if (modelo.getCliente() != null) {
             dto.setClienteId(modelo.getCliente().getId());
+            dto.setClienteNome(modelo.getCliente().getNome());
         }
 
         return dto;
