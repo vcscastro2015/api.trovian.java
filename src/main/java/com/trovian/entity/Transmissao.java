@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "transmissao")
@@ -22,9 +22,8 @@ public class Transmissao {
     @Column(name = "altitude")
     private Integer altitude;
     @Basic(optional = false)
-    @Column(name = "data_transmissao")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date dataTransmissao;
+    @Column(name = "data_transmissao", columnDefinition = "timestamptz")
+    private OffsetDateTime dataTransmissao;
 
     @Column(name = "direcao")
     private Integer direcao;
@@ -116,9 +115,8 @@ public class Transmissao {
     @Column(name = "ultimo_envio_sms")
     private Boolean ultimoEnvioSms;
 
-    @Column(name = "data_envio_sms")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date dataEnvioSms;
+    @Column(name = "data_envio_sms", columnDefinition = "timestamptz")
+    private OffsetDateTime dataEnvioSms;
 
     @Column(name = "distancia_percorrida")
     private Double distanciaPercorrida;
@@ -153,5 +151,58 @@ public class Transmissao {
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "veiculo", referencedColumnName = "id")
     private Veiculo veiculo;
+
+    @Column(name = "cliente_id")
+    private Long clienteId;
+
+    @Column(name = "motorista_id")
+    private Long motoristaid;
+
+    @Column(name = "velocidade_gps")
+    private Double velocidadeGps;
+
+    @Column(name = "nome_local", columnDefinition = "TEXT")
+    private String nomeLocal;
+
+    @Column(name = "distancia")
+    private Double distancia;
+
+    @Column(name = "ibutton_manual")
+    private Boolean iButtonManual;
+
+    @Column(name = "panico_visualizado")
+    @Convert(converter = Int2ToBooleanConverter.class)
+    private Boolean panicoVisualizado;
+
+    @Column(name = "panico_desativado")
+    @Convert(converter = Int2ToBooleanConverter.class)
+    private Boolean panicoDesativado;
+
+    @Column(name = "data_gps", columnDefinition = "timestamptz")
+    private OffsetDateTime dataGps;
+
+    @Column(name = "data_servidor", columnDefinition = "timestamptz")
+    private OffsetDateTime dataServidor;
+
+    @Column(name = "sequencia_rastreador")
+    private Integer sequenciaRastreador;
+
+    @Column(name = "tipo_rastreador", length = 10)
+    private String tipoRastreador;
+
+    @Column(name = "tipo_transmissao", length = 30)
+    private String tipoTransmissao;
+
+    @Column(name = "rastreador", columnDefinition = "TEXT")
+    private String rastreador;
+
+    @Column(name = "equipamento_portatil")
+    private Integer equipamentoPortatil;
+
+    @Column(name = "observacao", columnDefinition = "TEXT")
+    private String observacao;
+
+    @Column(name = "dados_puro_rastreador", columnDefinition = "TEXT")
+    private String dadosPuroRastreador;
 
 }

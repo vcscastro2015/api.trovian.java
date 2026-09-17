@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "inspecao_pneu")
@@ -41,7 +41,7 @@ public class InspecaoPneu {
 
     @NotNull(message = "Data da inspeção é obrigatória")
     @Column(name = "data_inspecao", nullable = false)
-    private LocalDateTime dataInspecao;
+    private OffsetDateTime dataInspecao;
 
     @Column(name = "km_veiculo")
     private Integer kmVeiculo;
@@ -69,12 +69,15 @@ public class InspecaoPneu {
     private Boolean geraAlerta;
 
     @Column(name = "data_cadastro", nullable = false, updatable = false)
-    private LocalDateTime dataCadastro;
+    private OffsetDateTime dataCadastro;
+
+    @Column(name = "cliente_id")
+    private Long clienteId;
 
     @PrePersist
     protected void onCreate() {
-        dataCadastro = LocalDateTime.now();
-        if (dataInspecao == null) dataInspecao = LocalDateTime.now();
+        dataCadastro = OffsetDateTime.now();
+        if (dataInspecao == null) dataInspecao = OffsetDateTime.now();
         if (geraAlerta == null) geraAlerta = false;
     }
 }

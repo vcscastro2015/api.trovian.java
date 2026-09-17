@@ -13,8 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,7 +32,7 @@ public class HodometroService {
     }
 
     @Transactional(readOnly = true)
-    public HodometroDTO findById(Integer id) {
+    public HodometroDTO findById(Long id) {
         Hodometro hodometro = hodometroRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Hodômetro não encontrado com id: " + id));
         return toDTO(hodometro);
@@ -52,8 +52,9 @@ public class HodometroService {
 
     @Transactional(readOnly = true)
     public List<HodometroDTO> findByVeiculoIdAndPeriodo(Long veiculoId, LocalDate dataInicial, LocalDate dataFinal) {
-        Date inicio = Date.from(dataInicial.atStartOfDay(ZoneId.systemDefault()).toInstant());
-        Date fim = Date.from(dataFinal.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        ZoneId zone = ZoneId.of("America/Sao_Paulo");
+        OffsetDateTime inicio = dataInicial.atStartOfDay(zone).toOffsetDateTime();
+        OffsetDateTime fim = dataFinal.plusDays(1).atStartOfDay(zone).toOffsetDateTime();
         return hodometroRepository
                 .findByVeiculoIdAndDataCadastroBetweenOrderByDataCadastroDesc(veiculoId, inicio, fim)
                 .stream()
@@ -73,7 +74,7 @@ public class HodometroService {
     }
 
     @Transactional
-    public HodometroDTO update(Integer id, HodometroDTO dto) {
+    public HodometroDTO update(Long id, HodometroDTO dto) {
         Hodometro hodometro = hodometroRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Hodômetro não encontrado com id: " + id));
 
@@ -87,14 +88,13 @@ public class HodometroService {
         hodometro.setHodometroRastreador(dto.getHodometroRastreador());
         hodometro.setTipo(dto.getTipo());
         hodometro.setIdTransmissao(dto.getIdTransmissao());
-        hodometro.setNomeMotorista(dto.getNomeMotorista());
         hodometro.setIdMotorista(dto.getIdMotorista());
 
         return toDTO(hodometroRepository.save(hodometro));
     }
 
     @Transactional
-    public void delete(Integer id) {
+    public void delete(Long id) {
         if (!hodometroRepository.existsById(id)) {
             throw new RuntimeException("Hodômetro não encontrado com id: " + id);
         }
@@ -108,7 +108,6 @@ public class HodometroService {
         dto.setHodometroRastreador(hodometro.getHodometroRastreador());
         dto.setTipo(hodometro.getTipo());
         dto.setIdTransmissao(hodometro.getIdTransmissao());
-        dto.setNomeMotorista(hodometro.getNomeMotorista());
         dto.setIdMotorista(hodometro.getIdMotorista());
         dto.setDataCadastro(hodometro.getDataCadastro());
         dto.setDataAtualizacao(hodometro.getDataAtualizacao());
@@ -127,7 +126,6 @@ public class HodometroService {
         hodometro.setHodometroRastreador(dto.getHodometroRastreador());
         hodometro.setTipo(dto.getTipo());
         hodometro.setIdTransmissao(dto.getIdTransmissao());
-        hodometro.setNomeMotorista(dto.getNomeMotorista());
         hodometro.setIdMotorista(dto.getIdMotorista());
         return hodometro;
     }

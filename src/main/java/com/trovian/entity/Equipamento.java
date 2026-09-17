@@ -7,8 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-import java.util.Date;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "equipamento")
@@ -21,9 +20,8 @@ public class Equipamento {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "data_cadastro", updatable = false)
-    private Date dataCadastro;
+    @Column(name = "data_cadastro", updatable = false, columnDefinition = "timestamptz")
+    private OffsetDateTime dataCadastro;
 
     @Column(name = "imei", length = 50)
     private String imei;
@@ -65,16 +63,16 @@ public class Equipamento {
     private Boolean equipamentoAlocado;
 
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    private OffsetDateTime updatedAt;
 
     @PrePersist
     protected void onCreate() {
-        dataCadastro = new Date();
-        updatedAt = LocalDateTime.now();
+        dataCadastro = OffsetDateTime.now();
+        updatedAt = OffsetDateTime.now();
     }
 
     @PreUpdate
     protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+        updatedAt = OffsetDateTime.now();
     }
 }

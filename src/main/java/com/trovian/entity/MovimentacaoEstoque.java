@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "movimentacao_estoque")
@@ -41,7 +41,7 @@ public class MovimentacaoEstoque {
 
     @Column(name = "data_movimentacao", nullable = false)
     @NotNull(message = "Data de movimentação é obrigatória")
-    private LocalDateTime dataMovimentacao;
+    private OffsetDateTime dataMovimentacao;
 
     @Column(name = "valor_unitario", precision = 10, scale = 2)
     private BigDecimal valorUnitario;
@@ -53,7 +53,7 @@ public class MovimentacaoEstoque {
     private String usuario;
 
     @Column(name = "data_cadastro", nullable = false, updatable = false)
-    private LocalDateTime dataCadastro;
+    private OffsetDateTime dataCadastro;
 
     @NotNull(message = "Cliente é obrigatório")
     @ManyToOne(fetch = FetchType.LAZY)
@@ -62,9 +62,9 @@ public class MovimentacaoEstoque {
 
     @PrePersist
     protected void onCreate() {
-        this.dataCadastro = LocalDateTime.now();
+        this.dataCadastro = OffsetDateTime.now();
         if (this.dataMovimentacao == null) {
-            this.dataMovimentacao = LocalDateTime.now();
+            this.dataMovimentacao = OffsetDateTime.now();
         }
     }
 }

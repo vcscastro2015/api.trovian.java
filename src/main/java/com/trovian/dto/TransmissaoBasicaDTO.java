@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.time.OffsetDateTime;
 
 @Data
 @NoArgsConstructor
@@ -20,7 +20,7 @@ public class TransmissaoBasicaDTO {
     private Integer altitude;
 
     @Schema(description = "Data e hora da transmissão", example = "2025-01-15T10:30:00")
-    private Date dataTransmissao;
+    private OffsetDateTime dataTransmissao;
 
     @Schema(description = "Direção do veículo (graus)", example = "180")
     private Integer direcao;
@@ -92,7 +92,7 @@ public class TransmissaoBasicaDTO {
     private Integer identificadorDeEvento;
 
     @Schema(description = "Data do envio SMS", example = "2025-01-15T10:30:00")
-    private Date dataEnvioSms;
+    private OffsetDateTime dataEnvioSms;
 
     @Schema(description = "Entrada digital 1", example = "false")
     private Boolean entradaDigitalUm;
@@ -128,10 +128,10 @@ public class TransmissaoBasicaDTO {
     private Boolean viagem;
 
     @Schema(description = "Data de registro", example = "2025-01-15T10:30:00")
-    private Date dataRegistro;
+    private OffsetDateTime dataRegistro;
 
-    @Schema(description = "ID da transmissão pai", example = "100.0")
-    private Double idTransmissaoPai;
+    @Schema(description = "ID da transmissão pai", example = "100")
+    private Long idTransmissaoPai;
 
     @Schema(description = "Endereço do ponto de transmissão", example = "Av. Paulista, 1000")
     private String endereco;

@@ -7,7 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "notificacoes")
@@ -40,10 +40,10 @@ public class Notificacao {
     private StatusNotificacao status = StatusNotificacao.PENDENTE;
 
     @Column(name = "data_criacao")
-    private LocalDateTime dataCriacao;
+    private OffsetDateTime dataCriacao;
 
     @Column(name = "data_envio")
-    private LocalDateTime dataEnvio;
+    private OffsetDateTime dataEnvio;
 
     @Column(name = "tentativas_envio")
     private Integer tentativasEnvio = 0;
@@ -55,7 +55,7 @@ public class Notificacao {
     private String respostaMotorista;
 
     @Column(name = "data_resposta")
-    private LocalDateTime dataResposta;
+    private OffsetDateTime dataResposta;
 
     // Referência para entidades do Trovian (opcional)
     @Column(name = "referencia_tipo")
@@ -66,6 +66,6 @@ public class Notificacao {
 
     @PrePersist
     protected void onCreate() {
-        dataCriacao = LocalDateTime.now();
+        dataCriacao = OffsetDateTime.now();
     }
 }

@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Base64;
-import java.util.Date;
+import java.time.OffsetDateTime;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -238,7 +238,7 @@ public class AbastecimentoService {
         dto.setCriadoEm(entity.getCriadoEm());
         dto.setAtualizadoEm(entity.getAtualizadoEm());
         dto.setStatus(entity.getStatus());
-        dto.setTemImagem(entity.getTemImagem());
+        dto.setQtdMidias(entity.getQtdMidias());
 
         return dto;
     }
@@ -260,7 +260,7 @@ public class AbastecimentoService {
         entity.setTanqueCheio(dto.getTanqueCheio());
         entity.setObservacoes(dto.getObservacoes());
         entity.setStatus(dto.getStatus());
-        entity.setTemImagem(dto.getTemImagem());
+        entity.setQtdMidias(dto.getQtdMidias());
 
         // Local (opcional)
         if (dto.getLocalId() != null) {
@@ -290,7 +290,7 @@ public class AbastecimentoService {
                 Abastecimento abastecimento = getAbastecimento(dadosFilaDTO, veiculo);
                 abastecimento.setMotorista(motorista);
                 Abastecimento savedAbastecimento = abastecimentoRepository.save(abastecimento);
-                if(savedAbastecimento.getTemImagem()){
+                if(savedAbastecimento.getQtdMidias() != null && savedAbastecimento.getQtdMidias() > 0){
                     salvarImagem(veiculo.getCliente(), savedAbastecimento, dadosFilaDTO);
                 }
                 contaPagarService.salvarContaPagarAbastecimentoWpp(savedAbastecimento, veiculo);
@@ -303,7 +303,7 @@ public class AbastecimentoService {
     private Abastecimento getAbastecimento(DadosFilaDTO dadosFilaDTO, Veiculo veiculo) {
         AbastecimentoWhatAppDTO abastecimentoDTO = dadosFilaDTO.getAbastecimento();
         Abastecimento abastecimento = new Abastecimento();
-        abastecimento.setDataHora(new Date());
+        abastecimento.setDataHora(OffsetDateTime.now());
         abastecimento.setCombustivelTipo(TipoCombustivel.DIESEL);
         abastecimento.setKmOdometro(Integer.valueOf(dadosFilaDTO.getHodometro()));
         abastecimento.setObservacoes("Abastecimento criado via informação originadas do WhatsApp.");
@@ -314,7 +314,7 @@ public class AbastecimentoService {
         preencherValoresAbastecimento(abastecimentoDTO, abastecimento);
 
         if (Objects.nonNull(dadosFilaDTO.getBase64())) {
-            abastecimento.setTemImagem(Boolean.TRUE);
+            abastecimento.setQtdMidias((short) 1);
         }
         return abastecimento;
     }

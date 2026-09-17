@@ -48,4 +48,7 @@ public class PontoRota {
 
     @Column(length = 255)
     private String nome;
+
+    @Column(name = "cliente_id")
+    private Long clienteId;
 }

@@ -6,8 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.time.LocalDateTime;
-import java.util.Date;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "forma_pagamento")
@@ -39,12 +38,11 @@ public class FormaPagamento {
     @Column(nullable = false)
     private Boolean status = true;
 
-    @Temporal(TemporalType.DATE)
-    @Column(nullable = false, updatable = false)
-    private Date dataCadastro = new Date();
+    @Column(nullable = false, updatable = false, columnDefinition = "timestamptz")
+    private OffsetDateTime dataCadastro = OffsetDateTime.now();
 
     @Column(nullable = false)
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    private OffsetDateTime updatedAt = OffsetDateTime.now();
 
     @NotNull(message = "Cliente é obrigatório")
     @ManyToOne(fetch = FetchType.LAZY)
@@ -53,6 +51,6 @@ public class FormaPagamento {
 
     @PreUpdate
     protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = OffsetDateTime.now();
     }
 }

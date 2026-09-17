@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "relatorios_gerados")
@@ -39,13 +39,13 @@ public class RelatorioGerado {
     private String caminhoArquivo; // Caminho no servidor/S3
 
     @Column(name = "generated_at", nullable = false)
-    private LocalDateTime generatedAt;
+    private OffsetDateTime generatedAt;
 
     @Column(name = "usuario_id")
     private Long usuarioId; // Quem gerou o relatório
 
     @PrePersist
     protected void onCreate() {
-        generatedAt = LocalDateTime.now();
+        generatedAt = OffsetDateTime.now();
     }
 }

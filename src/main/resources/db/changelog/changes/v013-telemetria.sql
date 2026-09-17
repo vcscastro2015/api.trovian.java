@@ -1,4 +1,4 @@
-seja se --liquibase formatted sql
+--liquibase formatted sql
 --changeset trovian:v013-telemetria
 
 CREATE TABLE telemetria (

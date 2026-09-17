@@ -5,17 +5,17 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.time.OffsetDateTime;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class TelemetriaLiveDTO {
-    private Integer telemetriaId;
+    private Long telemetriaId;
     private long veiculoId;
     private String placa;
-    private Date timestamp;
+    private OffsetDateTime timestamp;
     private String tipoEvento;
     private Integer velocidade;
     private Integer rpm;

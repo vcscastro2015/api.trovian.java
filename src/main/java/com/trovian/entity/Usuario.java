@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -49,21 +49,21 @@ public class Usuario {
     private String tokenDispositivo;
 
     @Column(name = "ultimo_login")
-    private LocalDateTime ultimoLogin;
+    private OffsetDateTime ultimoLogin;
 
     @Column(name = "token_recuperacao_senha")
     private String tokenRecuperacaoSenha;
 
     @Column(name = "token_expiracao")
-    private LocalDateTime tokenExpiracao;
+    private OffsetDateTime tokenExpiracao;
 
     @CreationTimestamp
     @Column(name = "criado_em", nullable = false, updatable = false)
-    private LocalDateTime criadoEm;
+    private OffsetDateTime criadoEm;
 
     @UpdateTimestamp
     @Column(name = "atualizado_em")
-    private LocalDateTime atualizadoEm;
+    private OffsetDateTime atualizadoEm;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

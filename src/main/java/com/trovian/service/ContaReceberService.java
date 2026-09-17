@@ -16,10 +16,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -190,13 +190,13 @@ public class ContaReceberService {
                 Viagem viagem = tentarLocalizarViagem(documentoCteDTO);
                 ContaReceber contaReceber = construirContaReceberDeCte(documentoCteDTO, cliente, categoria, fornecedorTomador, veiculo);
                 if(Objects.nonNull(dadosFilaDTO.getBase64())){
-                    contaReceber.setTemImagem(Boolean.TRUE);
+                    contaReceber.setQtdMidias((short) 1);
                 }
                 ContaReceber saved = contaReceberRepository.save(contaReceber);
                 log.info("Conta a receber criada com sucesso. ID: {} - CT-e: {}",
                         saved.getId(),
                         documentoCteDTO.getNumero());
-                if(Objects.nonNull(saved.getTemImagem()) && saved.getTemImagem()){
+                if(saved.getQtdMidias() != null && saved.getQtdMidias() > 0){
                     salvarImagem(cliente, saved, dadosFilaDTO);
                 }
                 return toDTO(saved);
@@ -365,8 +365,7 @@ public class ContaReceberService {
         conta.setValorMulta(BigDecimal.ZERO);
         conta.setValorRecebido(BigDecimal.ZERO);
 
-        // Datas - converter java.util.Date para LocalDate
-        LocalDate dataEmissao = new java.sql.Date(viagem.getDataViagem().getTime()).toLocalDate();
+        LocalDate dataEmissao = viagem.getDataViagem();
         conta.setDataEmissao(dataEmissao);
         conta.setDataVencimento(dataEmissao.plusDays(30));
         conta.setDataCompetencia(dataEmissao);
@@ -446,7 +445,7 @@ public class ContaReceberService {
         categoriaConta.setCliente(cliente);
         categoriaConta.setTipo(TipoConta.RECEBER);
         categoriaConta.setStatus(Boolean.TRUE);
-        categoriaConta.setDataCadastro(new Date());
+        categoriaConta.setDataCadastro(OffsetDateTime.now());
         return categoriaContaRepository.save(categoriaConta);
     }
 
@@ -592,7 +591,7 @@ public class ContaReceberService {
         dto.setNumeroNotaFiscal(entity.getNumeroNotaFiscal());
         dto.setNumeroControle(entity.getNumeroControle());
         dto.setNumeroCte(entity.getNumeroCte());
-        dto.setTemImagem(entity.getTemImagem());
+        dto.setQtdMidias(entity.getQtdMidias());
 
 
         if (entity.getCliente() != null) {
@@ -670,7 +669,7 @@ public class ContaReceberService {
         entity.setNumeroNotaFiscal(dto.getNumeroNotaFiscal());
         entity.setNumeroControle(dto.getNumeroControle());
         entity.setNumeroCte(dto.getNumeroCte());
-        entity.setTemImagem(dto.getTemImagem());
+        entity.setQtdMidias(dto.getQtdMidias());
 
         entity.setCliente(clienteRepository.findById(dto.getClienteId())
             .orElseThrow(() -> new RuntimeException("Cliente não encontrado")));

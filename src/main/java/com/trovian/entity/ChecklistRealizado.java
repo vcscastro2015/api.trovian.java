@@ -7,7 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -50,10 +50,10 @@ public class ChecklistRealizado {
 
     @NotNull(message = "Data/hora de início é obrigatória")
     @Column(name = "data_hora_inicio", nullable = false)
-    private LocalDateTime dataHoraInicio;
+    private OffsetDateTime dataHoraInicio;
 
     @Column(name = "data_hora_conclusao")
-    private LocalDateTime dataHoraConclusao;
+    private OffsetDateTime dataHoraConclusao;
 
     @Column(name = "km_veiculo")
     private Integer kmVeiculo;
@@ -80,7 +80,7 @@ public class ChecklistRealizado {
     @PrePersist
     protected void onCreate() {
         if (this.dataHoraInicio == null) {
-            this.dataHoraInicio = LocalDateTime.now();
+            this.dataHoraInicio = OffsetDateTime.now();
         }
         if (this.status == null) {
             this.status = StatusChecklist.EM_ANDAMENTO;
@@ -91,7 +91,7 @@ public class ChecklistRealizado {
      * Finaliza o checklist e determina o status baseado nas respostas
      */
     public void finalizar() {
-        this.dataHoraConclusao = LocalDateTime.now();
+        this.dataHoraConclusao = OffsetDateTime.now();
 
         // Verifica se há itens reprovados que requerem atenção
         boolean temItemCritico = respostas.stream()

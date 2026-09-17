@@ -8,8 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "veiculo")
@@ -39,9 +39,8 @@ public class Veiculo {
     private String cor;
 
     @NotNull(message = "Data de cadastro é obrigatória")
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "data_cadastro", nullable = false, updatable = false)
-    private Date dataCadastro;
+    @Column(name = "data_cadastro", nullable = false, updatable = false, columnDefinition = "timestamptz")
+    private OffsetDateTime dataCadastro;
 
     @Column(name = "observacao", columnDefinition = "TEXT")
     private String observacao;
@@ -178,6 +177,96 @@ public class Veiculo {
     @Column(name = "validar_rota")
     private Boolean validarRota;
 
+    // ==================== v015: HODÔMETRO / MEDIÇÃO ====================
+
+    @Column(name = "unidade_medicao", length = 10)
+    private String unidadeMedicao; // KM, HORA, AMBOS
+
+    @Column(name = "hodometro_tipo", length = 20)
+    private String hodometroTipo; // ANALOGICO, DIGITAL_LCD, DIGITAL_7SEG
+
+    @Column(name = "hodometro_digitos")
+    private Short hodometroDigitos;
+
+    @Column(name = "hodometro_casas_decimais")
+    private Short hodometroCasasDecimais;
+
+    @Column(name = "hodometro_unidade", length = 10)
+    private String hodometroUnidade; // KM, MILHA
+
+    @Column(name = "hodometro_fonte_rastreador", length = 20)
+    private String hodometroFonteRastreador; // CAN, GPS_ACUMULADO, PULSO, NENHUM
+
+    @Column(name = "hodometro_offset", precision = 12, scale = 2)
+    private BigDecimal hodometroOffset;
+
+    @Column(name = "hodometro_fator_correcao", precision = 6, scale = 4)
+    private BigDecimal hodometroFatorCorrecao;
+
+    @Column(name = "hodometro_tolerancia_pct", precision = 5, scale = 2)
+    private BigDecimal hodometroToleranciaPct;
+
+    @Column(name = "hodometro_calibrado_em")
+    private LocalDate hodometroCalibradoEm;
+
+    @Column(name = "hodometro_calibrado_por")
+    private Long hodometroCalibradoPor;
+
+    @Column(name = "hodometro_inicial_frota", precision = 12, scale = 2)
+    private BigDecimal hodometroInicialFrota;
+
+    @Column(name = "horimetro_inicial_frota", precision = 12, scale = 2)
+    private BigDecimal horimetroInicialFrota;
+
+    @Column(name = "data_aquisicao")
+    private LocalDate dataAquisicao;
+
+    @Column(name = "data_desmobilizacao")
+    private LocalDate dataDesmobilizacao;
+
+    // ==================== v015: TANQUES ====================
+
+    @Column(name = "capacidade_tanque_2", precision = 10, scale = 2)
+    private BigDecimal capacidadeTanque2;
+
+    @Column(name = "capacidade_arla", precision = 10, scale = 2)
+    private BigDecimal capacidadeArla;
+
+    @Column(name = "combustivel_secundario", length = 10)
+    private String combustivelSecundario;
+
+    @Column(name = "consumo_referencia_min", precision = 8, scale = 3)
+    private BigDecimal consumoReferenciaMin;
+
+    @Column(name = "consumo_referencia_max", precision = 8, scale = 3)
+    private BigDecimal consumoReferenciaMax;
+
+    // capacidade_tanque_total é GENERATED ALWAYS AS — não mapeada pelo JPA
+
+    // ==================== v015: IDENTIFICAÇÃO / ANTIFRAUDE ====================
+
+    @Column(name = "numero_frota", length = 20)
+    private String numeroFrota;
+
+    @Column(name = "vinculo", length = 15)
+    private String vinculo; // PROPRIO, AGREGADO, TERCEIRO, LOCADO
+
+    @Column(name = "perfil_risco", length = 10)
+    private String perfilRisco; // BAIXO, PADRAO, ALTO, CRITICO
+
+    @Column(name = "antifraude_ativo")
+    private Boolean antifraudeAtivo;
+
+    @Column(name = "antifraude_modo", length = 10)
+    private String antifraude_modo; // DESLIGADO, SOMBRA, ATIVO
+
+    @Column(name = "cadastro_completo_em", columnDefinition = "timestamptz")
+    private OffsetDateTime cadastroCompletoEm;
+
+    // placa_normalizada é GENERATED ALWAYS AS — lida como insertable=false/updatable=false
+    @Column(name = "placa_normalizada", length = 10, insertable = false, updatable = false)
+    private String placaNormalizada;
+
     @NotNull(message = "Modelo é obrigatório")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "modelo", referencedColumnName = "id", nullable = false)
@@ -189,16 +278,16 @@ public class Veiculo {
 
     @NotNull(message = "Cliente é obrigatório")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cliente", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "cliente_id", referencedColumnName = "id", nullable = false)
     private Cliente cliente;
 
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    private OffsetDateTime updatedAt;
 
     @PrePersist
     protected void onCreate() {
-        dataCadastro = new Date();
-        updatedAt = LocalDateTime.now();
+        dataCadastro = OffsetDateTime.now();
+        updatedAt = OffsetDateTime.now();
         if (status == null) {
             status = true;
         }
@@ -206,6 +295,6 @@ public class Veiculo {
 
     @PreUpdate
     protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+        updatedAt = OffsetDateTime.now();
     }
 }

@@ -53,4 +53,7 @@ public class RotaPedagio {
 
     @Column(name = "distancia_rota")
     private Double distanciaRota; // metros
+
+    @Column(name = "cliente_id")
+    private Long clienteId;
 }

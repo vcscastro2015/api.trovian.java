@@ -9,8 +9,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
 
 /**
  * Entidade que representa um Motorista no sistema
@@ -32,9 +32,8 @@ public class Motorista {
     private String nome;
 
     @Column(name = "data_nascimento", nullable = false)
-    @Temporal(TemporalType.DATE)
     @NotNull(message = "Data de nascimento é obrigatória")
-    private Date dataNascimento;
+    private LocalDate dataNascimento;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "sexo", length = 20)
@@ -51,13 +50,11 @@ public class Motorista {
     private String numeroCnh;
 
     @Column(name = "validade_cnh", nullable = false)
-    @Temporal(TemporalType.DATE)
     @NotNull(message = "Validade da CNH é obrigatória")
-    private Date validadeCnh;
+    private LocalDate validadeCnh;
 
     @Column(name = "data_admissao")
-    @Temporal(TemporalType.DATE)
-    private Date dataAdmissao;
+    private LocalDate dataAdmissao;
 
     @Column(name = "categoria_cnh", length = 2, nullable = false)
     @NotBlank(message = "Categoria da CNH é obrigatória")
@@ -118,20 +115,19 @@ public class Motorista {
     @JoinColumn(name = "consentimento_whatsapp_id")
     private ConsentimentoWhatsapp consentimentoWhatsapp;
 
-    @Column(name = "data_cadastro", nullable = false, updatable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date dataCadastro;
+    @Column(name = "data_cadastro", nullable = false, updatable = false, columnDefinition = "timestamptz")
+    private OffsetDateTime dataCadastro;
 
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    private OffsetDateTime updatedAt;
 
     /**
      * Método executado antes de persistir a entidade
      */
     @PrePersist
     protected void onCreate() {
-        this.dataCadastro = new Date();
-        this.updatedAt = LocalDateTime.now();
+        this.dataCadastro = OffsetDateTime.now();
+        this.updatedAt = OffsetDateTime.now();
     }
 
     /**
@@ -139,6 +135,6 @@ public class Motorista {
      */
     @PreUpdate
     protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = OffsetDateTime.now();
     }
 }

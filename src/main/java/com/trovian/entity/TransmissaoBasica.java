@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "transmissao_basica")
@@ -23,9 +23,8 @@ public class TransmissaoBasica {
     private Integer altitude;
 
     @Basic(optional = false)
-    @Column(name = "data_transmissao")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date dataTransmissao;
+    @Column(name = "data_transmissao", columnDefinition = "timestamptz")
+    private OffsetDateTime dataTransmissao;
 
     @Column(name = "direcao")
     private Integer direcao;
@@ -110,9 +109,8 @@ public class TransmissaoBasica {
     @Column(name = "identificador_de_evento")
     private Integer identificadorDeEvento;
 
-    @Column(name = "data_envio_sms")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date dataEnvioSms;
+    @Column(name = "data_envio_sms", columnDefinition = "timestamptz")
+    private OffsetDateTime dataEnvioSms;
 
     @Column(name = "entrada_digital_um")
     private Boolean entradaDigitalUm;
@@ -147,12 +145,11 @@ public class TransmissaoBasica {
     @Column(name = "viagem")
     private Boolean viagem;
 
-    @Column(name = "data_registro")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date dataRegistro;
+    @Column(name = "data_registro", columnDefinition = "timestamptz")
+    private OffsetDateTime dataRegistro;
 
     @Column(name = "id_transmissao_pai")
-    private Double idTransmissaoPai;
+    private Long idTransmissaoPai;
 
     @Column(name = "endereco")
     private String endereco;
@@ -169,4 +166,15 @@ public class TransmissaoBasica {
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "veiculo", referencedColumnName = "id")
     private Veiculo veiculo;
+
+    @Column(name = "cliente_id")
+    private Long clienteId;
+
+    @Column(name = "motorista_id")
+    private Long motoristaid;
+
+    @Column(name = "veiculo_fora_ancora")
+    @Convert(converter = Int2ToBooleanConverter.class)
+    private Boolean veiculoForaAncora;
+
 }

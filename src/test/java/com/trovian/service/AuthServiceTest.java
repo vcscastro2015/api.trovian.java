@@ -16,7 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -211,7 +211,7 @@ class AuthServiceTest {
     void redefinirSenha_comTokenValido_deveAtualizarSenha() {
         Usuario usuario = UsuarioBuilder.umUsuario().build();
         usuario.setTokenRecuperacaoSenha("valid-token");
-        usuario.setTokenExpiracao(LocalDateTime.now().plusHours(1)); // ainda válido
+        usuario.setTokenExpiracao(OffsetDateTime.now().plusHours(1)); // ainda válido
 
         given(usuarioRepository.findByTokenRecuperacaoSenha("valid-token")).willReturn(Optional.of(usuario));
         given(passwordEncoder.encode("novaSenha")).willReturn("$hash$");
@@ -232,7 +232,7 @@ class AuthServiceTest {
     void redefinirSenha_comTokenExpirado_deveLancarExcecao() {
         Usuario usuario = UsuarioBuilder.umUsuario().build();
         usuario.setTokenRecuperacaoSenha("expired-token");
-        usuario.setTokenExpiracao(LocalDateTime.now().minusHours(2)); // já expirado
+        usuario.setTokenExpiracao(OffsetDateTime.now().minusHours(2)); // já expirado
 
         given(usuarioRepository.findByTokenRecuperacaoSenha("expired-token")).willReturn(Optional.of(usuario));
 

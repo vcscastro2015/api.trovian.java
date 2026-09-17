@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -77,10 +77,10 @@ public class OrdemServico {
     private List<ItemManutencao> itens = new ArrayList<>();
 
     @Column(name = "data_cadastro", nullable = false, updatable = false)
-    private LocalDateTime dataCadastro;
+    private OffsetDateTime dataCadastro;
 
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    private OffsetDateTime updatedAt;
 
     @NotNull(message = "Cliente é obrigatório")
     @ManyToOne(fetch = FetchType.LAZY)
@@ -89,8 +89,8 @@ public class OrdemServico {
 
     @PrePersist
     protected void onCreate() {
-        this.dataCadastro = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        this.dataCadastro = OffsetDateTime.now();
+        this.updatedAt = OffsetDateTime.now();
         if (this.status == null) {
             this.status = StatusOrdemServico.ABERTA;
         }
@@ -104,7 +104,7 @@ public class OrdemServico {
 
     @PreUpdate
     protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = OffsetDateTime.now();
     }
 
     public void calcularValorTotal() {

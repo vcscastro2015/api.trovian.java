@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "item_manutencao")
@@ -52,21 +52,24 @@ public class ItemManutencao {
     private Fornecedor fornecedor;
 
     @Column(name = "data_cadastro", nullable = false, updatable = false)
-    private LocalDateTime dataCadastro;
+    private OffsetDateTime dataCadastro;
 
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    private OffsetDateTime updatedAt;
+
+    @Column(name = "cliente_id")
+    private Long clienteId;
 
     @PrePersist
     protected void onCreate() {
-        this.dataCadastro = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        this.dataCadastro = OffsetDateTime.now();
+        this.updatedAt = OffsetDateTime.now();
         calcularValorTotal();
     }
 
     @PreUpdate
     protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = OffsetDateTime.now();
         calcularValorTotal();
     }
 

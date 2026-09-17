@@ -17,7 +17,17 @@
       "PowerShell(java *)",
       "PowerShell($env:JAVA_HOME = \"C:\\\\Program Files\\\\Java\\\\jdk-17\"; cd \"C:\\\\projetos\\\\trajetto\\\\api.trovian.java\"; & \"C:\\\\frameworks\\\\apache-maven-3.8.1\\\\bin\\\\mvn.cmd\" \"-Djava.home=C:\\\\Program Files\\\\Java\\\\jdk-17\" compile -q 2>&1 | Select-Object -Last 80)",
       "mcp__ide__getDiagnostics",
-      "PowerShell(cmd /c \"set JAVA_HOME=C:\\\\Program Files\\\\Java\\\\jdk-17 && set PATH=C:\\\\Program Files\\\\Java\\\\jdk-17\\\\bin;%PATH% && cd /d C:\\\\projetos\\\\trajetto\\\\api.trovian.java && mvn compile -q\" 2>&1 | Select-Object -Last 80)"
+      "PowerShell(cmd /c \"set JAVA_HOME=C:\\\\Program Files\\\\Java\\\\jdk-17 && set PATH=C:\\\\Program Files\\\\Java\\\\jdk-17\\\\bin;%PATH% && cd /d C:\\\\projetos\\\\trajetto\\\\api.trovian.java && mvn compile -q\" 2>&1 | Select-Object -Last 80)",
+      "Bash(java -version)",
+      "Bash(mvn -version)",
+      "Bash(JAVA_HOME='/c/Program Files/Java/jdk-17' PATH='/c/Program Files/Java/jdk-17/bin:__TRACKED_VAR__' mvn compile -q)",
+      "Bash(JAVA_HOME=\"/c/Program Files/Java/jdk-17\" mvn compile -q)",
+      "Bash(sed -i 's/LocalDateTime dataInicio/OffsetDateTime dataInicio/g' src/main/java/com/trovian/repository/ChecklistRealizadoRepository.java)",
+      "Bash(sed -i 's/LocalDateTime dataInicial/OffsetDateTime dataInicial/g; s/LocalDateTime dataFinal/OffsetDateTime dataFinal/g' src/main/java/com/trovian/repository/ComissaoMotoristaRepository.java)",
+      "Bash(JAVA_HOME=\"/c/Program Files/Java/jdk-17\" mvn test -q)",
+      "Bash(sed -i 's/import java.time.LocalDateTime;/import java.time.OffsetDateTime;/' src/test/java/com/trovian/service/AuthServiceTest.java)",
+      "Bash(sed -i 's/LocalDateTime\\\\.now\\(\\)/OffsetDateTime.now\\(\\)/g' src/test/java/com/trovian/service/AuthServiceTest.java)",
+      "Bash(grep -n 'cliente_id\\\\|@PrePersist\\\\|@PreUpdate\\\\|private OffsetDateTime\\\\|private Long\\\\b' 'C:\\\\projetos\\\\trajetto\\\\api.trovian.java/__TRACKED_VAR__')"
     ],
     "deny": [],
     "ask": []

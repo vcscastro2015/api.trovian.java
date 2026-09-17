@@ -11,7 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -51,7 +51,7 @@ public class AuthService {
         }*/
 
         // Atualiza último login
-        usuario.setUltimoLogin(LocalDateTime.now());
+        usuario.setUltimoLogin(OffsetDateTime.now());
         usuarioRepository.save(usuario);
 
         // Gera tokens
@@ -138,7 +138,7 @@ public class AuthService {
         // Gera token de recuperação
         String token = UUID.randomUUID().toString();
         usuario.setTokenRecuperacaoSenha(token);
-        usuario.setTokenExpiracao(LocalDateTime.now().plusHours(1));
+        usuario.setTokenExpiracao(OffsetDateTime.now().plusHours(1));
         usuarioRepository.save(usuario);
 
         // Envia email
@@ -152,7 +152,7 @@ public class AuthService {
         Usuario usuario = usuarioRepository.findByTokenRecuperacaoSenha(request.getToken())
                 .orElseThrow(() -> new RuntimeException("Token inválido"));
 
-        if (usuario.getTokenExpiracao().isBefore(LocalDateTime.now())) {
+        if (usuario.getTokenExpiracao().isBefore(OffsetDateTime.now())) {
             throw new RuntimeException("Token expirado");
         }
 

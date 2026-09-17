@@ -11,7 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -197,7 +198,7 @@ public class DashboardService {
                             .margemPercentual(BigDecimal.valueOf(margem))
                             .lucro((BigDecimal) row[5])
                             .receita((BigDecimal) row[6])
-                            .dataViagem(((java.sql.Timestamp) row[7]).toLocalDateTime())
+                            .dataViagem(((java.sql.Timestamp) row[7]).toInstant().atOffset(java.time.ZoneOffset.UTC))
                             .nivelAlerta(classificarNivelAlerta(margem))
                             .motivo(identificarMotivoAlerta(row))
                             .build();
@@ -565,8 +566,8 @@ public class DashboardService {
     }
 
     private BigDecimal calcularTotalComissoesMotoristas(Long clienteId, LocalDate dataInicio, LocalDate dataFim) {
-        LocalDateTime dataInicioDateTime = dataInicio.atStartOfDay();
-        LocalDateTime dataFimDateTime = dataFim.atTime(23, 59, 59);
+        OffsetDateTime dataInicioDateTime = dataInicio.atStartOfDay(java.time.ZoneOffset.UTC).toOffsetDateTime();
+        OffsetDateTime dataFimDateTime = dataFim.atTime(23, 59, 59).atOffset(java.time.ZoneOffset.UTC);
         BigDecimal total = comissaoMotoristaRepository.sumTotalComissoesPorClienteEPeriodo(clienteId, dataInicioDateTime, dataFimDateTime);
         return total != null ? total : BigDecimal.ZERO;
     }

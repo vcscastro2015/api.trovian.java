@@ -69,4 +69,7 @@ public class RotaEstatisticas {
 
     @Column(name = "ponto_elevacao_minima_elev")
     private Double pontoElevacaoMinimaElev;
+
+    @Column(name = "cliente_id")
+    private Long clienteId;
 }
