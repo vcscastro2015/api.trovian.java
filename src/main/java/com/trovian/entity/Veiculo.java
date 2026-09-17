@@ -198,7 +198,7 @@ public class Veiculo {
     private String hodometroFonteRastreador = "GPS_ACUMULADO"; // CAN, GPS_ACUMULADO, PULSO, NENHUM
 
     @Column(name = "hodometro_offset", precision = 12, scale = 2)
-    private BigDecimal hodometroOffset;
+    private BigDecimal hodometroOffset = new BigDecimal("1");
 
     @Column(name = "hodometro_fator_correcao", precision = 6, scale = 4)
     private BigDecimal hodometroFatorCorrecao = new BigDecimal("0.5");
@@ -255,7 +255,7 @@ public class Veiculo {
     private String perfilRisco = "PADRAO"; // BAIXO, PADRAO, ALTO, CRITICO
 
     @Column(name = "antifraude_ativo")
-    private Boolean antifraudeAtivo;
+    private Boolean antifraudeAtivo = false;
 
     @Column(name = "antifraude_modo", length = 10)
     private String antifraude_modo = "DESLIGADO"; // DESLIGADO, SOMBRA, ATIVO
