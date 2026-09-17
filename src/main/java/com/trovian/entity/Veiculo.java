@@ -163,7 +163,7 @@ public class Veiculo {
     private Double cargaMaxima;
 
     @Column(name = "capacidade_tanque", precision = 10, scale = 2)
-    private BigDecimal capacidadeTanque;
+    private BigDecimal capacidadeTanque = new BigDecimal(1);
 
     @Column(name = "numero_eixos")
     private Integer numeroEixos;
@@ -180,31 +180,31 @@ public class Veiculo {
     // ==================== v015: HODÔMETRO / MEDIÇÃO ====================
 
     @Column(name = "unidade_medicao", length = 10)
-    private String unidadeMedicao; // KM, HORA, AMBOS
+    private String unidadeMedicao = "AMBOS"; // KM, HORA, AMBOS
 
     @Column(name = "hodometro_tipo", length = 20)
-    private String hodometroTipo; // ANALOGICO, DIGITAL_LCD, DIGITAL_7SEG
+    private String hodometroTipo = "DIGITAL_LCD"; // ANALOGICO, DIGITAL_LCD, DIGITAL_7SEG
 
     @Column(name = "hodometro_digitos")
-    private Short hodometroDigitos;
+    private Short hodometroDigitos = 5;
 
     @Column(name = "hodometro_casas_decimais")
-    private Short hodometroCasasDecimais;
+    private Short hodometroCasasDecimais = 0;
 
     @Column(name = "hodometro_unidade", length = 10)
-    private String hodometroUnidade; // KM, MILHA
+    private String hodometroUnidade = "KM"; // KM, MILHA
 
     @Column(name = "hodometro_fonte_rastreador", length = 20)
-    private String hodometroFonteRastreador; // CAN, GPS_ACUMULADO, PULSO, NENHUM
+    private String hodometroFonteRastreador = "GPS_ACUMULADO"; // CAN, GPS_ACUMULADO, PULSO, NENHUM
 
     @Column(name = "hodometro_offset", precision = 12, scale = 2)
     private BigDecimal hodometroOffset;
 
     @Column(name = "hodometro_fator_correcao", precision = 6, scale = 4)
-    private BigDecimal hodometroFatorCorrecao;
+    private BigDecimal hodometroFatorCorrecao = new BigDecimal("0.5");
 
     @Column(name = "hodometro_tolerancia_pct", precision = 5, scale = 2)
-    private BigDecimal hodometroToleranciaPct;
+    private BigDecimal hodometroToleranciaPct = new BigDecimal(1);
 
     @Column(name = "hodometro_calibrado_em")
     private LocalDate hodometroCalibradoEm;
@@ -227,19 +227,19 @@ public class Veiculo {
     // ==================== v015: TANQUES ====================
 
     @Column(name = "capacidade_tanque_2", precision = 10, scale = 2)
-    private BigDecimal capacidadeTanque2;
+    private BigDecimal capacidadeTanque2 = new BigDecimal(1);
 
     @Column(name = "capacidade_arla", precision = 10, scale = 2)
-    private BigDecimal capacidadeArla;
+    private BigDecimal capacidadeArla = new BigDecimal(1);;
 
     @Column(name = "combustivel_secundario", length = 10)
     private String combustivelSecundario;
 
     @Column(name = "consumo_referencia_min", precision = 8, scale = 3)
-    private BigDecimal consumoReferenciaMin;
+    private BigDecimal consumoReferenciaMin = new BigDecimal(1);
 
     @Column(name = "consumo_referencia_max", precision = 8, scale = 3)
-    private BigDecimal consumoReferenciaMax;
+    private BigDecimal consumoReferenciaMax = new BigDecimal(2);
 
     // capacidade_tanque_total é GENERATED ALWAYS AS — não mapeada pelo JPA
 
@@ -249,16 +249,16 @@ public class Veiculo {
     private String numeroFrota;
 
     @Column(name = "vinculo", length = 15)
-    private String vinculo; // PROPRIO, AGREGADO, TERCEIRO, LOCADO
+    private String vinculo = "PROPRIO"; // PROPRIO, AGREGADO, TERCEIRO, LOCADO
 
     @Column(name = "perfil_risco", length = 10)
-    private String perfilRisco; // BAIXO, PADRAO, ALTO, CRITICO
+    private String perfilRisco = "PADRAO"; // BAIXO, PADRAO, ALTO, CRITICO
 
     @Column(name = "antifraude_ativo")
     private Boolean antifraudeAtivo;
 
     @Column(name = "antifraude_modo", length = 10)
-    private String antifraude_modo; // DESLIGADO, SOMBRA, ATIVO
+    private String antifraude_modo = "DESLIGADO"; // DESLIGADO, SOMBRA, ATIVO
 
     @Column(name = "cadastro_completo_em", columnDefinition = "timestamptz")
     private OffsetDateTime cadastroCompletoEm;
