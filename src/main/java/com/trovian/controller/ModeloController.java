@@ -69,6 +69,30 @@ public class ModeloController {
         return ResponseEntity.ok(modelos);
     }
 
+    @Operation(summary = "Lista modelos do tipo Veículo de todos os clientes com paginação",
+               description = "Retorna uma página de modelos do tipo Veículo de todos os clientes")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Página de modelos retornada com sucesso",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = Page.class)))
+    })
+    @GetMapping(value = "/veiculos", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Page<ModeloDTO>> getAllVeiculosTodosClientes(
+            @Parameter(description = "Número da página (inicia em 0)", example = "0")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Tamanho da página", example = "10")
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Campo para ordenação", example = "fabricante")
+            @RequestParam(defaultValue = "id") String sortBy,
+            @Parameter(description = "Direção da ordenação (ASC ou DESC)", example = "ASC")
+            @RequestParam(defaultValue = "ASC") String direction) {
+
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+        Page<ModeloDTO> modelos = modeloService.findAllVeiculos(pageable);
+        return ResponseEntity.ok(modelos);
+    }
+
     @Operation(summary = "Lista modelos do tipo Veículo por cliente com paginação",
                description = "Retorna uma página de modelos do tipo Veículo de um cliente específico")
     @ApiResponses(value = {

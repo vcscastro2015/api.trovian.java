@@ -47,4 +47,7 @@ public class ModeloDTO {
     @NotNull(message = "ID do cliente é obrigatório")
     @Schema(description = "ID do cliente proprietário", example = "1", required = true)
     private Long clienteId;
+
+    @Schema(description = "Nome do cliente proprietário", example = "Transportadora XYZ", accessMode = Schema.AccessMode.READ_ONLY)
+    private String clienteNome;
 }
