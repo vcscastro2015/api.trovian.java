@@ -162,6 +162,15 @@ public class VeiculoService {
         veiculo.setTara(veiculoDTO.getTara());
         veiculo.setCombustivel(veiculoDTO.getCombustivel());
         veiculo.setValidarRota(veiculoDTO.getValidarRota());
+
+        // Anti-fraude
+        veiculo.setNumeroFrota(veiculoDTO.getNumeroFrota());
+        veiculo.setVinculo(veiculoDTO.getVinculo());
+        veiculo.setPerfilRisco(veiculoDTO.getPerfilRisco());
+        veiculo.setAntifraudeAtivo(veiculoDTO.getAntifraudeAtivo());
+        veiculo.setAntifraudeModo(veiculoDTO.getAntifraudeModo());
+        // cadastroCompletoEm e placaNormalizada são somente leitura — não atualizados aqui
+
         veiculo.setModelo(modelo);
         veiculo.setCliente(cliente);
 
@@ -266,6 +275,15 @@ public class VeiculoService {
         dto.setValidarRota(veiculo.getValidarRota());
         dto.setUpdatedAt(veiculo.getUpdatedAt());
 
+        // Anti-fraude
+        dto.setNumeroFrota(veiculo.getNumeroFrota());
+        dto.setVinculo(veiculo.getVinculo());
+        dto.setPerfilRisco(veiculo.getPerfilRisco());
+        dto.setAntifraudeAtivo(veiculo.getAntifraudeAtivo());
+        dto.setAntifraudeModo(veiculo.getAntifraudeModo());
+        dto.setCadastroCompletoEm(veiculo.getCadastroCompletoEm());
+        dto.setPlacaNormalizada(veiculo.getPlacaNormalizada());
+
         // Inclui informações do modelo
         if (veiculo.getModelo() != null) {
             dto.setModeloId(veiculo.getModelo().getId());
@@ -339,6 +357,15 @@ public class VeiculoService {
         veiculo.setTara(dto.getTara());
         veiculo.setCombustivel(dto.getCombustivel());
         veiculo.setValidarRota(dto.getValidarRota());
+
+        // Anti-fraude
+        veiculo.setNumeroFrota(dto.getNumeroFrota());
+        veiculo.setVinculo(dto.getVinculo() != null ? dto.getVinculo() : "PROPRIO");
+        veiculo.setPerfilRisco(dto.getPerfilRisco() != null ? dto.getPerfilRisco() : "PADRAO");
+        veiculo.setAntifraudeAtivo(dto.getAntifraudeAtivo() != null ? dto.getAntifraudeAtivo() : true);
+        veiculo.setAntifraudeModo(dto.getAntifraudeModo() != null ? dto.getAntifraudeModo() : "SOMBRA");
+        // cadastroCompletoEm e placaNormalizada são gerados pelo banco — não mapeados aqui
+
         return veiculo;
     }
 }

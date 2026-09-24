@@ -258,7 +258,7 @@ public class Veiculo {
     private Boolean antifraudeAtivo;
 
     @Column(name = "antifraude_modo", length = 10)
-    private String antifraude_modo; // DESLIGADO, SOMBRA, ATIVO
+    private String antifraudeModo; // DESLIGADO, SOMBRA, ATIVO
 
     @Column(name = "cadastro_completo_em", columnDefinition = "timestamptz")
     private OffsetDateTime cadastroCompletoEm;

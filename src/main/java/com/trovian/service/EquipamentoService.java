@@ -95,6 +95,15 @@ public class EquipamentoService {
         equipamento.setTipoChip(equipamentoDTO.getTipoChip());
         equipamento.setModelo(modelo);
         equipamento.setEquipamentoAlocado(equipamentoDTO.getEquipamentoAlocado());
+        if (equipamentoDTO.getTemCan() != null) equipamento.setTemCan(equipamentoDTO.getTemCan());
+        if (equipamentoDTO.getTemFms() != null) equipamento.setTemFms(equipamentoDTO.getTemFms());
+        if (equipamentoDTO.getTemSondaNivel() != null) equipamento.setTemSondaNivel(equipamentoDTO.getTemSondaNivel());
+        if (equipamentoDTO.getTemIbutton() != null) equipamento.setTemIbutton(equipamentoDTO.getTemIbutton());
+        equipamento.setSondaModelo(equipamentoDTO.getSondaModelo());
+        if (equipamentoDTO.getSondaQtd() != null) equipamento.setSondaQtd(equipamentoDTO.getSondaQtd());
+        equipamento.setSondaCalibradadEm(equipamentoDTO.getSondaCalibradadEm());
+        equipamento.setSondaErroPct(equipamentoDTO.getSondaErroPct());
+        equipamento.setCanErroPct(equipamentoDTO.getCanErroPct());
 
         Equipamento updatedEquipamento = equipamentoRepository.save(equipamento);
         log.info("Equipamento atualizado com sucesso. ID: {}", id);
@@ -145,6 +154,15 @@ public class EquipamentoService {
         dto.setTipoChip(equipamento.getTipoChip());
         dto.setEquipamentoAlocado(equipamento.getEquipamentoAlocado());
         dto.setUpdatedAt(equipamento.getUpdatedAt());
+        dto.setTemCan(equipamento.getTemCan());
+        dto.setTemFms(equipamento.getTemFms());
+        dto.setTemSondaNivel(equipamento.getTemSondaNivel());
+        dto.setTemIbutton(equipamento.getTemIbutton());
+        dto.setSondaModelo(equipamento.getSondaModelo());
+        dto.setSondaQtd(equipamento.getSondaQtd());
+        dto.setSondaCalibradadEm(equipamento.getSondaCalibradadEm());
+        dto.setSondaErroPct(equipamento.getSondaErroPct());
+        dto.setCanErroPct(equipamento.getCanErroPct());
 
         // Inclui informações do modelo
         if (equipamento.getModelo() != null) {
@@ -173,6 +191,15 @@ public class EquipamentoService {
         equipamento.setTipoEquipamento(dto.getTipoEquipamento());
         equipamento.setTipoChip(dto.getTipoChip());
         equipamento.setEquipamentoAlocado(dto.getEquipamentoAlocado() != null ? dto.getEquipamentoAlocado() : false);
+        equipamento.setTemCan(dto.getTemCan() != null ? dto.getTemCan() : false);
+        equipamento.setTemFms(dto.getTemFms() != null ? dto.getTemFms() : false);
+        equipamento.setTemSondaNivel(dto.getTemSondaNivel() != null ? dto.getTemSondaNivel() : false);
+        equipamento.setTemIbutton(dto.getTemIbutton() != null ? dto.getTemIbutton() : false);
+        equipamento.setSondaModelo(dto.getSondaModelo());
+        if (dto.getSondaQtd() != null) equipamento.setSondaQtd(dto.getSondaQtd());
+        equipamento.setSondaCalibradadEm(dto.getSondaCalibradadEm());
+        equipamento.setSondaErroPct(dto.getSondaErroPct());
+        equipamento.setCanErroPct(dto.getCanErroPct());
         return equipamento;
     }
 }
