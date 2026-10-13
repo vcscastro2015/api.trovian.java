@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Configuration
 public class JacksonConfig {
@@ -22,6 +23,7 @@ public class JacksonConfig {
 
         SimpleModule flexibleDates = new SimpleModule();
         flexibleDates.addDeserializer(LocalDateTime.class, new FlexibleLocalDateTimeDeserializer());
+        flexibleDates.addDeserializer(OffsetDateTime.class, new FlexibleOffsetDateTimeDeserializer());
         mapper.registerModule(flexibleDates);
 
         return mapper;
