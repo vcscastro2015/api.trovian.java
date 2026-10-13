@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 @Entity
@@ -64,6 +66,33 @@ public class Equipamento {
 
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
+
+    @Column(name = "tem_can", nullable = false)
+    private Boolean temCan = false;
+
+    @Column(name = "tem_fms", nullable = false)
+    private Boolean temFms = false;
+
+    @Column(name = "tem_sonda_nivel", nullable = false)
+    private Boolean temSondaNivel = false;
+
+    @Column(name = "tem_ibutton", nullable = false)
+    private Boolean temIbutton = false;
+
+    @Column(name = "sonda_modelo", length = 50)
+    private String sondaModelo;
+
+    @Column(name = "sonda_qtd", nullable = false)
+    private Short sondaQtd = 0;
+
+    @Column(name = "sonda_calibrada_em")
+    private LocalDate sondaCalibradadEm;
+
+    @Column(name = "sonda_erro_pct", precision = 5, scale = 2)
+    private BigDecimal sondaErroPct = new BigDecimal("3.0");
+
+    @Column(name = "can_erro_pct", precision = 5, scale = 2)
+    private BigDecimal canErroPct = new BigDecimal("8.0");
 
     @PrePersist
     protected void onCreate() {

@@ -200,4 +200,31 @@ public class VeiculoDTO {
 
     @Schema(description = "Data da última atualização", example = "2025-01-20T14:45:00", accessMode = Schema.AccessMode.READ_ONLY)
     private OffsetDateTime updatedAt;
+
+    // ==================== ANTI-FRAUDE ====================
+
+    @Schema(description = "Número de frota", example = "FR-001")
+    private String numeroFrota;
+
+    @Schema(description = "Vínculo do veículo", example = "PROPRIO",
+            allowableValues = {"PROPRIO", "AGREGADO", "TERCEIRO", "LOCADO"})
+    private String vinculo;
+
+    @Schema(description = "Perfil de risco", example = "PADRAO",
+            allowableValues = {"BAIXO", "PADRAO", "ALTO", "CRITICO"})
+    private String perfilRisco;
+
+    @Schema(description = "Anti-fraude habilitado", example = "true")
+    private Boolean antifraudeAtivo;
+
+    @Schema(description = "Modo anti-fraude", example = "SOMBRA",
+            allowableValues = {"DESLIGADO", "SOMBRA", "ATIVO"})
+    private String antifraudeModo;
+
+    @Schema(description = "Data em que o cadastro foi concluído", accessMode = Schema.AccessMode.READ_ONLY)
+    private OffsetDateTime cadastroCompletoEm;
+
+    @Schema(description = "Placa normalizada gerada pelo banco (somente leitura)", example = "ABC1234",
+            accessMode = Schema.AccessMode.READ_ONLY)
+    private String placaNormalizada;
 }
