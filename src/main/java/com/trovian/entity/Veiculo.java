@@ -22,7 +22,7 @@ public class Veiculo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Size(min = 1, max = 5, message = "Ano de fabricação deve ter entre 1 e 5 caracteres")
+    @Size(min = 1, max = 5, message = "Ano de fabricação deve ter entre 1 e 5 caracteres.")
     @Column(name = "ano_fabricacao", length = 5)
     private String anoFabricacao;
 
