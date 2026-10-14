@@ -177,8 +177,6 @@ public class Veiculo {
     @Column(name = "validar_rota")
     private Boolean validarRota;
 
-    // ==================== v015: HODÔMETRO / MEDIÇÃO ====================
-
     @Column(name = "unidade_medicao", length = 10)
     private String unidadeMedicao; // KM, HORA, AMBOS
 
@@ -224,8 +222,6 @@ public class Veiculo {
     @Column(name = "data_desmobilizacao")
     private LocalDate dataDesmobilizacao;
 
-    // ==================== v015: TANQUES ====================
-
     @Column(name = "capacidade_tanque_2", precision = 10, scale = 2)
     private BigDecimal capacidadeTanque2;
 
@@ -242,8 +238,6 @@ public class Veiculo {
     private BigDecimal consumoReferenciaMax;
 
     // capacidade_tanque_total é GENERATED ALWAYS AS — não mapeada pelo JPA
-
-    // ==================== v015: IDENTIFICAÇÃO / ANTIFRAUDE ====================
 
     @Column(name = "numero_frota", length = 20)
     private String numeroFrota;
@@ -262,8 +256,7 @@ public class Veiculo {
 
     @Column(name = "cadastro_completo_em", columnDefinition = "timestamptz")
     private OffsetDateTime cadastroCompletoEm;
-
-    // placa_normalizada é GENERATED ALWAYS AS — lida como insertable=false/updatable=false
+    
     @Column(name = "placa_normalizada", length = 10, insertable = false, updatable = false)
     private String placaNormalizada;
 
