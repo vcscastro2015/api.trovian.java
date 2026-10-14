@@ -1,6 +1,8 @@
 package com.trovian.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -53,4 +55,32 @@ public class EquipamentoDTO {
     @NotNull(message = "ID do cliente é obrigatório")
     @Schema(description = "ID do cliente proprietário", example = "1", required = true)
     private Long clienteId;
+
+    @Schema(description = "Indica se o equipamento possui CAN Bus", example = "false")
+    private Boolean temCan;
+
+    @Schema(description = "Indica se o equipamento possui FMS", example = "false")
+    private Boolean temFms;
+
+    @Schema(description = "Indica se o equipamento possui sonda de nível", example = "false")
+    private Boolean temSondaNivel;
+
+    @Schema(description = "Indica se o equipamento possui iButton", example = "false")
+    private Boolean temIbutton;
+
+    @Size(max = 50, message = "Modelo da sonda deve ter no máximo 50 caracteres")
+    @Schema(description = "Modelo da sonda instalada", example = "BCD-200")
+    private String sondaModelo;
+
+    @Schema(description = "Quantidade de sondas instaladas", example = "2")
+    private Short sondaQtd;
+
+    @Schema(description = "Data em que a sonda foi calibrada", example = "2025-06-10")
+    private LocalDate sondaCalibradadEm;
+
+    @Schema(description = "Percentual de erro admitido para a sonda", example = "3.00")
+    private BigDecimal sondaErroPct;
+
+    @Schema(description = "Percentual de erro admitido para o CAN", example = "8.00")
+    private BigDecimal canErroPct;
 }

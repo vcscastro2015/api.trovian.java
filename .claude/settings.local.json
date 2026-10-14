@@ -27,7 +27,10 @@
       "Bash(JAVA_HOME=\"/c/Program Files/Java/jdk-17\" mvn test -q)",
       "Bash(sed -i 's/import java.time.LocalDateTime;/import java.time.OffsetDateTime;/' src/test/java/com/trovian/service/AuthServiceTest.java)",
       "Bash(sed -i 's/LocalDateTime\\\\.now\\(\\)/OffsetDateTime.now\\(\\)/g' src/test/java/com/trovian/service/AuthServiceTest.java)",
-      "Bash(grep -n 'cliente_id\\\\|@PrePersist\\\\|@PreUpdate\\\\|private OffsetDateTime\\\\|private Long\\\\b' 'C:\\\\projetos\\\\trajetto\\\\api.trovian.java/__TRACKED_VAR__')"
+      "Bash(grep -n 'cliente_id\\\\|@PrePersist\\\\|@PreUpdate\\\\|private OffsetDateTime\\\\|private Long\\\\b' 'C:\\\\projetos\\\\trajetto\\\\api.trovian.java/__TRACKED_VAR__')",
+      "Bash(xargs grep -l -i \"midia\\\\|antifraude\\\\|anti.fraude\\\\|veiculo.*midia\\\\|referencia\")",
+      "Bash(xargs grep -l -i \"midia\\\\|antifraude\\\\|anti.fraude\")",
+      "Bash(xargs grep -l -i \"veiculo\")"
     ],
     "deny": [],
     "ask": []
