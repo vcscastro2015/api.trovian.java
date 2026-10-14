@@ -1,6 +1,8 @@
 package com.trovian.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.trovian.config.FlexibleOffsetDateTimeDeserializer;
 import java.time.OffsetDateTime;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -33,6 +35,7 @@ public class DadosFilaDTO {
     @JsonProperty("hodometro")
     private String hodometro;
     @JsonProperty("dataEnvio")
+    @JsonDeserialize(using = FlexibleOffsetDateTimeDeserializer.class)
     private OffsetDateTime dataEnvio = OffsetDateTime.now();
     @JsonProperty("documentoCTE")
     private DocumentoCteDTO documentoCte;
