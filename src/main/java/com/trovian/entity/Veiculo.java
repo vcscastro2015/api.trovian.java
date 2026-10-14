@@ -22,7 +22,7 @@ public class Veiculo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Size(min = 1, max = 5, message = "Ano de fabricação deve ter entre 1 e 5 caracteres")
+    @Size(min = 1, max = 5, message = "Ano de fabricação deve ter entre 1 e 5 caracteres.")
     @Column(name = "ano_fabricacao", length = 5)
     private String anoFabricacao;
 
@@ -163,7 +163,7 @@ public class Veiculo {
     private Double cargaMaxima;
 
     @Column(name = "capacidade_tanque", precision = 10, scale = 2)
-    private BigDecimal capacidadeTanque = new BigDecimal(1);
+    private BigDecimal capacidadeTanque;
 
     @Column(name = "numero_eixos")
     private Integer numeroEixos;
@@ -177,34 +177,32 @@ public class Veiculo {
     @Column(name = "validar_rota")
     private Boolean validarRota;
 
-    // ==================== v015: HODÔMETRO / MEDIÇÃO ====================
-
     @Column(name = "unidade_medicao", length = 10)
-    private String unidadeMedicao = "AMBOS"; // KM, HORA, AMBOS
+    private String unidadeMedicao; // KM, HORA, AMBOS
 
     @Column(name = "hodometro_tipo", length = 20)
-    private String hodometroTipo = "DIGITAL_LCD"; // ANALOGICO, DIGITAL_LCD, DIGITAL_7SEG
+    private String hodometroTipo; // ANALOGICO, DIGITAL_LCD, DIGITAL_7SEG
 
     @Column(name = "hodometro_digitos")
-    private Short hodometroDigitos = 5;
+    private Short hodometroDigitos;
 
     @Column(name = "hodometro_casas_decimais")
-    private Short hodometroCasasDecimais = 0;
+    private Short hodometroCasasDecimais;
 
     @Column(name = "hodometro_unidade", length = 10)
-    private String hodometroUnidade = "KM"; // KM, MILHA
+    private String hodometroUnidade; // KM, MILHA
 
     @Column(name = "hodometro_fonte_rastreador", length = 20)
-    private String hodometroFonteRastreador = "GPS_ACUMULADO"; // CAN, GPS_ACUMULADO, PULSO, NENHUM
+    private String hodometroFonteRastreador; // CAN, GPS_ACUMULADO, PULSO, NENHUM
 
     @Column(name = "hodometro_offset", precision = 12, scale = 2)
-    private BigDecimal hodometroOffset = new BigDecimal("1");
+    private BigDecimal hodometroOffset;
 
     @Column(name = "hodometro_fator_correcao", precision = 6, scale = 4)
-    private BigDecimal hodometroFatorCorrecao = new BigDecimal("0.5");
+    private BigDecimal hodometroFatorCorrecao;
 
     @Column(name = "hodometro_tolerancia_pct", precision = 5, scale = 2)
-    private BigDecimal hodometroToleranciaPct = new BigDecimal(1);
+    private BigDecimal hodometroToleranciaPct;
 
     @Column(name = "hodometro_calibrado_em")
     private LocalDate hodometroCalibradoEm;
@@ -224,46 +222,41 @@ public class Veiculo {
     @Column(name = "data_desmobilizacao")
     private LocalDate dataDesmobilizacao;
 
-    // ==================== v015: TANQUES ====================
-
     @Column(name = "capacidade_tanque_2", precision = 10, scale = 2)
-    private BigDecimal capacidadeTanque2 = new BigDecimal(1);
+    private BigDecimal capacidadeTanque2;
 
     @Column(name = "capacidade_arla", precision = 10, scale = 2)
-    private BigDecimal capacidadeArla = new BigDecimal(1);;
+    private BigDecimal capacidadeArla;
 
     @Column(name = "combustivel_secundario", length = 10)
     private String combustivelSecundario;
 
     @Column(name = "consumo_referencia_min", precision = 8, scale = 3)
-    private BigDecimal consumoReferenciaMin = new BigDecimal(1);
+    private BigDecimal consumoReferenciaMin;
 
     @Column(name = "consumo_referencia_max", precision = 8, scale = 3)
-    private BigDecimal consumoReferenciaMax = new BigDecimal(2);
+    private BigDecimal consumoReferenciaMax;
 
     // capacidade_tanque_total é GENERATED ALWAYS AS — não mapeada pelo JPA
-
-    // ==================== v015: IDENTIFICAÇÃO / ANTIFRAUDE ====================
 
     @Column(name = "numero_frota", length = 20)
     private String numeroFrota;
 
     @Column(name = "vinculo", length = 15)
-    private String vinculo = "PROPRIO"; // PROPRIO, AGREGADO, TERCEIRO, LOCADO
+    private String vinculo; // PROPRIO, AGREGADO, TERCEIRO, LOCADO
 
     @Column(name = "perfil_risco", length = 10)
-    private String perfilRisco = "PADRAO"; // BAIXO, PADRAO, ALTO, CRITICO
+    private String perfilRisco; // BAIXO, PADRAO, ALTO, CRITICO
 
     @Column(name = "antifraude_ativo")
-    private Boolean antifraudeAtivo = false;
+    private Boolean antifraudeAtivo;
 
     @Column(name = "antifraude_modo", length = 10)
-    private String antifraude_modo = "DESLIGADO"; // DESLIGADO, SOMBRA, ATIVO
+    private String antifraudeModo; // DESLIGADO, SOMBRA, ATIVO.
 
     @Column(name = "cadastro_completo_em", columnDefinition = "timestamptz")
     private OffsetDateTime cadastroCompletoEm;
-
-    // placa_normalizada é GENERATED ALWAYS AS — lida como insertable=false/updatable=false
+    
     @Column(name = "placa_normalizada", length = 10, insertable = false, updatable = false)
     private String placaNormalizada;
 
